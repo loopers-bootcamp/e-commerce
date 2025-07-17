@@ -19,5 +19,6 @@ dependencies {
     testImplementation("org.testcontainers:mysql")
 
     testFixturesImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    testFixturesImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testFixturesImplementation("org.testcontainers:mysql")
 }
