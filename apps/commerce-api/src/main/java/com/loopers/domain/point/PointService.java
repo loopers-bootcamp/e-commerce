@@ -1,0 +1,88 @@
+package com.loopers.domain.point;
+
+import com.loopers.domain.point.attribute.Cause;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class PointService {
+
+    private final PointRepository pointRepository;
+
+    @Transactional(readOnly = true)
+    public Optional<PointResult.GetPoint> getPoint(Long userId) {
+        return pointRepository.findPointByUserId(userId)
+                .map(PointResult.GetPoint::from);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PointHistory> getPointHistories(Long userId) {
+        return pointRepository.findPointHistoriesByUserId(userId);
+    }
+
+    @Transactional
+    public PointResult.Create create(Long userId) {
+        if (pointRepository.existsPointByUserId(userId)) {
+            throw new BusinessException(CommonErrorType.CONFLICT);
+        }
+
+        Point point = Point.builder()
+                .userId(userId)
+                .balance(0L)
+                .build();
+
+        pointRepository.savePoint(point);
+
+        return PointResult.Create.from(point);
+    }
+
+    @Transactional
+    public PointResult.Increase increase(PointCommand.Increase command) {
+        Long userId = command.getUserId();
+        Long amount = command.getAmount();
+
+        Point point = pointRepository.findPointByUserId(userId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        point.increase(amount);
+        pointRepository.savePoint(point);
+
+        PointHistory history = PointHistory.builder()
+                .userId(userId)
+                .cause(Cause.CHARGE)
+                .amount(amount)
+                .build();
+        pointRepository.savePointHistory(history);
+
+        return PointResult.Increase.from(point);
+    }
+
+    @Transactional
+    public PointResult.Decrease decrease(PointCommand.Decrease command) {
+        Long userId = command.getUserId();
+        Long amount = command.getAmount();
+
+        Point point = pointRepository.findPointByUserId(userId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        point.decrease(amount);
+        pointRepository.savePoint(point);
+
+        PointHistory history = PointHistory.builder()
+                .userId(userId)
+                .cause(Cause.PURCHASE)
+                .amount(amount)
+                .build();
+        pointRepository.savePointHistory(history);
+
+        return PointResult.Decrease.from(point);
+    }
+
+}
