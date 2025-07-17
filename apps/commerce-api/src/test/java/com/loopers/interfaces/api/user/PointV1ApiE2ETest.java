@@ -47,20 +47,19 @@ class PointV1ApiE2ETest {
     @Nested
     class GetUser {
 
+        private static final String REQUEST_URL = BASE_ENDPOINT;
+
         @DisplayName("""
                     X-USER-ID 헤더가 없다면,
                     400 응답과 { meta=BAD_REQUEST, data=null }를 보낸다.
                 """)
         @Test
         void sendError_whenUserIdHeaderDoesNotExist() {
-            // given
-            String requestUrl = BASE_ENDPOINT;
-
             // when
             HttpEntity<?> requestEntity = HttpEntity.EMPTY;
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -77,7 +76,6 @@ class PointV1ApiE2ETest {
         void sendError_whenUserDoesNotExistByProvidedUserId() {
             // given
             String userName = "gildong";
-            String requestUrl = BASE_ENDPOINT;
 
             // when
             HttpHeaders headers = new HttpHeaders();
@@ -85,7 +83,7 @@ class PointV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -114,15 +112,13 @@ class PointV1ApiE2ETest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
-            String requestUrl = BASE_ENDPOINT;
-
             // when
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -138,6 +134,8 @@ class PointV1ApiE2ETest {
     @Nested
     class Charge {
 
+        private static final String REQUEST_URL = BASE_ENDPOINT + "/charge";
+
         @DisplayName("""
                     존재하지 않는 사용자 아이디를 주면,
                     404 응답과 { meta=NOT_FOUND, data=null }를 보낸다.
@@ -151,15 +149,13 @@ class PointV1ApiE2ETest {
                     .amount(1000L)
                     .build();
 
-            String requestUrl = BASE_ENDPOINT + "/charge";
-
             // when
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -199,15 +195,13 @@ class PointV1ApiE2ETest {
                     .amount(amount)
                     .build();
 
-            String requestUrl = BASE_ENDPOINT + "/charge";
-
             // when
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -250,15 +244,13 @@ class PointV1ApiE2ETest {
                     .amount(amount)
                     .build();
 
-            String requestUrl = BASE_ENDPOINT + "/charge";
-
             // when
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -298,15 +290,13 @@ class PointV1ApiE2ETest {
                     .amount(amount)
                     .build();
 
-            String requestUrl = BASE_ENDPOINT + "/charge";
-
             // when
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
