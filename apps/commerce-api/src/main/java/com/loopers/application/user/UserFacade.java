@@ -26,6 +26,9 @@ public class UserFacade {
     @Transactional
     public UserOutput.Join join(UserInput.Join input) {
         UserResult.Join result = userService.join(input.toCommand());
+
+        // 포인트 충전 시 Point를 생성하면 PointRepository가 User를 반환해야 한다.
+        // 상호의존성을 application 레이어에서 해결하고자, 회원가입과 동시에 생성한다.
         pointService.create(result.getUserId());
 
         return UserOutput.Join.from(result);
