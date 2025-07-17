@@ -16,12 +16,21 @@ import java.time.ZonedDateTime;
 @Getter
 public abstract class BaseEntity {
 
+    /**
+     * 생성일시
+     */
     @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
 
+    /**
+     * 수정일시
+     */
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
 
+    /**
+     * 삭제일시
+     */
     @Column(name = "deleted_at")
     private ZonedDateTime deletedAt;
 
@@ -29,7 +38,8 @@ public abstract class BaseEntity {
      * 엔티티의 유효성을 검증한다.
      * 이 메소드는 PrePersist 및 PreUpdate 시점에 호출된다.
      */
-    protected void guard() {}
+    protected void guard() {
+    }
 
     @PrePersist
     private void prePersist() {
@@ -64,4 +74,5 @@ public abstract class BaseEntity {
             this.deletedAt = null;
         }
     }
+
 }
