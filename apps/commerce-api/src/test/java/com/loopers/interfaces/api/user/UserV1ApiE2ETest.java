@@ -43,20 +43,19 @@ class UserV1ApiE2ETest {
     @Nested
     class GetUser {
 
+        private static final String REQUEST_URL = BASE_ENDPOINT + "/me";
+
         @DisplayName("""
                     X-USER-ID 헤더가 없다면,
                     400 응답과 { meta=BAD_REQUEST, data=null }를 보낸다.
                 """)
         @Test
         void sendError_whenUserIdHeaderDoesNotExist() {
-            // given
-            String requestUrl = BASE_ENDPOINT + "/me";
-
             // when
             HttpEntity<?> requestEntity = HttpEntity.EMPTY;
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -73,7 +72,6 @@ class UserV1ApiE2ETest {
         void sendError_whenUserDoesNotExistByProvidedUserId() {
             // given
             String userName = "gildong";
-            String requestUrl = BASE_ENDPOINT + "/me";
 
             // when
             HttpHeaders headers = new HttpHeaders();
@@ -81,7 +79,7 @@ class UserV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -104,15 +102,13 @@ class UserV1ApiE2ETest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
-            String requestUrl = BASE_ENDPOINT + "/me";
-
             // when
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -132,6 +128,8 @@ class UserV1ApiE2ETest {
     @Nested
     class Join {
 
+        private static final String REQUEST_URL = BASE_ENDPOINT;
+
         @DisplayName("""
                     올바르지 않은 사용자 아이디를 주면,
                     400 응답과 { meta=INVALID, data=null }를 보낸다.
@@ -148,8 +146,6 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidUserIdIsProvided(String userName) {
             // given
-            String requestUrl = BASE_ENDPOINT;
-
             UserRequest.JoinUser body = UserRequest.JoinUser.builder()
                     .userName(userName)
                     .genderCode(Gender.FEMALE.getCode())
@@ -161,7 +157,7 @@ class UserV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -181,8 +177,6 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidGenderCodeIsProvided(Integer genderCode) {
             // given
-            String requestUrl = BASE_ENDPOINT;
-
             UserRequest.JoinUser body = UserRequest.JoinUser.builder()
                     .userName("gildong")
                     .genderCode(genderCode)
@@ -194,7 +188,7 @@ class UserV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -219,8 +213,6 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidBirthDateIsProvided(String birthDate) {
             // given
-            String requestUrl = BASE_ENDPOINT;
-
             UserRequest.JoinUser body = UserRequest.JoinUser.builder()
                     .userName("gildong")
                     .genderCode(Gender.MALE.getCode())
@@ -232,7 +224,7 @@ class UserV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -258,8 +250,6 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidEmailIsProvided(String email) {
             // given
-            String requestUrl = BASE_ENDPOINT;
-
             UserRequest.JoinUser body = UserRequest.JoinUser.builder()
                     .userName("gildong")
                     .genderCode(Gender.MALE.getCode())
@@ -271,7 +261,7 @@ class UserV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -297,8 +287,6 @@ class UserV1ApiE2ETest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
-            String requestUrl = BASE_ENDPOINT;
-
             UserRequest.JoinUser body = UserRequest.JoinUser.builder()
                     .userName(user.getName())
                     .genderCode(Gender.FEMALE.getCode())
@@ -310,7 +298,7 @@ class UserV1ApiE2ETest {
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
@@ -332,13 +320,11 @@ class UserV1ApiE2ETest {
                     .email("gildong.hong@example.com")
                     .build();
 
-            String requestUrl = BASE_ENDPOINT;
-
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
             ResponseEntity<ApiResponse<UserResponse.JoinUser>> response =
-                    testRestTemplate.exchange(requestUrl, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
             // then
