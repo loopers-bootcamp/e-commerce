@@ -146,7 +146,7 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidUserIdIsProvided(String userName) {
             // given
-            UserRequest.JoinUser body = UserRequest.JoinUser.builder()
+            UserRequest.Join body = UserRequest.Join.builder()
                     .userName(userName)
                     .genderCode(Gender.FEMALE.getCode())
                     .birthDate("2010-08-15")
@@ -156,7 +156,7 @@ class UserV1ApiE2ETest {
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
@@ -177,7 +177,7 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidGenderCodeIsProvided(Integer genderCode) {
             // given
-            UserRequest.JoinUser body = UserRequest.JoinUser.builder()
+            UserRequest.Join body = UserRequest.Join.builder()
                     .userName("gildong")
                     .genderCode(genderCode)
                     .birthDate("2010-08-15")
@@ -187,7 +187,7 @@ class UserV1ApiE2ETest {
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
@@ -213,7 +213,7 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidBirthDateIsProvided(String birthDate) {
             // given
-            UserRequest.JoinUser body = UserRequest.JoinUser.builder()
+            UserRequest.Join body = UserRequest.Join.builder()
                     .userName("gildong")
                     .genderCode(Gender.MALE.getCode())
                     .birthDate(birthDate)
@@ -223,7 +223,7 @@ class UserV1ApiE2ETest {
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
@@ -250,7 +250,7 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidEmailIsProvided(String email) {
             // given
-            UserRequest.JoinUser body = UserRequest.JoinUser.builder()
+            UserRequest.Join body = UserRequest.Join.builder()
                     .userName("gildong")
                     .genderCode(Gender.MALE.getCode())
                     .birthDate("2010-08-15")
@@ -260,7 +260,7 @@ class UserV1ApiE2ETest {
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
@@ -287,7 +287,7 @@ class UserV1ApiE2ETest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
-            UserRequest.JoinUser body = UserRequest.JoinUser.builder()
+            UserRequest.Join body = UserRequest.Join.builder()
                     .userName(user.getName())
                     .genderCode(Gender.FEMALE.getCode())
                     .birthDate("2010-08-15")
@@ -297,7 +297,7 @@ class UserV1ApiE2ETest {
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
@@ -313,7 +313,7 @@ class UserV1ApiE2ETest {
             // given
             String userName = "gildong";
 
-            UserRequest.JoinUser body = UserRequest.JoinUser.builder()
+            UserRequest.Join body = UserRequest.Join.builder()
                     .userName(userName)
                     .genderCode(Gender.MALE.getCode())
                     .birthDate("1990-01-01")
@@ -323,7 +323,7 @@ class UserV1ApiE2ETest {
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
 
-            ResponseEntity<ApiResponse<UserResponse.JoinUser>> response =
+            ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 

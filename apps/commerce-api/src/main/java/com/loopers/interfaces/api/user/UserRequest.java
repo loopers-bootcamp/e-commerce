@@ -11,7 +11,7 @@ public final class UserRequest {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class JoinUser {
+    public static class Join {
         @NotBlank
         private final String userName;
         @NotNull

@@ -22,9 +22,9 @@ public interface UserV1ApiSpec {
             summary = "회원 가입",
             description = "새로운 회원을 등록합니다."
     )
-    ApiResponse<UserResponse.JoinUser> joinUser(
+    ApiResponse<UserResponse.Join> join(
             @RequestBody(description = "회원 정보")
-            UserRequest.JoinUser request
+            UserRequest.Join request
     );
 
 }
