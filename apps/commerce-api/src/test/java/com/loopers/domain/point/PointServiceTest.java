@@ -137,9 +137,9 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 증가할 때: ")
+    @DisplayName("포인트를 충전할 때: ")
     @Nested
-    class Increase {
+    class Charge {
 
         @DisplayName("""
                 해당 아이디의 사용자가 없으면,
@@ -150,7 +150,7 @@ class PointServiceTest {
             // given
             Long userId = 1L;
 
-            PointCommand.Increase command = PointCommand.Increase.builder()
+            PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(userId)
                     .build();
 
@@ -159,7 +159,7 @@ class PointServiceTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.increase(command))
+                    .isThrownBy(() -> sut.charge(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
@@ -179,7 +179,7 @@ class PointServiceTest {
         @ParameterizedTest
         void throwException_whenAmountIsZeroOrNegative(long amount) {
             // given
-            PointCommand.Increase command = PointCommand.Increase.builder()
+            PointCommand.Charge command = PointCommand.Charge.builder()
                     .amount(amount)
                     .userId(1L)
                     .build();
@@ -196,7 +196,7 @@ class PointServiceTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.increase(command))
+                    .isThrownBy(() -> sut.charge(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
@@ -220,7 +220,7 @@ class PointServiceTest {
         @ParameterizedTest
         void throwException_whenMaxBalanceExceeded(long balance, long amount) {
             // given
-            PointCommand.Increase command = PointCommand.Increase.builder()
+            PointCommand.Charge command = PointCommand.Charge.builder()
                     .amount(amount)
                     .userId(1L)
                     .build();
@@ -236,7 +236,7 @@ class PointServiceTest {
                     );
 
             // when & then
-            assertThatThrownBy(() -> sut.increase(command))
+            assertThatThrownBy(() -> sut.charge(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
@@ -255,9 +255,9 @@ class PointServiceTest {
                 99_999_999  | 1
                 """, delimiter = '|')
         @ParameterizedTest
-        void savePointAndHistoryAndReturnIncreasedPoint_whenValidAmountIsProvided(long balance, long amount) {
+        void savePointAndHistoryAndReturnChargedPoint_whenValidAmountIsProvided(long balance, long amount) {
             // given
-            PointCommand.Increase command = PointCommand.Increase.builder()
+            PointCommand.Charge command = PointCommand.Charge.builder()
                     .amount(amount)
                     .userId(1L)
                     .build();
@@ -273,7 +273,7 @@ class PointServiceTest {
                     );
 
             // when
-            PointResult.Increase result = sut.increase(command);
+            PointResult.Charge result = sut.charge(command);
 
             // then
             long increasedBalance = balance + amount;
@@ -289,9 +289,9 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 감소할 때: ")
+    @DisplayName("포인트를 차감할 때: ")
     @Nested
-    class Decrease {
+    class Spend {
 
         @DisplayName("""
                 해당 아이디의 사용자가 없으면,
@@ -302,7 +302,7 @@ class PointServiceTest {
             // given
             Long userId = 1L;
 
-            PointCommand.Decrease command = PointCommand.Decrease.builder()
+            PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(userId)
                     .build();
 
@@ -311,7 +311,7 @@ class PointServiceTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.decrease(command))
+                    .isThrownBy(() -> sut.spend(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
@@ -331,7 +331,7 @@ class PointServiceTest {
         @ParameterizedTest
         void throwException_whenAmountIsZeroOrNegative(long amount) {
             // given
-            PointCommand.Decrease command = PointCommand.Decrease.builder()
+            PointCommand.Spend command = PointCommand.Spend.builder()
                     .amount(amount)
                     .userId(1L)
                     .build();
@@ -348,7 +348,7 @@ class PointServiceTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.decrease(command))
+                    .isThrownBy(() -> sut.spend(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
@@ -372,7 +372,7 @@ class PointServiceTest {
         @ParameterizedTest
         void throwException_whenBalanceIsNotEnough(long balance, long amount) {
             // given
-            PointCommand.Decrease command = PointCommand.Decrease.builder()
+            PointCommand.Spend command = PointCommand.Spend.builder()
                     .amount(amount)
                     .userId(1L)
                     .build();
@@ -388,7 +388,7 @@ class PointServiceTest {
                     );
 
             // when & then
-            assertThatThrownBy(() -> sut.decrease(command))
+            assertThatThrownBy(() -> sut.spend(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.NOT_ENOUGH_BALANCE);
@@ -409,9 +409,9 @@ class PointServiceTest {
                 100_000_000 | 100_000_000
                 """, delimiter = '|')
         @ParameterizedTest
-        void savePointAndHistoryAndReturnDecreasedPoint_whenValidAmountIsProvided(long balance, long amount) {
+        void savePointAndHistoryAndReturnSpentPoint_whenValidAmountIsProvided(long balance, long amount) {
             // given
-            PointCommand.Decrease command = PointCommand.Decrease.builder()
+            PointCommand.Spend command = PointCommand.Spend.builder()
                     .amount(amount)
                     .userId(1L)
                     .build();
@@ -427,7 +427,7 @@ class PointServiceTest {
                     );
 
             // when
-            PointResult.Decrease result = sut.decrease(command);
+            PointResult.Spend result = sut.spend(command);
 
             // then
             long decreasedBalance = balance - amount;

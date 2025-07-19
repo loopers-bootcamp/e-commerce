@@ -33,8 +33,8 @@ public final class PointOutput {
         private final Long balance;
         private final Long userId;
 
-        public static Charge from(PointResult.Increase result) {
-            return Charge.builder()
+        public static Charge from(PointResult.Charge result) {
+            return PointOutput.Charge.builder()
                     .pointId(result.getUserId())
                     .balance(result.getBalance())
                     .userId(result.getUserId())

@@ -8,7 +8,7 @@ public final class PointCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Increase {
+    public static class Charge {
         private final Long userId;
         private final Long amount;
     }
@@ -16,7 +16,7 @@ public final class PointCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Decrease {
+    public static class Spend {
         private final Long userId;
         private final Long amount;
     }

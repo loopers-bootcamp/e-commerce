@@ -61,10 +61,10 @@ public class Point extends BaseEntity {
         this.userId = userId;
     }
 
-    public void increase(long amount) {
+    public void charge(long amount) {
         if (amount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID,
-                    "0 이하의 값으로 포인트를 증가할 수 없습니다.");
+                    "0 이하의 값으로 포인트를 충전할 수 없습니다.");
         }
 
         long increaseBalance = this.balance + amount;
@@ -75,10 +75,10 @@ public class Point extends BaseEntity {
         this.balance = increaseBalance;
     }
 
-    public void decrease(long amount) {
+    public void spend(long amount) {
         if (amount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID,
-                    "0 이하의 값으로 포인트를 감소할 수 없습니다.");
+                    "0 이하의 값으로 포인트를 차감할 수 없습니다.");
         }
 
         long decreasedBalance = this.balance - amount;
