@@ -35,7 +35,7 @@ public class Point extends BaseEntity {
     /**
      * 사용자 아이디
      */
-    @Column(name = "ref_user_id", nullable = false)
+    @Column(name = "ref_user_id", nullable = false, unique = true)
     private Long userId;
 
     // -------------------------------------------------------------------------------------------------
