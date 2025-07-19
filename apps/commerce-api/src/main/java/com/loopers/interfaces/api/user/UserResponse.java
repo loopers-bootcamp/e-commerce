@@ -32,15 +32,15 @@ public final class UserResponse {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class JoinUser {
+    public static class Join {
         private final Long userId;
         private final String userName;
         private final Integer genderCode;
         private final String birthDate;
         private final String email;
 
-        public static JoinUser from(UserOutput.Join output) {
-            return JoinUser.builder()
+        public static Join from(UserOutput.Join output) {
+            return Join.builder()
                     .userId(output.getUserId())
                     .userName(output.getUserName())
                     .genderCode(output.getGenderCode())

@@ -1,4 +1,4 @@
-package com.loopers.interfaces.api.user;
+package com.loopers.interfaces.api.point;
 
 import com.loopers.annotation.SpringE2ETest;
 import com.loopers.domain.point.Point;
@@ -6,8 +6,6 @@ import com.loopers.domain.point.error.PointErrorType;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.interfaces.api.ApiResponse;
-import com.loopers.interfaces.api.point.PointRequest;
-import com.loopers.interfaces.api.point.PointResponse;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.utils.DatabaseCleanUp;
 import lombok.RequiredArgsConstructor;
@@ -200,7 +198,7 @@ class PointV1ApiE2ETest {
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<PointResponse.Charge>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 
@@ -249,7 +247,7 @@ class PointV1ApiE2ETest {
             headers.set("X-USER-ID", userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
+            ResponseEntity<ApiResponse<PointResponse.Charge>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
 

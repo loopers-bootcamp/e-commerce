@@ -29,14 +29,14 @@ public class UserV1Controller implements UserV1ApiSpec {
 
     @PostMapping
     @Override
-    public ApiResponse<UserResponse.JoinUser> joinUser(
+    public ApiResponse<UserResponse.Join> join(
             @Valid
             @RequestBody
-            UserRequest.JoinUser request
+            UserRequest.Join request
     ) {
         UserInput.Join input = request.toInput();
         UserOutput.Join output = userFacade.join(input);
-        UserResponse.JoinUser response = UserResponse.JoinUser.from(output);
+        UserResponse.Join response = UserResponse.Join.from(output);
 
         return ApiResponse.success(response);
     }
