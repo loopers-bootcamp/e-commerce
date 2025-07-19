@@ -9,9 +9,10 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 class QueryDslConfig {
 
-    @Primary
     @Bean
-    JPAQueryFactory mySqlJpaQueryFactory(EntityManager entityManager) {
+    @Primary
+    JPAQueryFactory mysqlJpaQueryFactory(EntityManager entityManager) {
         return new JPAQueryFactory(entityManager);
     }
+
 }

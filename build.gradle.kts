@@ -52,9 +52,13 @@ subprojects {
         implementation("org.springframework.boot:spring-boot-starter")
         // Serialize
         implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
         // Lombok
-        implementation("org.projectlombok:lombok")
+        compileOnly("org.projectlombok:lombok")
         annotationProcessor("org.projectlombok:lombok")
+        testCompileOnly("org.projectlombok:lombok")
+        testAnnotationProcessor("org.projectlombok:lombok")
+
         // Test
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         // testcontainers:mysql 이 jdbc 사용함
@@ -77,7 +81,11 @@ subprojects {
         tasks.withType(BootJar::class) { enabled = true }
     }
 
-    tasks.test {
+    tasks.withType<JavaCompile> {
+        options.compilerArgs.add("-parameters")
+    }
+
+    tasks.withType<Test> {
         maxParallelForks = 1
         useJUnitPlatform()
         systemProperty("user.timezone", "Asia/Seoul")
