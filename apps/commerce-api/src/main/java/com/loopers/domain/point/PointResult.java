@@ -46,13 +46,13 @@ public final class PointResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Increase {
+    public static class Charge {
         private final Long pointId;
         private final Long balance;
         private final Long userId;
 
-        public static Increase from(Point point) {
-            return Increase.builder()
+        public static Charge from(Point point) {
+            return Charge.builder()
                     .pointId(point.getId())
                     .balance(point.getBalance())
                     .userId(point.getUserId())
@@ -65,13 +65,13 @@ public final class PointResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Decrease {
+    public static class Spend {
         private final Long pointId;
         private final Long balance;
         private final Long userId;
 
-        public static Decrease from(Point point) {
-            return Decrease.builder()
+        public static Spend from(Point point) {
+            return Spend.builder()
                     .pointId(point.getId())
                     .balance(point.getBalance())
                     .userId(point.getUserId())

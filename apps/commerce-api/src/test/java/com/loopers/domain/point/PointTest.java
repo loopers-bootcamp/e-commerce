@@ -102,9 +102,9 @@ class PointTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 증가할 때: ")
+    @DisplayName("포인트를 충전할 때: ")
     @Nested
-    class Increase {
+    class Charge {
 
         @DisplayName("""
                 0 이하 금액이면,
@@ -122,7 +122,7 @@ class PointTest {
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> point.increase(amount))
+            assertThatThrownBy(() -> point.charge(amount))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
@@ -148,7 +148,7 @@ class PointTest {
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> point.increase(amount))
+            assertThatThrownBy(() -> point.charge(amount))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
@@ -163,7 +163,7 @@ class PointTest {
                 99_999_999  | 1
                 """, delimiter = '|')
         @ParameterizedTest
-        void increaseBalance_whenValidAmountIsProvided(long balance, long amount) {
+        void chargeBalance_whenValidAmountIsProvided(long balance, long amount) {
             // given
             Point point = Point.builder()
                     .balance(balance)
@@ -171,7 +171,7 @@ class PointTest {
                     .build();
 
             // when
-            point.increase(amount);
+            point.charge(amount);
 
             // then
             long increasedBalance = balance + amount;
@@ -182,9 +182,9 @@ class PointTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 감소할 때: ")
+    @DisplayName("포인트를 차감할 때: ")
     @Nested
-    class Decrease {
+    class Spend {
 
         @DisplayName("""
                 0 이하 금액이면,
@@ -202,7 +202,7 @@ class PointTest {
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> point.decrease(amount))
+            assertThatThrownBy(() -> point.spend(amount))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
@@ -228,7 +228,7 @@ class PointTest {
                     .build();
 
             // when & then
-            assertThatThrownBy(() -> point.decrease(amount))
+            assertThatThrownBy(() -> point.spend(amount))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.NOT_ENOUGH_BALANCE);
@@ -245,7 +245,7 @@ class PointTest {
                 100_000_000 | 100_000_000
                 """, delimiter = '|')
         @ParameterizedTest
-        void decreaseBalance_whenValidAmountIsProvided(long balance, long amount) {
+        void spendBalance_whenValidAmountIsProvided(long balance, long amount) {
             // given
             Point point = Point.builder()
                     .balance(balance)
@@ -253,7 +253,7 @@ class PointTest {
                     .build();
 
             // when
-            point.decrease(amount);
+            point.spend(amount);
 
             // then
             long decreasedBalance = balance - amount;

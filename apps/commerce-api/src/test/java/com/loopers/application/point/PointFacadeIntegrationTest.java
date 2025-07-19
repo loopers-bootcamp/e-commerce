@@ -86,7 +86,7 @@ class PointFacadeIntegrationTest {
 
             verify(userService, times(2)).getUser(user.getName());
             verify(pointService).getPoint(user.getId());
-            verify(pointService).increase(any(PointCommand.Increase.class));
+            verify(pointService).charge(any(PointCommand.Charge.class));
         }
 
     }
@@ -136,7 +136,7 @@ class PointFacadeIntegrationTest {
         }
 
         // then
-        verify(pointService, times(threadCount)).increase(any(PointCommand.Increase.class));
+        verify(pointService, times(threadCount)).charge(any(PointCommand.Charge.class));
 
         PointOutput.GetPoint output = sut.getPoint(user.getName());
         assertThat(output.getBalance()).isEqualTo(100L * threadCount);

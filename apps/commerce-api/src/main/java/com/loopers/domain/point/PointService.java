@@ -44,14 +44,14 @@ public class PointService {
     }
 
     @Transactional
-    public PointResult.Increase increase(PointCommand.Increase command) {
+    public PointResult.Charge charge(PointCommand.Charge command) {
         Long userId = command.getUserId();
         Long amount = command.getAmount();
 
         Point point = pointRepository.findPointByUserId(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
-        point.increase(amount);
+        point.charge(amount);
         pointRepository.savePoint(point);
 
         PointHistory history = PointHistory.builder()
@@ -61,18 +61,18 @@ public class PointService {
                 .build();
         pointRepository.savePointHistory(history);
 
-        return PointResult.Increase.from(point);
+        return PointResult.Charge.from(point);
     }
 
     @Transactional
-    public PointResult.Decrease decrease(PointCommand.Decrease command) {
+    public PointResult.Spend spend(PointCommand.Spend command) {
         Long userId = command.getUserId();
         Long amount = command.getAmount();
 
         Point point = pointRepository.findPointByUserId(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
-        point.decrease(amount);
+        point.spend(amount);
         pointRepository.savePoint(point);
 
         PointHistory history = PointHistory.builder()
@@ -82,7 +82,7 @@ public class PointService {
                 .build();
         pointRepository.savePointHistory(history);
 
-        return PointResult.Decrease.from(point);
+        return PointResult.Spend.from(point);
     }
 
 }

@@ -31,11 +31,11 @@ public class PointFacade {
         UserResult.GetUser userResult = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
-        PointCommand.Increase command = PointCommand.Increase.builder()
+        PointCommand.Charge command = PointCommand.Charge.builder()
                 .userId(userResult.getUserId())
                 .amount(input.getAmount())
                 .build();
-        PointResult.Increase pointResult = pointService.increase(command);
+        PointResult.Charge pointResult = pointService.charge(command);
 
         return PointOutput.Charge.from(pointResult);
     }
