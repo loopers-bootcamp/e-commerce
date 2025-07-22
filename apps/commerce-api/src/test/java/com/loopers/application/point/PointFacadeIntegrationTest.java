@@ -5,6 +5,7 @@ import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.UserService;
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.utils.DatabaseCleanUp;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDate;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,9 +59,9 @@ class PointFacadeIntegrationTest {
             // given
             User user = User.builder()
                     .name("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
 
@@ -97,9 +99,9 @@ class PointFacadeIntegrationTest {
         // given
         User user = User.builder()
                 .name("gildong")
-                .genderCode(Gender.MALE.getCode())
-                .birthDate("1990-01-01")
-                .email("gildong.hong@example.com")
+                .gender(Gender.MALE)
+                .birthDate(LocalDate.of(1990, 1, 1))
+                .email(new Email("gildong.hong@example.com"))
                 .build();
         Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
 

@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.support.error.BusinessException;
 import org.instancio.Instancio;
@@ -10,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,9 +68,9 @@ class UserServiceTest {
             assertThat(maybeResult).isPresent();
             assertThat(maybeResult.get().getUserId()).isEqualTo(foundUser.getId());
             assertThat(maybeResult.get().getUserName()).isEqualTo(foundUser.getName());
-            assertThat(maybeResult.get().getGenderCode()).isEqualTo(foundUser.getGender().getCode());
-            assertThat(maybeResult.get().getBirthDate()).isEqualTo(foundUser.getBirthDate().toString());
-            assertThat(maybeResult.get().getEmail()).isEqualTo(foundUser.getEmail().getValue());
+            assertThat(maybeResult.get().getGender()).isEqualTo(foundUser.getGender());
+            assertThat(maybeResult.get().getBirthDate()).isEqualTo(foundUser.getBirthDate());
+            assertThat(maybeResult.get().getEmail()).isEqualTo(foundUser.getEmail());
         }
 
     }
@@ -85,9 +87,9 @@ class UserServiceTest {
             // given
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             given(userRepository.existsUserByName(command.getUserName()))
                     .willReturn(true);
@@ -98,15 +100,15 @@ class UserServiceTest {
                     .isInstanceOf(BusinessException.class);
         }
 
-        @DisplayName("이미 가입된 회원의 이름이 아니고 모든 속성이 올바르면 사용자 정보를 반환한다.")
+        @DisplayName("이미 가입된 회원의 이름이 아니고 모든 속성이 올바르면, 사용자 정보를 반환한다.")
         @Test
         void returnUser_whenUserExistsByName() {
             // given
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             given(userRepository.existsUserByName(command.getUserName()))
                     .willReturn(false);
@@ -117,11 +119,11 @@ class UserServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.getUserName()).isEqualTo(command.getUserName());
-            assertThat(result.getGenderCode()).isEqualTo(command.getGenderCode());
+            assertThat(result.getGender()).isEqualTo(command.getGender());
             assertThat(result.getBirthDate()).isEqualTo(command.getBirthDate());
             assertThat(result.getEmail()).isEqualTo(command.getEmail());
 
-            verify(userRepository).existsUserByName(any(String.class));
+            verify(userRepository).existsUserByName(command.getUserName());
             verify(userRepository).saveUser(any(User.class));
         }
 

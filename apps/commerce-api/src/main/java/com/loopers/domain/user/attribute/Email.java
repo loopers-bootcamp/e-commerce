@@ -1,5 +1,6 @@
 package com.loopers.domain.user.attribute;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -31,9 +32,10 @@ public final class Email {
 
     // -------------------------------------------------------------------------------------------------
 
+    @JsonCreator
     public Email(String value) {
         if (!isValid(value)) {
-            throw new BusinessException(CommonErrorType.INVALID);
+            throw new BusinessException(CommonErrorType.INVALID, "이메일 형식이 올바르지 않습니다.");
         }
 
         this.value = value.toLowerCase(Locale.ROOT);

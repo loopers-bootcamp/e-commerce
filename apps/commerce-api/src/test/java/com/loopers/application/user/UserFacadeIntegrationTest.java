@@ -3,6 +3,7 @@ package com.loopers.application.user;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.user.UserCommand;
 import com.loopers.domain.user.UserService;
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -17,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
@@ -58,16 +61,16 @@ class UserFacadeIntegrationTest {
             // given
             UserInput.Join input1 = UserInput.Join.builder()
                     .userName("gildong")
-                    .genderCode(Gender.FEMALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.FEMALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
 
             UserInput.Join input2 = UserInput.Join.builder()
                     .userName("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(2010, 8, 15))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
 
             // when & then
@@ -94,9 +97,9 @@ class UserFacadeIntegrationTest {
             // given
             UserInput.Join input = UserInput.Join.builder()
                     .userName("gildong")
-                    .genderCode(Gender.FEMALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.FEMALE)
+                    .birthDate(LocalDate.of(2010, 8, 15))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
 
             // when
@@ -105,7 +108,7 @@ class UserFacadeIntegrationTest {
 
             // then
             assertThat(output.getUserName()).isEqualTo(input.getUserName());
-            assertThat(output.getGenderCode()).isEqualTo(input.getGenderCode());
+            assertThat(output.getGender()).isEqualTo(input.getGender());
             assertThat(output.getBirthDate()).isEqualTo(input.getBirthDate());
             assertThat(output.getEmail()).isEqualTo(input.getEmail());
 

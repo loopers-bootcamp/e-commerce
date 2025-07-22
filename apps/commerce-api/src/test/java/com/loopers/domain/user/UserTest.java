@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -11,6 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
@@ -37,13 +40,18 @@ class UserTest {
         })
         @ParameterizedTest
         void throwException_whenInvalidNameIsProvided(String name) {
+            // given
+            Gender gender = Gender.MALE;
+            LocalDate birthDate = LocalDate.of(1990, 1, 1);
+            Email email = new Email("gildong.go@example.com");
+
             // when & then
             assertThatException()
                     .isThrownBy(() -> User.builder()
                             .name(name)
-                            .genderCode(Gender.MALE.getCode())
-                            .birthDate("1990-01-01")
-                            .email("gildong.go@example.com")
+                            .gender(gender)
+                            .birthDate(birthDate)
+                            .email(email)
                             .build())
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
@@ -55,46 +63,20 @@ class UserTest {
                 BusinessException(errorType=INVALID)이 발생한다.
                 """)
         @NullSource
-        @ValueSource(ints = {
-                -1, 0, 100,
-        })
         @ParameterizedTest
-        void throwException_whenInvalidGenderCodeIsProvided(Integer genderCode) {
-            // when & then
-            assertThatException()
-                    .isThrownBy(() -> User.builder()
-                            .name("gildong")
-                            .genderCode(genderCode)
-                            .birthDate("1990-01-01")
-                            .email("gildong.go@example.com")
-                            .build())
-                    .isInstanceOf(BusinessException.class)
-                    .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(CommonErrorType.INVALID);
-        }
+        void throwException_whenInvalidGenderCodeIsProvided(Gender gender) {
+            // given
+            String name = "gildong";
+            LocalDate birthDate = LocalDate.of(1990, 1, 1);
+            Email email = new Email("gildong.go@example.com");
 
-        @DisplayName("""
-                생년월일이 yyyy-MM-dd 형식에 맞지 않으면,
-                BusinessException(errorType=INVALID)이 발생한다.
-                """)
-        @NullSource
-        @EmptySource
-        @ValueSource(strings = {
-                " ",
-                "1990-1-1",
-                "1945-12-32",
-                "2010.08.15",
-                "07/12/2025",
-        })
-        @ParameterizedTest
-        void throwException_whenInvalidBirthDateIsProvided(String birthDate) {
             // when & then
             assertThatException()
                     .isThrownBy(() -> User.builder()
-                            .name("gildong")
-                            .genderCode(Gender.MALE.getCode())
+                            .name(name)
+                            .gender(gender)
                             .birthDate(birthDate)
-                            .email("gildong.go@example.com")
+                            .email(email)
                             .build())
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
@@ -102,27 +84,48 @@ class UserTest {
         }
 
         @DisplayName("""
-                이메일 형식이 올바르지 않으면,
+                생년월일이 주어지지 않으면,
                 BusinessException(errorType=INVALID)이 발생한다.
                 """)
         @NullSource
-        @EmptySource
-        @ValueSource(strings = {
-                " ",
-                "foo.test.com",
-                "bar@example.c",
-                "alpha/beta/gamma@test.org",
-                "zeta001@whitehouse.alphabeta",
-                "omega002@bluehouse.org2",
-        })
         @ParameterizedTest
-        void throwException_whenInvalidEmailIsProvided(String email) {
+        void throwException_whenBirthDateIsNotProvided(LocalDate birthDate) {
+            // given
+            String name = "gildong";
+            Gender gender = Gender.MALE;
+            Email email = new Email("gildong.go@example.com");
+
             // when & then
             assertThatException()
                     .isThrownBy(() -> User.builder()
-                            .name("gildong")
-                            .genderCode(Gender.MALE.getCode())
-                            .birthDate("1990-01-01")
+                            .name(name)
+                            .gender(gender)
+                            .birthDate(birthDate)
+                            .email(email)
+                            .build())
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorType", type(ErrorType.class))
+                    .isEqualTo(CommonErrorType.INVALID);
+        }
+
+        @DisplayName("""
+                이메일이 주어지지 않으면,
+                BusinessException(errorType=INVALID)이 발생한다.
+                """)
+        @NullSource
+        @ParameterizedTest
+        void throwException_whenEmailIsNotProvided(Email email) {
+            // given
+            String name = "gildong";
+            Gender gender = Gender.MALE;
+            LocalDate birthDate = LocalDate.of(1990, 1, 1);
+
+            // when & then
+            assertThatException()
+                    .isThrownBy(() -> User.builder()
+                            .name(name)
+                            .gender(gender)
+                            .birthDate(birthDate)
                             .email(email)
                             .build())
                     .isInstanceOf(BusinessException.class)
@@ -135,14 +138,14 @@ class UserTest {
         void createUser_whenAllPropertiesProvidedIsValid() {
             // given
             String name = "gildong";
-            int genderCode = Gender.MALE.getCode();
-            String birthDate = "1990-01-01";
-            String email = "gildong.go@example.com";
+            Gender gender = Gender.MALE;
+            LocalDate birthDate = LocalDate.of(1990, 1, 1);
+            Email email = new Email("gildong.go@example.com");
 
             // when
             User user = User.builder()
                     .name(name)
-                    .genderCode(genderCode)
+                    .gender(gender)
                     .birthDate(birthDate)
                     .email(email)
                     .build();
@@ -150,9 +153,9 @@ class UserTest {
             // then
             assertThat(user).isNotNull();
             assertThat(user.getName()).isEqualTo(name);
-            assertThat(user.getGender().getCode()).isEqualTo(genderCode);
-            assertThat(user.getBirthDate().toString()).isEqualTo(birthDate);
-            assertThat(user.getEmail().getValue()).isEqualTo(email);
+            assertThat(user.getGender()).isEqualTo(gender);
+            assertThat(user.getBirthDate()).isEqualTo(birthDate);
+            assertThat(user.getEmail()).isEqualTo(email);
         }
 
     }

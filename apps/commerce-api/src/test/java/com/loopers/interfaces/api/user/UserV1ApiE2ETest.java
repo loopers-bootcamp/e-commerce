@@ -2,6 +2,7 @@ package com.loopers.interfaces.api.user;
 
 import com.loopers.annotation.SpringE2ETest;
 import com.loopers.domain.user.User;
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CommonErrorType;
@@ -20,6 +21,10 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -96,9 +101,9 @@ class UserV1ApiE2ETest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
@@ -115,9 +120,9 @@ class UserV1ApiE2ETest {
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
             assertThat(response.getBody().data().getUserId()).isNotNull();
             assertThat(response.getBody().data().getUserName()).isEqualTo(userName);
-            assertThat(response.getBody().data().getGenderCode()).isEqualTo(user.getGender().getCode());
-            assertThat(response.getBody().data().getBirthDate()).isEqualTo(user.getBirthDate().toString());
-            assertThat(response.getBody().data().getEmail()).isEqualTo(user.getEmail().getValue());
+            assertThat(response.getBody().data().getGender()).isEqualTo(user.getGender());
+            assertThat(response.getBody().data().getBirthDate()).isEqualTo(user.getBirthDate());
+            assertThat(response.getBody().data().getEmail()).isEqualTo(user.getEmail());
         }
 
     }
@@ -148,9 +153,9 @@ class UserV1ApiE2ETest {
             // given
             UserRequest.Join body = UserRequest.Join.builder()
                     .userName(userName)
-                    .genderCode(Gender.FEMALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.FEMALE)
+                    .birthDate(LocalDate.of(2010, 8, 15))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
 
             // when
@@ -175,14 +180,13 @@ class UserV1ApiE2ETest {
                 -1, 0, 100,
         })
         @ParameterizedTest
-        void sendError_whenInvalidGenderCodeIsProvided(Integer genderCode) {
+        void sendError_whenInvalidGenderIsProvided(Integer gender) {
             // given
-            UserRequest.Join body = UserRequest.Join.builder()
-                    .userName("gildong")
-                    .genderCode(genderCode)
-                    .birthDate("2010-08-15")
-                    .email("gildong.go@example.com")
-                    .build();
+            Map<String, Object> body = new HashMap<>();
+            body.put("userName", "gildong");
+            body.put("gender", gender);
+            body.put("birthDate", "2010-08-15");
+            body.put("email", "gildong.go@example.com");
 
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
@@ -209,16 +213,16 @@ class UserV1ApiE2ETest {
                 "1945-12-32",
                 "2010.08.15",
                 "07/12/2025",
+                "9999-12-31",
         })
         @ParameterizedTest
         void sendError_whenInvalidBirthDateIsProvided(String birthDate) {
             // given
-            UserRequest.Join body = UserRequest.Join.builder()
-                    .userName("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate(birthDate)
-                    .email("gildong.go@example.com")
-                    .build();
+            Map<String, Object> body = new HashMap<>();
+            body.put("userName", "gildong");
+            body.put("gender", Gender.MALE.getCode());
+            body.put("birthDate", birthDate);
+            body.put("email", "gildong.go@example.com");
 
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
@@ -226,6 +230,8 @@ class UserV1ApiE2ETest {
             ResponseEntity<ApiResponse<UserResponse.Join>> response =
                     testRestTemplate.exchange(REQUEST_URL, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {
                     });
+
+            System.err.println(response.getBody().meta().message());
 
             // then
             assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)).isTrue();
@@ -250,12 +256,11 @@ class UserV1ApiE2ETest {
         @ParameterizedTest
         void sendError_whenInvalidEmailIsProvided(String email) {
             // given
-            UserRequest.Join body = UserRequest.Join.builder()
-                    .userName("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email(email)
-                    .build();
+            Map<String, Object> body = new HashMap<>();
+            body.put("userName", "gildong");
+            body.put("gender", Gender.MALE.getCode());
+            body.put("birthDate", "2010-08-15");
+            body.put("email", email);
 
             // when
             HttpEntity<Object> requestEntity = new HttpEntity<>(body);
@@ -281,17 +286,17 @@ class UserV1ApiE2ETest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
             UserRequest.Join body = UserRequest.Join.builder()
                     .userName(user.getName())
-                    .genderCode(Gender.FEMALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.FEMALE)
+                    .birthDate(LocalDate.of(2010, 8, 15))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
 
             // when
@@ -315,9 +320,9 @@ class UserV1ApiE2ETest {
 
             UserRequest.Join body = UserRequest.Join.builder()
                     .userName(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
 
             // when
@@ -331,7 +336,7 @@ class UserV1ApiE2ETest {
             assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
             assertThat(response.getBody().data().getUserId()).isNotNull();
             assertThat(response.getBody().data().getUserName()).isEqualTo(userName);
-            assertThat(response.getBody().data().getGenderCode()).isEqualTo(body.getGenderCode());
+            assertThat(response.getBody().data().getGender()).isEqualTo(body.getGender());
             assertThat(response.getBody().data().getBirthDate()).isEqualTo(body.getBirthDate());
             assertThat(response.getBody().data().getEmail()).isEqualTo(body.getEmail());
         }
