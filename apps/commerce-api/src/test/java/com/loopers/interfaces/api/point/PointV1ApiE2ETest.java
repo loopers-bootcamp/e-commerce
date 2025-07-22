@@ -4,6 +4,7 @@ import com.loopers.annotation.SpringE2ETest;
 import com.loopers.domain.point.Point;
 import com.loopers.domain.point.error.PointErrorType;
 import com.loopers.domain.user.User;
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CommonErrorType;
@@ -22,6 +23,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -98,9 +101,9 @@ class PointV1ApiE2ETest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
 
@@ -177,9 +180,9 @@ class PointV1ApiE2ETest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
 
@@ -226,9 +229,9 @@ class PointV1ApiE2ETest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
 
@@ -272,9 +275,9 @@ class PointV1ApiE2ETest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
             Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
 

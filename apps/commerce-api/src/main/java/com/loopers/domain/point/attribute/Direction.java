@@ -17,9 +17,9 @@ public enum Direction {
 
     @JsonCreator
     public static Direction from(int value) {
-        for (Direction sex : values()) {
-            if (sex.value == value) {
-                return sex;
+        for (Direction direction : values()) {
+            if (direction.value == value) {
+                return direction;
             }
         }
 

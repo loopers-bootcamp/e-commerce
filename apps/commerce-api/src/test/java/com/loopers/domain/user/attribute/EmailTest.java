@@ -92,7 +92,7 @@ class EmailTest {
             "1234@5678.org",
     })
     @ParameterizedTest
-    void convertToString_whenJacksonDeserialize(String value) throws JsonProcessingException {
+    void convertString_whenJacksonDeserialize(String value) throws JsonProcessingException {
         // given
         JsonMapper mapper = new JsonMapper();
         String json = "\"%s\"".formatted(value);

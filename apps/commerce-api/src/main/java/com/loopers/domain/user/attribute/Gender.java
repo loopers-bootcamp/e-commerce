@@ -1,6 +1,7 @@
 package com.loopers.domain.user.attribute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +15,7 @@ public enum Gender {
 
     // -------------------------------------------------------------------------------------------------
 
+    @JsonValue
     private final int code;
 
     @JsonCreator

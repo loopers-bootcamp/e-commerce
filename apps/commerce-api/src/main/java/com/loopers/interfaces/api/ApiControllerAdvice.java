@@ -20,11 +20,13 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.time.DateTimeException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 @Slf4j
 @RestControllerAdvice
@@ -81,14 +83,14 @@ public class ApiControllerAdvice {
         if (rootCause instanceof InvalidFormatException invalidFormat) {
             String fieldName = invalidFormat.getPath().stream()
                     .map(ref -> ref.getFieldName() != null ? ref.getFieldName() : "?")
-                    .collect(Collectors.joining("."));
+                    .collect(joining("."));
 
             String valueIndicationMessage = "";
             if (invalidFormat.getTargetType().isEnum()) {
                 Class<?> enumClass = invalidFormat.getTargetType();
                 String enumValues = Arrays.stream(enumClass.getEnumConstants())
                         .map(Object::toString)
-                        .collect(Collectors.joining(", "));
+                        .collect(joining(", "));
                 valueIndicationMessage = "사용 가능한 값 : [" + enumValues + "]";
             }
 
@@ -101,18 +103,24 @@ public class ApiControllerAdvice {
         } else if (rootCause instanceof MismatchedInputException mismatchedInput) {
             String fieldPath = mismatchedInput.getPath().stream()
                     .map(ref -> ref.getFieldName() != null ? ref.getFieldName() : "?")
-                    .collect(Collectors.joining("."));
+                    .collect(joining("."));
             errorMessage = String.format("필수 필드 '%s'이(가) 누락되었습니다.", fieldPath);
 
         } else if (rootCause instanceof JsonMappingException jsonMapping) {
             String fieldPath = jsonMapping.getPath().stream()
                     .map(ref -> ref.getFieldName() != null ? ref.getFieldName() : "?")
-                    .collect(Collectors.joining("."));
+                    .collect(joining("."));
             errorMessage = String.format("필드 '%s'에서 JSON 매핑 오류가 발생했습니다: %s",
                     fieldPath, jsonMapping.getOriginalMessage());
 
+        } else if (rootCause instanceof DateTimeException) {
+            return failureResponse(CommonErrorType.INVALID, "올바르지 않은 날짜 형식입니다.");
+
+        } else if (rootCause instanceof BusinessException business) {
+            return failureResponse(business.getErrorType(), business.getCustomMessage());
+
         } else {
-            errorMessage = "요청 본문을 처리하는 중 오류가 발생했습니다. JSON 메세지 규격을 확인해주세요.";
+            errorMessage = "요청 본문을 처리하는 중 오류가 발생했습니다. JSON 메세지 규격을 확인해주세요." + rootCause.getClass();
         }
 
         return failureResponse(CommonErrorType.BAD_REQUEST, errorMessage);

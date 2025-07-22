@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.infrastructure.user.UserJpaRepository;
 import com.loopers.support.error.BusinessException;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,9 +73,9 @@ class UserServiceIntegrationTest {
 
             User user = User.builder()
                     .name(userName)
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
             userJpaRepository.save(user);
 
@@ -84,9 +86,9 @@ class UserServiceIntegrationTest {
             assertThat(maybeResult).isPresent();
             assertThat(maybeResult.get().getUserId()).isEqualTo(user.getId());
             assertThat(maybeResult.get().getUserName()).isEqualTo(user.getName());
-            assertThat(maybeResult.get().getGenderCode()).isEqualTo(user.getGender().getCode());
-            assertThat(maybeResult.get().getBirthDate()).isEqualTo(user.getBirthDate().toString());
-            assertThat(maybeResult.get().getEmail()).isEqualTo(user.getEmail().getValue());
+            assertThat(maybeResult.get().getGender()).isEqualTo(user.getGender());
+            assertThat(maybeResult.get().getBirthDate()).isEqualTo(user.getBirthDate());
+            assertThat(maybeResult.get().getEmail()).isEqualTo(user.getEmail());
         }
 
     }
@@ -106,17 +108,17 @@ class UserServiceIntegrationTest {
             // given
             User user = User.builder()
                     .name("gildong")
-                    .genderCode(Gender.MALE.getCode())
-                    .birthDate("1990-01-01")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
             userJpaRepository.save(user);
 
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName(user.getName())
-                    .genderCode(Gender.FEMALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email("gildong.hong@example.com")
+                    .gender(Gender.FEMALE)
+                    .birthDate(LocalDate.of(2010, 8, 15))
+                    .email(new Email("gildong.hong@example.com"))
                     .build();
 
             // when & then
@@ -136,9 +138,9 @@ class UserServiceIntegrationTest {
             // given
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName("gildong")
-                    .genderCode(Gender.FEMALE.getCode())
-                    .birthDate("2010-08-15")
-                    .email("gildong.go@example.com")
+                    .gender(Gender.FEMALE)
+                    .birthDate(LocalDate.of(2010, 8, 15))
+                    .email(new Email("gildong.go@example.com"))
                     .build();
 
             // when
@@ -146,7 +148,7 @@ class UserServiceIntegrationTest {
 
             // then
             assertThat(result.getUserName()).isEqualTo(command.getUserName());
-            assertThat(result.getGenderCode()).isEqualTo(command.getGenderCode());
+            assertThat(result.getGender()).isEqualTo(command.getGender());
             assertThat(result.getBirthDate()).isEqualTo(command.getBirthDate());
             assertThat(result.getEmail()).isEqualTo(command.getEmail());
 

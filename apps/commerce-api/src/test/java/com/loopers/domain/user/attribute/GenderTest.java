@@ -12,7 +12,7 @@ class GenderTest {
     @DisplayName("알맞은 코드가 주어지면, 성별로 변환한다.")
     @EnumSource(Gender.class)
     @ParameterizedTest
-    void convertToSex_whenValidCodeIsProvided(Gender expected) {
+    void convertToGender_whenValidCodeIsProvided(Gender expected) {
         // given
         int code = expected.getCode();
 
