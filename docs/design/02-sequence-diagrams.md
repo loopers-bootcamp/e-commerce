@@ -51,6 +51,23 @@ sequenceDiagram
     B ->> C: 브랜드 정보 + 상품 목록
 ```
 
+## 좋아요 한 상품 목록 조회
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant C as Controller
+    participant U as User
+    participant P as Product
+    participant LP as LikedProduct
+    Client ->> C: 좋아요 한 상품 목록 요청
+    C ->> U: 회원 조회 (userName)
+    alt 회원 없음
+        U -->> Client: 401 Unauthorized
+    end
+    C ->> LP: 목록 조회 (userId)
+```
+
 ## 상품 좋아요 등록
 
 ```mermaid
@@ -91,6 +108,44 @@ sequenceDiagram
         P -->> Client: 404 Not Found
     end
     C ->> LP: 좋아요 취소 (productId, userId)
+```
+
+## 주문 목록 조회
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant C as Controller
+    participant U as User
+    participant O as Order
+    Client ->> C: 주문 목록 요청
+    C ->> U: 회원 조회 (userName)
+    alt 회원 없음
+        U -->> Client: 401 Unauthorized
+    end
+    C ->> O: 주문 목록 조회 (userId)
+```
+
+## 주문 상세 조회
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant C as Controller
+    participant U as User
+    participant O as Order
+    participant P as Payment
+    Client ->> C: 주문 상세 요청 (orderId)
+    C ->> U: 회원 조회 (userName)
+    alt 회원 없음
+        U -->> Client: 401 Unauthorized
+    end
+    C ->> O: 주문 상세 조회 (orderId)
+    alt 주문 없음
+        O -->> Client: 404 Not Found
+    end
+    C ->> P: 결제 상세 조회 (orderId)
+    P ->> C: 주문 + 결제 정보
 ```
 
 ## 주문 생성
