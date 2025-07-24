@@ -139,6 +139,7 @@ sequenceDiagram
     participant PNT as Point
     participant S as Stock
     participant PAY as Payment
+    participant ES as ExternalSystem
     Client ->> C: 결제 요청 (orderId)
     C ->> O: 주문 조회 (orderId)
     alt 주문 없음
@@ -157,4 +158,7 @@ sequenceDiagram
     end
     C ->> PAY: 결제 정보 저장
     C ->> O: 주문 상태 변경
+    par 비동기
+        O ->> ES: 주문 정보 전송
+    end
 ```
