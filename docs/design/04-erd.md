@@ -8,18 +8,27 @@ erDiagram
         int gender "성별"
         date birth_date "생년월일"
         varchar email "이메일"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     point {
         bigint point_id PK "포인트 ID"
         bigint balance "잔액"
         bigint ref_user_id FK "사용자 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     brand {
         bigint brand_id PK "브랜드 ID"
         varchar brand_name "이름"
         varchar description "설명"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     product {
@@ -27,6 +36,9 @@ erDiagram
         varchar product_name "이름"
         bigint base_price "기본 가격"
         bigint ref_brand_id FK "브랜드 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     product_option {
@@ -34,12 +46,18 @@ erDiagram
         varchar product_option_name "옵션명"
         bigint additional_price "추가 가격"
         bigint ref_product_id FK "상품 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     stock {
         bigint stock_id PK "재고 ID"
         bigint quantity "수량"
         bigint ref_product_option_id FK "상품 옵션 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     order {
@@ -47,6 +65,9 @@ erDiagram
         bigint total_price "총 가격"
         int status "주문 상태"
         bigint ref_user_id FK "사용자 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     order_product_option {
@@ -55,6 +76,9 @@ erDiagram
         bigint quantity "주문 수량"
         varchar ref_order_id FK "주문 ID"
         bigint ref_product_option_id FK "상품 옵션 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     payment {
@@ -64,12 +88,18 @@ erDiagram
         int method "결제 수단"
         varchar ref_order_id FK "주문 ID"
         bigint ref_user_id FK "사용자 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     liked_product {
         bigint liked_product_id PK "찜한 상품 ID"
         bigint ref_user_id FK "사용자 ID"
         bigint ref_product_id FK "상품 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     viewed_product {
@@ -77,6 +107,9 @@ erDiagram
         bigint viewed_count "조회수"
         bigint ref_user_id FK "사용자 ID"
         bigint ref_product_id FK "상품 ID"
+        timestamp created_at "생성일시"
+        timestamp updated_at "수정일시"
+        timestamp deleted_at "삭제일시"
     }
 
     user ||--|| point: "보유"

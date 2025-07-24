@@ -149,6 +149,38 @@ classDiagram
     User ..> LikedProduct: 좋아요
 ```
 
+## 좋아요 한 상품 목록 조회
+
+
+```mermaid
+classDiagram
+    class User {
+        -id: Long
+        -name: String
+        -gender: Gender
+        -birthDate: LocalDate
+        -email: Email
+    }
+
+    class Product {
+        -id: Long
+        -name: String
+        -basePrice: Long
+        -brand: Brand
+        -options: Option[]
+    }
+
+    class LikedProduct {
+        -id: Long
+        -product: Product
+        -user: User
+    }
+
+    User ..> LikedProduct: 좋아요
+    LikedProduct "N" --> Product: 참조
+    LikedProduct "N" --> User: 참조
+```
+
 ## 상품 좋아요 등록
 
 ```mermaid
@@ -209,6 +241,83 @@ classDiagram
     User ..> LikedProduct: 좋아요
     LikedProduct "N" --> Product: 참조
     LikedProduct "N" --> User: 참조
+```
+
+## 주문 목록 조회
+
+```mermaid
+classDiagram
+    class User {
+        -id: Long
+        -name: String
+        -gender: Gender
+        -birthDate: LocalDate
+        -email: Email
+    }
+
+    class Order {
+        -id: String
+        -totalPrice: Long
+        -status: OrderStatus
+        -user: User
+        -productOptions: OrderProductOption[]
+    }
+
+    class OrderProductOption {
+        -id: Long
+        -price: Long
+        -quantity: Long
+        -order: Order
+        -productOption: ProductOption
+    }
+
+    Order "N" --> User: 참조
+    Order --> "N" OrderProductOption: 소유
+    User ..> Order: 주문
+```
+
+## 주문 상세 조회
+
+```mermaid
+classDiagram
+    class User {
+        -id: Long
+        -name: String
+        -gender: Gender
+        -birthDate: LocalDate
+        -email: Email
+    }
+
+    class Order {
+        -id: String
+        -totalPrice: Long
+        -status: OrderStatus
+        -user: User
+        -productOptions: OrderProductOption[]
+    }
+
+    class OrderProductOption {
+        -id: Long
+        -price: Long
+        -quantity: Long
+        -order: Order
+        -productOption: ProductOption
+    }
+
+    class Payment {
+        -id: Long
+        -amount: Long
+        -status: PaymentStatus
+        -method: PaymentMethod
+        -order: Order
+        -user: User
+    }
+
+    Order "N" --> User: 참조
+    Order --> "N" OrderProductOption: 소유
+    User ..> Order: 주문
+    Payment --> Order: 주문완료
+    User ..> "N" Payment: 결제
 ```
 
 ## 주문 생성
