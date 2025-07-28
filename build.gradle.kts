@@ -43,6 +43,11 @@ subprojects {
         imports {
             mavenBom("org.springframework.cloud:spring-cloud-dependencies:${project.properties["springCloudDependenciesVersion"]}")
         }
+
+        dependencies {
+            // UUID v7
+            dependency("com.fasterxml.uuid:java-uuid-generator:5.1.0")
+        }
     }
 
     dependencies {
