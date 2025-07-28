@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @Table(
-        name = "viewed_product",
+        name = "viewed_products",
         indexes = {
                 @Index(columnList = "ref_user_id"),
                 @Index(columnList = "ref_product_id"),

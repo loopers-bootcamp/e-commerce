@@ -13,7 +13,7 @@ import java.util.*;
 
 @Getter
 @Entity
-@Table(name = "product")
+@Table(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "order_product_option", indexes = {
+@Table(name = "order_product_options", indexes = {
         @Index(columnList = "ref_order_id"),
         @Index(columnList = "ref_product_option_id"),
 })

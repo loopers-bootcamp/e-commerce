@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "payment", indexes = {
+@Table(name = "payments", indexes = {
         @Index(columnList = "ref_user_id, ref_order_id"),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
