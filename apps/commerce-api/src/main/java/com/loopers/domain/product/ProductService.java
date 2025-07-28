@@ -1,10 +1,10 @@
 package com.loopers.domain.product;
 
+import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -16,13 +16,13 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     public Product getProduct(Long productId) {
         return productRepository.findProductByProductId(productId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
     }
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     public List<Product> getProductsByOptionIds(List<Long> optionIds) {
         if (CollectionUtils.isEmpty(optionIds)) {
             throw new BusinessException(CommonErrorType.NOT_FOUND);

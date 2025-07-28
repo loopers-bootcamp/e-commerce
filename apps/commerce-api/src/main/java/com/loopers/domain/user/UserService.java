@@ -1,5 +1,6 @@
 package com.loopers.domain.user;
 
+import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     public Optional<UserResult.GetUser> getUser(String userName) {
         return userRepository.findUserByName(userName)
                 .map(UserResult.GetUser::from);
