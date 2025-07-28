@@ -208,7 +208,7 @@ class PointServiceTest {
 
         @DisplayName("""
                 잔액이 최대치를 초과하면,
-                BusinessException(errorType=TOO_MUCH_BALANCE)이 발생한다.
+                BusinessException(errorType=EXCESSIVE)이 발생한다.
                 """)
         @CsvSource(textBlock = """
                 0           | 100_000_001
@@ -239,7 +239,7 @@ class PointServiceTest {
             assertThatThrownBy(() -> sut.charge(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
+                    .isEqualTo(PointErrorType.EXCESSIVE);
 
             verify(pointRepository).findPointByUserId(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
@@ -391,7 +391,7 @@ class PointServiceTest {
             assertThatThrownBy(() -> sut.spend(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.NOT_ENOUGH_BALANCE);
+                    .isEqualTo(PointErrorType.NOT_ENOUGH);
 
             verify(pointRepository).findPointByUserId(any());
             verify(pointRepository, never()).savePoint(any(Point.class));

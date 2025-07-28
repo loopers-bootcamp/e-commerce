@@ -1,10 +1,7 @@
 package com.loopers.domain.product;
 
 import com.loopers.domain.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +17,7 @@ public class ProductOption extends BaseEntity {
      * 아이디
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_option_id", nullable = false, updatable = false)
     private Long id;
 

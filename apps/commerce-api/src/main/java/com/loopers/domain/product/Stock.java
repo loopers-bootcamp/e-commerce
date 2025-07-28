@@ -3,6 +3,7 @@ package com.loopers.domain.product;
 import com.loopers.domain.BaseEntity;
 import com.loopers.domain.product.error.ProductErrorType;
 import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -47,25 +48,27 @@ public class Stock extends BaseEntity {
         this.productOptionId = productOptionId;
     }
 
-    public void increase(int amount) {
+    public void add(int amount) {
         if (amount <= 0) {
-            throw new BusinessException(ProductErrorType.INCREASE_INVALID_AMOUNT);
+            throw new BusinessException(CommonErrorType.INVALID,
+                    "0 이하의 값으로 재고를 증가할 수 없습니다.");
         }
 
         this.quantity += amount;
     }
 
-    public void decrease(int amount) {
+    public void deduct(int amount) {
         if (amount <= 0) {
-            throw new BusinessException(ProductErrorType.DECREASE_INVALID_AMOUNT);
+            throw new BusinessException(CommonErrorType.INVALID,
+                    "0 이하의 값으로 재고를 차감할 수 없습니다.");
         }
 
-        int decreasedQuantity = this.quantity - amount;
-        if (decreasedQuantity < 0) {
-            throw new BusinessException(ProductErrorType.NOT_ENOUGH_QUANTITY);
+        int deductedQuantity = this.quantity - amount;
+        if (deductedQuantity < 0) {
+            throw new BusinessException(ProductErrorType.NOT_ENOUGH);
         }
 
-        this.quantity = decreasedQuantity;
+        this.quantity = deductedQuantity;
     }
 
 }

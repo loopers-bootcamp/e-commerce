@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+import java.util.Locale;
+
 @Getter
 @RequiredArgsConstructor
 public enum CommonErrorType implements ErrorType {
@@ -21,7 +23,7 @@ public enum CommonErrorType implements ErrorType {
 
     CommonErrorType(HttpStatus status, String message) {
         this.status = status;
-        this.code = name();
+        this.code = "common:" + name().toLowerCase(Locale.ROOT);
         this.message = message;
     }
 

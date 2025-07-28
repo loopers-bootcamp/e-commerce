@@ -21,6 +21,7 @@ public class Product extends BaseEntity {
      * 아이디
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id", nullable = false, updatable = false)
     private Long id;
 
@@ -56,13 +57,10 @@ public class Product extends BaseEntity {
 
     @Builder
     private Product(String name, Integer basePrice, Long brandId) {
+        // TODO: add validation.
         this.name = name;
         this.basePrice = basePrice;
         this.brandId = brandId;
-    }
-
-    public void addOption(ProductOption option) {
-        addOptions(List.of(option));
     }
 
     public void addOptions(List<ProductOption> options) {
