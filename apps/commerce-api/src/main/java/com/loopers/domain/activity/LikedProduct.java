@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "liked_product",
         indexes = {
-                @Index(name = "idx__liked_product__ref_user_id", columnList = "userId"),
-                @Index(name = "idx__liked_product__ref_product_id", columnList = "productId"),
+                @Index(columnList = "ref_user_id"),
+                @Index(columnList = "ref_product_id"),
         },
-        uniqueConstraints = @UniqueConstraint(name = "uk__liked_product__ref_user_id__ref_product_id", columnNames = "userId, productId")
+        uniqueConstraints = @UniqueConstraint(columnNames = {"ref_user_id", "ref_product_id"})
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LikedProduct extends BaseEntity {

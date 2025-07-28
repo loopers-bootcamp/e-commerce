@@ -1,9 +1,7 @@
 package com.loopers.domain.order;
 
-import com.loopers.config.jpa.converter.OrderIdConverter;
 import com.loopers.config.jpa.converter.OrderStatusConverter;
 import com.loopers.domain.BaseEntity;
-import com.loopers.domain.order.attribute.OrderId;
 import com.loopers.domain.order.attribute.OrderStatus;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -17,19 +15,18 @@ import java.util.*;
 
 @Getter
 @Entity
-@Table(name = "order", indexes = {
-        @Index(name = "idx__order__ref_user_id", columnList = "userId"),
+@Table(name = "orders", indexes = {
+        @Index(columnList = "ref_user_id"),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order extends BaseEntity {
+public class Order extends BaseEntity implements Comparable<Order> {
 
     /**
      * 아이디
      */
     @Id
-    @Convert(converter = OrderIdConverter.class)
     @Column(name = "order_id", nullable = false, updatable = false)
-    private OrderId id;
+    private UUID id;
 
     /**
      * 총 가격
@@ -52,12 +49,6 @@ public class Order extends BaseEntity {
     @Column(name = "ref_user_id", nullable = false, updatable = false)
     private Long userId;
 
-    /**
-     * 상품 아이디
-     */
-    @Column(name = "ref_product_id", nullable = false, updatable = false)
-    private Long productId;
-
     // -------------------------------------------------------------------------------------------------
 
     /**
@@ -70,10 +61,14 @@ public class Order extends BaseEntity {
 
     @Builder
     private Order(
-            OrderId id,
+            UUID id,
             Long totalPrice,
             Long userId
     ) {
+        if (!OrderIdManager.isValid(id)) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 아이디가 올바르지 않습니다.");
+        }
+
         this.id = id;
         this.totalPrice = totalPrice;
         this.status = OrderStatus.CREATED;
@@ -92,13 +87,26 @@ public class Order extends BaseEntity {
                 throw new BusinessException(CommonErrorType.CONFLICT);
             }
 
-            OrderId orderId = that.getOrderId();
+            UUID orderId = that.getOrderId();
             if (orderId != null && !Objects.equals(this.id, orderId)) {
                 throw new BusinessException(CommonErrorType.INCONSISTENT);
             }
         }
 
         this.productOptions = List.copyOf(those);
+    }
+
+    @Override
+    public int compareTo(Order o) {
+        long t1 = OrderIdManager.toTimestamp(this.id);
+        long t2 = OrderIdManager.toTimestamp(o.id);
+
+        int compared = Long.compare(t1, t2);
+        if (compared != 0) {
+            return compared;
+        }
+
+        return this.id.compareTo(o.id);
     }
 
 }

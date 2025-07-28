@@ -1,19 +1,19 @@
 package com.loopers.domain.order;
 
-import com.loopers.config.jpa.converter.OrderIdConverter;
 import com.loopers.domain.BaseEntity;
-import com.loopers.domain.order.attribute.OrderId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Entity
 @Table(name = "order_product_option", indexes = {
-        @Index(name = "idx__order_product_option__ref_order_id", columnList = "orderId"),
-        @Index(name = "idx__order_product_option__ref_product_option_id", columnList = "productOptionId"),
+        @Index(columnList = "ref_order_id"),
+        @Index(columnList = "ref_product_option_id"),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderProductOption extends BaseEntity {
@@ -43,9 +43,8 @@ public class OrderProductOption extends BaseEntity {
     /**
      * 주문 아이디
      */
-    @Convert(converter = OrderIdConverter.class)
     @Column(name = "ref_order_id", nullable = false, updatable = false)
-    private OrderId orderId;
+    private UUID orderId;
 
     /**
      * 상품 옵션 아이디
@@ -59,7 +58,7 @@ public class OrderProductOption extends BaseEntity {
     private OrderProductOption(
             Long price,
             Integer quantity,
-            OrderId orderId,
+            UUID orderId,
             Long productOptionId
     ) {
         this.price = price;

@@ -1,10 +1,8 @@
 package com.loopers.domain.payment;
 
-import com.loopers.config.jpa.converter.OrderIdConverter;
 import com.loopers.config.jpa.converter.PaymentMethodConverter;
 import com.loopers.config.jpa.converter.PaymentStatusConverter;
 import com.loopers.domain.BaseEntity;
-import com.loopers.domain.order.attribute.OrderId;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import jakarta.persistence.*;
@@ -13,10 +11,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Getter
 @Entity
 @Table(name = "payment", indexes = {
-        @Index(name = "idx__payment__ref_user_id__ref_order_id", columnList = "userId, orderId"),
+        @Index(columnList = "ref_user_id, ref_order_id"),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Payment extends BaseEntity {
@@ -60,9 +60,8 @@ public class Payment extends BaseEntity {
     /**
      * 주문 아이디
      */
-    @Convert(converter = OrderIdConverter.class)
     @Column(name = "ref_order_id", nullable = false, updatable = false)
-    private OrderId orderId;
+    private UUID orderId;
 
     // -------------------------------------------------------------------------------------------------
 
@@ -72,7 +71,7 @@ public class Payment extends BaseEntity {
             PaymentStatus status,
             PaymentMethod method,
             Long userId,
-            OrderId orderId
+            UUID orderId
     ) {
         this.amount = amount;
         this.status = status;
