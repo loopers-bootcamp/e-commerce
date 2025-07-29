@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -16,37 +16,60 @@ import java.util.Optional;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository productRepository;
+    private final ProductOptionJpaRepository productOptionRepository;
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Optional<Product> findProductByProductId(Long productId) {
-        return productRepository.findById(productId);
-    }
-
-    @Override
-    public Optional<Product> findProductAndOptionsByProductId(Long productId) {
-        QProduct product = QProduct.product;
-        QProductOption option = QProductOption.productOption;
+    public Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId) {
+        QProduct p = QProduct.product;
+        QProductOption po = QProductOption.productOption;
+        QStock s = QStock.stock;
 
         List<Tuple> rows = queryFactory
-                .select(product, option)
-                .from(product)
-                .leftJoin(option).on(option.productId.eq(product.id))
-                .where(product.id.eq(productId))
+                .select(p, po, s)
+                .from(p)
+                .leftJoin(po).on(po.productId.eq(p.id))
+                .leftJoin(s).on(s.productOptionId.eq(po.id))
+                .where(p.id.eq(productId))
                 .fetch();
 
         if (CollectionUtils.isEmpty(rows)) {
             return Optional.empty();
         }
 
-        Product prd = rows.getFirst().get(product);
-        List<ProductOption> opts = rows.stream()
-                .map(row -> row.get(option))
-                .filter(Objects::nonNull)
-                .toList();
-        prd.addOptions(opts);
+        Product product = rows.getFirst().get(p);
+        ProductQueryResult.ProductDetail detail = ProductQueryResult.ProductDetail.builder()
+                .productId(product.getId())
+                .productName(product.getName())
+                .basePrice(product.getBasePrice())
+                .brandId(product.getBrandId())
+                .options(new ArrayList<>())
+                .build();
 
-        return Optional.of(prd);
+        for (Tuple row : rows) {
+            ProductOption option = row.get(po);
+            if (option == null) {
+                continue;
+            }
+
+            Stock stock = row.get(s);
+            ProductQueryResult.ProductDetail.Option item = ProductQueryResult.ProductDetail.Option.builder()
+                    .productOptionId(option.getId())
+                    .productOptionName(option.getName())
+                    .additionalPrice(option.getAdditionalPrice())
+                    .productId(option.getProductId())
+                    .stockQuantity(stock.getQuantity())
+                    .build();
+
+            detail.getOptions().add(item);
+        }
+
+        return Optional.of(detail);
+    }
+
+    @Override
+    public Optional<Product> findProductById(Long productId) {
+        return productRepository.findById(productId);
     }
 
     @Override

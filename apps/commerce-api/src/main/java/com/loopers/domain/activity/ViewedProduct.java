@@ -34,8 +34,8 @@ public class ViewedProduct extends BaseEntity {
     /**
      * 상품 조회 수
      */
-    @Column(name = "viewed_count", nullable = false)
-    private Long viewedCount;
+    @Column(name = "view_count", nullable = false)
+    private Long viewCount;
 
     // -------------------------------------------------------------------------------------------------
 
@@ -54,14 +54,14 @@ public class ViewedProduct extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private ViewedProduct(Long viewedCount, Long userId, Long productId) {
-        this.viewedCount = viewedCount;
+    private ViewedProduct(Long viewCount, Long userId, Long productId) {
+        this.viewCount = viewCount;
         this.userId = userId;
         this.productId = productId;
     }
 
     public void view() {
-        this.viewedCount = this.viewedCount == null ? 1L : this.viewedCount + 1L;
+        this.viewCount = this.viewCount == null ? 1L : this.viewCount + 1L;
     }
 
 }

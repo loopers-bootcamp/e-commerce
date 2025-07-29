@@ -10,6 +10,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -52,10 +53,10 @@ public class Order extends BaseEntity implements Comparable<Order> {
     // -------------------------------------------------------------------------------------------------
 
     /**
-     * 주문 상품 옵션 목록
+     * 주문 상품 목록
      */
     @Transient
-    private List<OrderProductOption> productOptions = Collections.emptyList();
+    private List<OrderProduct> products = Collections.emptyList();
 
     // -------------------------------------------------------------------------------------------------
 
@@ -65,7 +66,15 @@ public class Order extends BaseEntity implements Comparable<Order> {
             Long totalPrice,
             Long userId
     ) {
-        if (!OrderIdManager.isValid(id)) {
+        if (id == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 아이디가 올바르지 않습니다.");
+        }
+
+        long msb = id.getMostSignificantBits();
+        long timestamp = (msb >>> 16) & 0xFFFFFFFFFFFFL;
+        long now = System.currentTimeMillis();
+
+        if (now < timestamp) {
             throw new BusinessException(CommonErrorType.INVALID, "주문 아이디가 올바르지 않습니다.");
         }
 
@@ -75,31 +84,41 @@ public class Order extends BaseEntity implements Comparable<Order> {
         this.userId = userId;
     }
 
-    public void addProductOptions(List<OrderProductOption> productOptions) {
-        List<OrderProductOption> those = new ArrayList<>(this.productOptions);
-        those.addAll(productOptions);
+    public void addProducts(List<OrderProduct> products) {
+        if (CollectionUtils.isEmpty(products)) {
+            return;
+        }
+
+        List<OrderProduct> those = new ArrayList<>(this.products);
+        those.addAll(products);
 
         Set<Long> ids = new HashSet<>();
 
-        for (OrderProductOption that : those) {
+        for (OrderProduct that : those) {
             Long id = that.getId();
             if (id != null && !ids.add(id)) {
                 throw new BusinessException(CommonErrorType.CONFLICT);
             }
 
             UUID orderId = that.getOrderId();
-            if (orderId != null && !Objects.equals(this.id, orderId)) {
+            if (!Objects.equals(this.id, orderId)) {
                 throw new BusinessException(CommonErrorType.INCONSISTENT);
             }
         }
 
-        this.productOptions = List.copyOf(those);
+        this.products = List.copyOf(those);
+    }
+
+    public long toTimestamp() {
+        // UUIDv7: Unix epoch milliseconds
+        long msb = this.id.getMostSignificantBits();
+        return (msb >>> 16) & 0xFFFFFFFFFFFFL;
     }
 
     @Override
     public int compareTo(Order o) {
-        long t1 = OrderIdManager.toTimestamp(this.id);
-        long t2 = OrderIdManager.toTimestamp(o.id);
+        long t1 = this.toTimestamp();
+        long t2 = o.toTimestamp();
 
         int compared = Long.compare(t1, t2);
         if (compared != 0) {

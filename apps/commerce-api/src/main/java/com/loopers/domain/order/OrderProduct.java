@@ -9,21 +9,31 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * 주문 도메인에서의 상품은 SKU(Stock Keeping Unit)다.
+ * <p>
+ * 상품 도메인에서 SKU가 {@code Product}든 {@code ProductOption}이든,
+ * 주문 컨텍스트에서는 '상품'이라는 것만 인지하면 된다.
+ * 이 엔터티는 {@code ProductOption}와 관계되었기에 {@code OrderProductOption}이라고
+ * 명명하는 게 직관적일 순 있어도, 물리적으로 분리된 MSA를 생각하면 그 장점 또한 퇴색된다고 생각한다.
+ * <p>
+ * 따라서 간단하게 {@code OrderProduct}라고 이름을 정의한다.
+ */
 @Getter
 @Entity
-@Table(name = "order_product_options", indexes = {
+@Table(name = "order_products", indexes = {
         @Index(columnList = "ref_order_id"),
         @Index(columnList = "ref_product_option_id"),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderProductOption extends BaseEntity {
+public class OrderProduct extends BaseEntity {
 
     /**
      * 아이디
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_product_option_id", nullable = false, updatable = false)
+    @Column(name = "order_product_id", nullable = false, updatable = false)
     private Long id;
 
     /**
@@ -55,7 +65,7 @@ public class OrderProductOption extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private OrderProductOption(
+    private OrderProduct(
             Long price,
             Integer quantity,
             UUID orderId,

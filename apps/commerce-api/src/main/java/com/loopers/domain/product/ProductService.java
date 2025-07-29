@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -17,9 +18,9 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     @ReadOnlyTransactional
-    public Product getProduct(Long productId) {
-        return productRepository.findProductByProductId(productId)
-                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+    public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {
+        return productRepository.findProductDetailById(productId)
+                .map(ProductResult.GetProductDetail::from);
     }
 
     @ReadOnlyTransactional

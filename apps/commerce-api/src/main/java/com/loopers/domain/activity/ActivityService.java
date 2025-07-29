@@ -12,7 +12,7 @@ public class ActivityService {
     private final ViewedProductRepository viewedProductRepository;
 
     @Transactional
-    public void likeProduct(ActivityCommand.LikeProduct command) {
+    public void like(ActivityCommand.Like command) {
         LikedProduct likedProduct = LikedProduct.builder()
                 .userId(command.getUserId())
                 .productId(command.getProductId())
@@ -22,7 +22,7 @@ public class ActivityService {
     }
 
     @Transactional
-    public long viewProduct(ActivityCommand.ViewProduct command) {
+    public long view(ActivityCommand.View command) {
         Long userId = command.getUserId();
         Long productId = command.getProductId();
 
@@ -37,7 +37,7 @@ public class ActivityService {
 
         viewedProductRepository.saveViewedProduct(viewedProduct);
 
-        return viewedProduct.getViewedCount();
+        return viewedProduct.getViewCount();
     }
 
 }

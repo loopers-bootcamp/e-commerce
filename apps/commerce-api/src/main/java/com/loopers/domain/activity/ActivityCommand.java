@@ -8,7 +8,7 @@ public final class ActivityCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class LikeProduct {
+    public static class Like {
         private final Long userId;
         private final Long productId;
     }
@@ -16,7 +16,7 @@ public final class ActivityCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class ViewProduct {
+    public static class View {
         private final Long userId;
         private final Long productId;
     }
