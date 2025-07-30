@@ -1,15 +1,21 @@
 package com.loopers.domain.product;
 
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 @Getter
 @Entity
-@Table(name = "product_options")
+@Table(
+        name = "product_options",
+        indexes = @Index(columnList = "ref_product_id")
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductOption extends BaseEntity {
 
@@ -45,6 +51,18 @@ public class ProductOption extends BaseEntity {
 
     @Builder
     private ProductOption(String name, Integer additionalPrice, Long productId) {
+        if (!StringUtils.hasText(name)) {
+            throw new BusinessException(CommonErrorType.INVALID, "이름이 올바르지 않습니다.");
+        }
+
+        if (additionalPrice == null || additionalPrice < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "추가 가격은 0 이상이어야 합니다.");
+        }
+
+        if (productId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "상품 아이디가 올바르지 않습니다.");
+        }
+
         this.name = name;
         this.additionalPrice = additionalPrice;
         this.productId = productId;

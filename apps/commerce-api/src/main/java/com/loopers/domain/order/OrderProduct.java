@@ -1,6 +1,8 @@
 package com.loopers.domain.order;
 
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -71,6 +73,22 @@ public class OrderProduct extends BaseEntity {
             UUID orderId,
             Long productOptionId
     ) {
+        if (price == null || price < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 시점의 가격은 0 이상이어야 합니다.");
+        }
+
+        if (quantity == null || quantity <= 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 수량은 1 이상이어야 합니다.");
+        }
+
+        if (orderId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 아이디가 올바르지 않습니다.");
+        }
+
+        if (productOptionId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "상품 옵션 아이디가 올바르지 않습니다.");
+        }
+
         this.price = price;
         this.quantity = quantity;
         this.orderId = orderId;

@@ -44,6 +44,14 @@ public class Stock extends BaseEntity {
 
     @Builder
     private Stock(Integer quantity, Long productOptionId) {
+        if (quantity == null || quantity < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "재고 수량은 0 이상이어야 합니다.");
+        }
+
+        if (productOptionId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "상품 옵션 아이디가 올바르지 않습니다.");
+        }
+
         this.quantity = quantity;
         this.productOptionId = productOptionId;
     }

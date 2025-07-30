@@ -13,7 +13,7 @@ public final class OrderResult {
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Create {
-        private UUID orderId;
+        private final UUID orderId;
         private final Long totalPrice;
         private final OrderStatus status;
         private final Long userId;
@@ -33,11 +33,11 @@ public final class OrderResult {
         @Builder
         @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
         public static class Product {
-            private Long orderProductId;
-            private Long price;
-            private Integer quantity;
-            private UUID orderId;
-            private Long productOptionId;
+            private final Long orderProductId;
+            private final Long price;
+            private final Integer quantity;
+            private final UUID orderId;
+            private final Long productOptionId;
 
             public static Product from(OrderProduct product) {
                 return Product.builder()

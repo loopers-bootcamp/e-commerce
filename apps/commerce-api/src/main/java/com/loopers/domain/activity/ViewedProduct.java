@@ -1,6 +1,8 @@
 package com.loopers.domain.activity;
 
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -55,13 +57,28 @@ public class ViewedProduct extends BaseEntity {
 
     @Builder
     private ViewedProduct(Long viewCount, Long userId, Long productId) {
+        if (viewCount == null || viewCount < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "상품 조회 수는 0 이상이어야 합니다.");
+        }
+
+        if (userId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "사용자 아이디가 올바르지 않습니다.");
+        }
+
+        if (productId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "상품 아이디가 올바르지 않습니다.");
+        }
+
         this.viewCount = viewCount;
         this.userId = userId;
         this.productId = productId;
     }
 
     public void view() {
-        this.viewCount = this.viewCount == null ? 1L : this.viewCount + 1L;
+        // 오버플로우를 방지한다.
+        if (this.viewCount < Long.MAX_VALUE) {
+            this.viewCount++;
+        }
     }
 
 }

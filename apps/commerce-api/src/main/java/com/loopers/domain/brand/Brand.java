@@ -1,6 +1,8 @@
 package com.loopers.domain.brand;
 
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 @Getter
 @Entity
@@ -39,6 +42,14 @@ public class Brand extends BaseEntity {
 
     @Builder
     private Brand(String name, String description) {
+        if (!StringUtils.hasText(name)) {
+            throw new BusinessException(CommonErrorType.INVALID, "이름이 올바르지 않습니다.");
+        }
+
+        if (!StringUtils.hasText(description)) {
+            throw new BusinessException(CommonErrorType.INVALID, "설명이 올바르지 않습니다.");
+        }
+
         this.name = name;
         this.description = description;
     }

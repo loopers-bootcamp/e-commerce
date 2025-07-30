@@ -28,7 +28,7 @@ public class ActivityService {
 
         ViewedProduct viewedProduct = viewedProductRepository.findViewedProduct(userId, productId)
                 .orElseGet(() -> ViewedProduct.builder()
-                        .viewedCount(0L)
+                        .viewCount(0L)
                         .userId(userId)
                         .productId(productId)
                         .build());

@@ -1,6 +1,8 @@
 package com.loopers.domain.activity;
 
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -49,6 +51,14 @@ public class LikedProduct extends BaseEntity {
 
     @Builder
     private LikedProduct(Long userId, Long productId) {
+        if (userId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "사용자 아이디가 올바르지 않습니다.");
+        }
+
+        if (productId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "상품 아이디가 올바르지 않습니다.");
+        }
+
         this.userId = userId;
         this.productId = productId;
     }

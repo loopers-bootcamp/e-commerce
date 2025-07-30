@@ -8,6 +8,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -57,13 +59,24 @@ public class Product extends BaseEntity {
 
     @Builder
     private Product(String name, Integer basePrice, Long brandId) {
-        // TODO: add validation.
+        if (!StringUtils.hasText(name)) {
+            throw new BusinessException(CommonErrorType.INVALID, "이름이 올바르지 않습니다.");
+        }
+
+        if (basePrice == null || basePrice < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "기본 가격은 0 이상이어야 합니다.");
+        }
+
         this.name = name;
         this.basePrice = basePrice;
         this.brandId = brandId;
     }
 
     public void addOptions(List<ProductOption> options) {
+        if (CollectionUtils.isEmpty(options)) {
+            return;
+        }
+
         List<ProductOption> those = new ArrayList<>(this.options);
         those.addAll(options);
 
