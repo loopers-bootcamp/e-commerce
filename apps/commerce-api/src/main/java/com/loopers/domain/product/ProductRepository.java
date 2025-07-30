@@ -9,9 +9,7 @@ public interface ProductRepository {
 
     Optional<Product> findProductById(Long productId);
 
-    List<Product> findProductsByOptionIds(List<Long> optionIds);
-
-    List<Stock> findStocksByOptionIds(List<Long> optionIds);
+    List<Stock> findStocksByProductOptionIdsForUpdate(List<Long> productOptionIds);
 
     List<Stock> saveStocks(List<Stock> stocks);
 

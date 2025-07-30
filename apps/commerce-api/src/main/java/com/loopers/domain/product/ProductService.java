@@ -5,11 +5,15 @@ import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -19,75 +23,66 @@ public class ProductService {
 
     @ReadOnlyTransactional
     public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {
+        if (productId == null) {
+            return Optional.empty();
+        }
+
         return productRepository.findProductDetailById(productId)
                 .map(ProductResult.GetProductDetail::from);
     }
 
-    @ReadOnlyTransactional
-    public List<Product> getProductsByOptionIds(List<Long> optionIds) {
-        if (CollectionUtils.isEmpty(optionIds)) {
-            throw new BusinessException(CommonErrorType.NOT_FOUND);
+    @Transactional
+    public void addStocks(ProductCommand.AddStocks command) {
+        List<ProductCommand.AddStocks.Item> items = command.getItems();
+        if (CollectionUtils.isEmpty(items)) {
+            return;
         }
 
-        if (Set.copyOf(optionIds).size() != optionIds.size()) {
-            throw new BusinessException(CommonErrorType.CONFLICT);
+        if (items.stream().map(ProductCommand.AddStocks.Item::getProductOptionId).distinct().count() != items.size()) {
+            throw new BusinessException(CommonErrorType.INVALID, "중복된 상품 옵션 아이디가 있습니다.");
         }
 
-        List<Product> products = productRepository.findProductsByOptionIds(optionIds);
+        List<Long> productOptionIds = items.stream().map(ProductCommand.AddStocks.Item::getProductOptionId).toList();
+        Map<Long, Stock> stockMap = productRepository.findStocksByProductOptionIdsForUpdate(productOptionIds)
+                .stream().collect(toMap(Stock::getProductOptionId, Function.identity()));
 
-        // 요청한 옵션을 모두 조회했는지 검사한다.
-        int foundOptionCount = products.stream()
-                .mapToInt(product -> product.getOptions().size())
-                .sum();
-        if (foundOptionCount == optionIds.size()) {
-            throw new BusinessException(CommonErrorType.NOT_FOUND);
+        if (stockMap.size() != productOptionIds.size()) {
+            throw new BusinessException(CommonErrorType.NOT_FOUND, "상품 재고를 찾을 수 없습니다.");
         }
 
-        return products;
+        for (ProductCommand.AddStocks.Item item : items) {
+            Stock stock = stockMap.get(item.getProductOptionId());
+            stock.add(item.getAmount());
+        }
+
+        productRepository.saveStocks(List.copyOf(stockMap.values()));
     }
 
-//    @Transactional
-//    public List<Stock> increaseStocks(List<ProductCommand.ChangeStock> commands) {
-//        List<Long> optionsIds = commands.stream().map(ProductCommand.ChangeStock::getOptionId).toList();
-//        List<Stock> stocks = productRepository.findStocksByOptionIds(optionsIds);
-//
-//        // 요청한 재고를 모두 조회했는지 검사한다.
-//        if (stocks.size() == commands.size()) {
-//            throw new BusinessException(CommonErrorType.NOT_FOUND);
-//        }
-//
-//        Map<Long, Integer> optionIdToAmount = commands.stream()
-//                .collect(toMap(ProductCommand.ChangeStock::getOptionId, ProductCommand.ChangeStock::getAmount));
-//        for (Stock stock : stocks) {
-//            Integer amount = optionIdToAmount.get(stock.getOptionId());
-//            stock.increase(amount);
-//        }
-//
-//        productRepository.saveStocks(stocks);
-//
-//        return stocks;
-//    }
-//
-//    @Transactional
-//    public List<Stock> decreaseStocks(List<ProductCommand.ChangeStock> commands) {
-//        List<Long> optionsIds = commands.stream().map(ProductCommand.ChangeStock::getOptionId).toList();
-//        List<Stock> stocks = productRepository.findStocksByOptionIds(optionsIds);
-//
-//        // 요청한 재고를 모두 조회했는지 검사한다.
-//        if (stocks.size() == commands.size()) {
-//            throw new BusinessException(CommonErrorType.NOT_FOUND);
-//        }
-//
-//        Map<Long, Integer> optionIdToAmount = commands.stream()
-//                .collect(toMap(ProductCommand.ChangeStock::getOptionId, ProductCommand.ChangeStock::getAmount));
-//        for (Stock stock : stocks) {
-//            Integer amount = optionIdToAmount.get(stock.getOptionId());
-//            stock.decrease(amount);
-//        }
-//
-//        productRepository.saveStocks(stocks);
-//
-//        return stocks;
-//    }
+    @Transactional
+    public void deductStocks(ProductCommand.DeductStocks command) {
+        List<ProductCommand.DeductStocks.Item> items = command.getItems();
+        if (CollectionUtils.isEmpty(items)) {
+            return;
+        }
+
+        if (items.stream().map(ProductCommand.DeductStocks.Item::getProductOptionId).distinct().count() != items.size()) {
+            throw new BusinessException(CommonErrorType.INVALID, "중복된 상품 옵션 아이디가 있습니다.");
+        }
+
+        List<Long> productOptionIds = items.stream().map(ProductCommand.DeductStocks.Item::getProductOptionId).toList();
+        Map<Long, Stock> stockMap = productRepository.findStocksByProductOptionIdsForUpdate(productOptionIds)
+                .stream().collect(toMap(Stock::getProductOptionId, Function.identity()));
+
+        if (stockMap.size() != productOptionIds.size()) {
+            throw new BusinessException(CommonErrorType.NOT_FOUND, "상품 재고를 찾을 수 없습니다.");
+        }
+
+        for (ProductCommand.DeductStocks.Item item : items) {
+            Stock stock = stockMap.get(item.getProductOptionId());
+            stock.deduct(item.getAmount());
+        }
+
+        productRepository.saveStocks(List.copyOf(stockMap.values()));
+    }
 
 }

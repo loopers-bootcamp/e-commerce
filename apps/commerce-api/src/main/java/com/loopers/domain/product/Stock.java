@@ -4,10 +4,7 @@ import com.loopers.domain.BaseEntity;
 import com.loopers.domain.product.error.ProductErrorType;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,6 +20,7 @@ public class Stock extends BaseEntity {
      * 아이디
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stock_id", nullable = false, updatable = false)
     private Long id;
 

@@ -17,6 +17,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository productRepository;
     private final ProductOptionJpaRepository productOptionRepository;
+    private final StockJpaRepository stockJpaRepository;
     private final JPAQueryFactory queryFactory;
 
     @Override
@@ -73,18 +74,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<Product> findProductsByOptionIds(List<Long> optionIds) {
-        return List.of();
-    }
-
-    @Override
-    public List<Stock> findStocksByOptionIds(List<Long> optionIds) {
-        return List.of();
+    public List<Stock> findStocksByProductOptionIdsForUpdate(List<Long> productOptionIds) {
+        return stockJpaRepository.findByProductOptionIdIn(productOptionIds);
     }
 
     @Override
     public List<Stock> saveStocks(List<Stock> stocks) {
-        return List.of();
+        return stockJpaRepository.saveAll(stocks);
     }
 
 }
