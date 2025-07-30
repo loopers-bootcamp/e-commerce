@@ -18,7 +18,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 class PointTest {
 
-    @DisplayName("포인트를 생성할 때: ")
+    @DisplayName("포인트를 생성할 때:")
     @Nested
     class Create {
 
@@ -102,7 +102,7 @@ class PointTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 충전할 때: ")
+    @DisplayName("포인트를 충전할 때:")
     @Nested
     class Charge {
 
@@ -182,7 +182,7 @@ class PointTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 차감할 때: ")
+    @DisplayName("포인트를 차감할 때:")
     @Nested
     class Spend {
 

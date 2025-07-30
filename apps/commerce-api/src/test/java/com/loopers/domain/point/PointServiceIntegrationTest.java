@@ -46,7 +46,7 @@ class PointServiceIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("포인트를 조회할 때: ")
+    @DisplayName("포인트를 조회할 때:")
     @Nested
     class GetPoint {
 
@@ -92,7 +92,7 @@ class PointServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 생성할 때: ")
+    @DisplayName("포인트를 생성할 때:")
     @Nested
     class Create {
 
@@ -144,7 +144,7 @@ class PointServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 충전할 때: ")
+    @DisplayName("포인트를 충전할 때:")
     @Nested
     class Charge {
 
@@ -279,7 +279,7 @@ class PointServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 차감할 때: ")
+    @DisplayName("포인트를 차감할 때:")
     @Nested
     class Spend {
 

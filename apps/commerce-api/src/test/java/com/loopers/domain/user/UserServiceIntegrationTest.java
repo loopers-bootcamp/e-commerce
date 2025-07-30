@@ -46,7 +46,7 @@ class UserServiceIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("회원 정보를 조회할 때: ")
+    @DisplayName("회원 정보를 조회할 때:")
     @Nested
     class GetUser {
 
@@ -95,7 +95,7 @@ class UserServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("회원 가입할 때: ")
+    @DisplayName("회원 가입할 때:")
     @Nested
     class Join {
 

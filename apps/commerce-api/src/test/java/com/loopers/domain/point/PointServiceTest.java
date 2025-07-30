@@ -32,7 +32,7 @@ class PointServiceTest {
     @Mock
     private PointRepository pointRepository;
 
-    @DisplayName("포인트를 조회할 때: ")
+    @DisplayName("포인트를 조회할 때:")
     @Nested
     class GetPoint {
 
@@ -82,7 +82,7 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 생성할 때: ")
+    @DisplayName("포인트를 생성할 때:")
     @Nested
     class Create {
 
@@ -137,7 +137,7 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 충전할 때: ")
+    @DisplayName("포인트를 충전할 때:")
     @Nested
     class Charge {
 
@@ -289,7 +289,7 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 차감할 때: ")
+    @DisplayName("포인트를 차감할 때:")
     @Nested
     class Spend {
 
