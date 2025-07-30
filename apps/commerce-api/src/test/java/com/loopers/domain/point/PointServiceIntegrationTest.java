@@ -1,7 +1,6 @@
 package com.loopers.domain.point;
 
 import com.loopers.domain.point.error.PointErrorType;
-import com.loopers.infrastructure.point.PointJpaRepository;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.support.error.ErrorType;
@@ -15,9 +14,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
@@ -38,7 +39,8 @@ class PointServiceIntegrationTest {
     @MockitoSpyBean
     private final PointRepository pointRepository;
 
-    private final PointJpaRepository pointJpaRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final TestEntityManager testEntityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
@@ -75,7 +77,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(userId)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             // when
             Optional<PointResult.GetPoint> maybeResult = sut.getPoint(userId);
@@ -106,7 +108,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(userId)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             // when & then
             assertThatException()
@@ -185,7 +187,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -222,7 +224,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -255,7 +257,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -322,7 +324,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -359,7 +361,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -397,7 +399,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
