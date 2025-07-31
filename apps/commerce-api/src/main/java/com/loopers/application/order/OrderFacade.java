@@ -50,7 +50,7 @@ public class OrderFacade {
         Long userId = user.getUserId();
         PointResult.GetPoint point = pointService.getPoint(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
-        if (cart.isEnoughPoint(point.getBalance())) {
+        if (!cart.isEnoughPoint(point.getBalance())) {
             throw new BusinessException(PointErrorType.NOT_ENOUGH);
         }
 
