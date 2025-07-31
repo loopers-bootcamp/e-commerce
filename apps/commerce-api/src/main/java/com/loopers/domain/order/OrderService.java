@@ -1,8 +1,11 @@
 package com.loopers.domain.order;
 
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +18,10 @@ public class OrderService {
 
     @Transactional
     public OrderResult.Create create(OrderCommand.Create command) {
+        if (CollectionUtils.isEmpty(command.getProducts())) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문할 상품이 없습니다.");
+        }
+
         UUID id = orderRepository.findNextOrderId();
 
         Order order = Order.builder()
