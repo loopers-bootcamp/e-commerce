@@ -13,12 +13,24 @@ public class ActivityService {
 
     @Transactional
     public void like(ActivityCommand.Like command) {
-        LikedProduct likedProduct = LikedProduct.builder()
-                .userId(command.getUserId())
-                .productId(command.getProductId())
-                .build();
+        Long userId = command.getUserId();
+        Long productId = command.getProductId();
 
-        likedProductRepository.saveLikedProduct(likedProduct);
+        likedProductRepository.findByUserIdAndProductId(userId, productId)
+                .orElseGet(() -> {
+                    LikedProduct likedProduct = LikedProduct.builder()
+                            .userId(userId)
+                            .productId(productId)
+                            .build();
+
+                    return likedProductRepository.save(likedProduct);
+                });
+    }
+
+    @Transactional
+    public void dislike(ActivityCommand.Dislike command) {
+        likedProductRepository.findByUserIdAndProductId(command.getUserId(), command.getProductId())
+                .ifPresent(likedProductRepository::delete);
     }
 
     @Transactional

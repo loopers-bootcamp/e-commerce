@@ -1,6 +1,7 @@
 package com.loopers.domain.activity;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LikedProductRepository {
 
@@ -8,8 +9,10 @@ public interface LikedProductRepository {
 
     long countLikedProductsByProductId(Long productId);
 
-    boolean existsLikedProductsByUserId(Long userId);
+    Optional<LikedProduct> findByUserIdAndProductId(Long userId, Long productId);
 
-    LikedProduct saveLikedProduct(LikedProduct likedProduct);
+    LikedProduct save(LikedProduct likedProduct);
+
+    void delete(LikedProduct likedProduct);
 
 }

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,13 +25,18 @@ public class LikedProductRepositoryImpl implements LikedProductRepository {
     }
 
     @Override
-    public boolean existsLikedProductsByUserId(Long userId) {
-        return likedProductJpaRepository.existsByUserId(userId);
+    public Optional<LikedProduct> findByUserIdAndProductId(Long userId, Long productId) {
+        return likedProductJpaRepository.findByUserIdAndProductId(userId, productId);
     }
 
     @Override
-    public LikedProduct saveLikedProduct(LikedProduct likedProduct) {
+    public LikedProduct save(LikedProduct likedProduct) {
         return likedProductJpaRepository.save(likedProduct);
+    }
+
+    @Override
+    public void delete(LikedProduct likedProduct) {
+        likedProductJpaRepository.delete(likedProduct);
     }
 
 }
