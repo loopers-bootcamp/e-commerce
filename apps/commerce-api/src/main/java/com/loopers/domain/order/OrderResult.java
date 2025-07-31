@@ -34,7 +34,7 @@ public final class OrderResult {
         @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
         public static class Product {
             private final Long orderProductId;
-            private final Long price;
+            private final Integer price;
             private final Integer quantity;
             private final UUID orderId;
             private final Long productOptionId;
@@ -49,7 +49,6 @@ public final class OrderResult {
                         .build();
             }
         }
-
     }
 
 }

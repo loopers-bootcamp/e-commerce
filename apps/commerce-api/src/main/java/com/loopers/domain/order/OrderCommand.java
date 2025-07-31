@@ -21,7 +21,7 @@ public final class OrderCommand {
         public static class Product {
             private final Long productOptionId;
             private final Integer quantity;
-            private final Long price;
+            private final Integer price;
         }
     }
 

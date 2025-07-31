@@ -22,11 +22,11 @@ class OrderProductTest {
 
         @DisplayName("주문 시점의 가격이 유효하지 않으면, BusinessException이 발생한다.")
         @NullSource
-        @ValueSource(longs = {
-                Long.MIN_VALUE, -100, -1,
+        @ValueSource(ints = {
+                Integer.MIN_VALUE, -100, -1,
         })
         @ParameterizedTest
-        void throwException_withInvalidPrice(Long price) {
+        void throwException_withInvalidPrice(Integer price) {
             // given
             Integer quantity = 1;
             UUID orderId = UUID.randomUUID();
@@ -53,7 +53,7 @@ class OrderProductTest {
         @ParameterizedTest
         void throwException_withInvalidQuantity(Integer quantity) {
             // given
-            Long price = 1000L;
+            Integer price = 1000;
             UUID orderId = UUID.randomUUID();
             Long productOptionId = 1L;
 
@@ -75,7 +75,7 @@ class OrderProductTest {
         @ParameterizedTest
         void throwException_withInvalidOrderId(UUID orderId) {
             // given
-            Long price = 1000L;
+            Integer price = 1000;
             Integer quantity = 1;
             Long productOptionId = 1L;
 
@@ -97,7 +97,7 @@ class OrderProductTest {
         @ParameterizedTest
         void throwException_withInvalidProductOptionId(Long productOptionId) {
             // given
-            Long price = 1000L;
+            Integer price = 1000;
             Integer quantity = 1;
             UUID orderId = UUID.randomUUID();
 
@@ -121,7 +121,7 @@ class OrderProductTest {
                 500   | 10 | 10
                 """, delimiter = '|')
         @ParameterizedTest
-        void createNewOrderProduct_withValidValues(Long price, Integer quantity, Long productOptionId) {
+        void createNewOrderProduct_withValidValues(Integer price, Integer quantity, Long productOptionId) {
             // given
             UUID orderId = UUID.randomUUID();
 

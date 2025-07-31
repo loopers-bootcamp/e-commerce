@@ -42,7 +42,7 @@ public class OrderProduct extends BaseEntity {
      * 주문 시점의 가격
      */
     @Column(name = "price", nullable = false)
-    private Long price;
+    private Integer price;
 
     /**
      * 주문 수량
@@ -68,7 +68,7 @@ public class OrderProduct extends BaseEntity {
 
     @Builder
     private OrderProduct(
-            Long price,
+            Integer price,
             Integer quantity,
             UUID orderId,
             Long productOptionId
