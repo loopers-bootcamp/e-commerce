@@ -17,13 +17,13 @@ public final class ProductResult {
         private final Long brandId;
         private final List<Option> options;
 
-        public static GetProductDetail from(ProductQueryResult.ProductDetail detail) {
+        public static GetProductDetail from(ProductQueryResult.ProductDetail queryResult) {
             return GetProductDetail.builder()
-                    .productId(detail.getProductId())
-                    .productName(detail.getProductName())
-                    .basePrice(detail.getBasePrice())
-                    .brandId(detail.getBrandId())
-                    .options(detail.getOptions().stream().map(Option::from).toList())
+                    .productId(queryResult.getProductId())
+                    .productName(queryResult.getProductName())
+                    .basePrice(queryResult.getBasePrice())
+                    .brandId(queryResult.getBrandId())
+                    .options(queryResult.getOptions().stream().map(Option::from).toList())
                     .build();
         }
 
@@ -47,7 +47,40 @@ public final class ProductResult {
                         .build();
             }
         }
+    }
 
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetProductOptions {
+        private final List<Item> items;
+
+        public static GetProductOptions from(ProductQueryResult.ProductOptions queryResult) {
+            return GetProductOptions.builder()
+                    .items(queryResult.getItems().stream().map(Item::from).toList())
+                    .build();
+        }
+
+        @Getter
+        @Builder
+        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+        public static class Item {
+            private final Long productOptionId;
+            private final Integer salePrice;
+            private final Integer stockQuantity;
+            private final Long productId;
+
+            public static Item from(ProductQueryResult.ProductOptions.Item item) {
+                return Item.builder()
+                        .productOptionId(item.getProductOptionId())
+                        .salePrice(item.getSalePrice())
+                        .stockQuantity(item.getStockQuantity())
+                        .productId(item.getProductId())
+                        .build();
+            }
+        }
     }
 
 }

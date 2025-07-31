@@ -2,6 +2,7 @@ package com.loopers.infrastructure.product;
 
 import com.loopers.domain.product.*;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -69,8 +70,44 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Optional<Product> findProductById(Long productId) {
-        return productRepository.findById(productId);
+    public Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds) {
+        QProduct p = QProduct.product;
+        QProductOption po = QProductOption.productOption;
+        QStock s = QStock.stock;
+
+        NumberExpression<Integer> salePrice = p.basePrice.add(po.additionalPrice).as("salePrice");
+
+        List<ProductQueryResult.ProductOptions.Item> items = queryFactory
+                .select(
+                        po.id,
+                        salePrice,
+                        s.quantity,
+                        p.id
+                )
+                .from(po)
+                .join(p).on(p.id.eq(po.productId))
+                .join(s).on(s.productOptionId.eq(po.id))
+                .where(po.id.in(productOptionIds))
+                .stream()
+                .map(row ->
+                        ProductQueryResult.ProductOptions.Item.builder()
+                                .productOptionId(row.get(po.id))
+                                .salePrice(row.get(salePrice))
+                                .stockQuantity(row.get(s.quantity))
+                                .productId(row.get(p.id))
+                                .build()
+                )
+                .toList();
+
+        if (CollectionUtils.isEmpty(items)) {
+            return Optional.empty();
+        }
+
+        ProductQueryResult.ProductOptions queryResult = ProductQueryResult.ProductOptions.builder()
+                .items(items)
+                .build();
+
+        return Optional.of(queryResult);
     }
 
     @Override

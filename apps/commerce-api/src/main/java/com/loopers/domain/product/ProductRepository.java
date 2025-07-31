@@ -7,7 +7,7 @@ public interface ProductRepository {
 
     Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId);
 
-    Optional<Product> findProductById(Long productId);
+    Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds);
 
     List<Stock> findStocksByProductOptionIdsForUpdate(List<Long> productOptionIds);
 

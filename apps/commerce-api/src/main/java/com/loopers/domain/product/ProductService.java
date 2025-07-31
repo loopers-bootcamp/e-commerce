@@ -31,6 +31,16 @@ public class ProductService {
                 .map(ProductResult.GetProductDetail::from);
     }
 
+    @ReadOnlyTransactional
+    public Optional<ProductResult.GetProductOptions> getProductOptions(List<Long> productOptionIds) {
+        if (CollectionUtils.isEmpty(productOptionIds)) {
+            return Optional.empty();
+        }
+
+        return productRepository.findProductOptionsByIds(productOptionIds)
+                .map(ProductResult.GetProductOptions::from);
+    }
+
     @Transactional
     public void addStocks(ProductCommand.AddStocks command) {
         List<ProductCommand.AddStocks.Item> items = command.getItems();
