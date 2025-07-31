@@ -14,7 +14,6 @@ import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -28,7 +27,6 @@ public class OrderFacade {
     private final ProductService productService;
     private final PointService pointService;
 
-    @Transactional
     public OrderOutput.Create create(OrderInput.Create input) {
         List<OrderInput.Create.Product> products = input.getProducts();
         if (CollectionUtils.isEmpty(products)) {
