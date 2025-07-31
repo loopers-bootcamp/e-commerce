@@ -2,15 +2,29 @@ package com.loopers.infrastructure.product;
 
 import com.loopers.domain.product.*;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.loopers.domain.activity.QLikedProduct.likedProduct;
+import static com.loopers.domain.brand.QBrand.brand;
+import static com.loopers.domain.product.QProduct.product;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,6 +34,56 @@ public class ProductRepositoryImpl implements ProductRepository {
     private final ProductOptionJpaRepository productOptionRepository;
     private final StockJpaRepository stockJpaRepository;
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Page<Product> searchProducts(ProductQueryCommand.SearchProducts queryCommand) {
+        PageRequest pageable = PageRequest.of(queryCommand.getPage(), queryCommand.getSize());
+
+        String keyword = queryCommand.getKeyword();
+        Long brandId = queryCommand.getBrandId();
+
+        Predicate containKeywordByProductName = StringUtils.hasText(keyword) ? product.name.containsIgnoreCase(keyword) : null;
+        Predicate matchByBrand = brandId == null ? null : brand.id.eq(brandId);
+
+        OrderSpecifier<? extends Serializable> orderSpecifier = switch (queryCommand.getSortType()) {
+            case LATEST -> product.createdAt.desc();
+            case POPULAR -> new OrderSpecifier<>(
+                    Order.DESC,
+                    JPAExpressions
+                            .select(likedProduct.id.count())
+                            .from(likedProduct)
+                            .where(likedProduct.productId.eq(product.id)),
+                    OrderSpecifier.NullHandling.NullsLast
+            );
+            case CHEAP -> product.basePrice.asc();
+        };
+
+        JPAQuery<Product> query = queryFactory
+                .select(product)
+                .from(product)
+                .leftJoin(brand).on(brand.id.eq(product.brandId))
+                .where(
+                        containKeywordByProductName,
+                        matchByBrand
+                )
+                .groupBy(product.id)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(orderSpecifier, product.id.desc());
+
+        List<Product> products = query.fetch();
+        Long total = queryFactory
+                .select(product.count())
+                .from(product)
+                .leftJoin(brand).on(brand.id.eq(product.brandId))
+                .where(
+                        containKeywordByProductName,
+                        matchByBrand
+                )
+                .fetchOne();
+
+        return new PageImpl<>(products, pageable, total);
+    }
 
     @Override
     public Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId) {

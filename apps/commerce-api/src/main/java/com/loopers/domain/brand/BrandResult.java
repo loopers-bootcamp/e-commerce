@@ -10,8 +10,8 @@ public final class BrandResult {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class GetBrand {
         private final Long brandId;
-        private String brandName;
-        private String brandDescription;
+        private final String brandName;
+        private final String brandDescription;
 
         public static GetBrand from(Brand brand) {
             return GetBrand.builder()

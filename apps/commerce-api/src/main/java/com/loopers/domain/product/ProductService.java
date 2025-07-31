@@ -4,6 +4,7 @@ import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -20,6 +21,19 @@ import static java.util.stream.Collectors.toMap;
 public class ProductService {
 
     private final ProductRepository productRepository;
+
+    @ReadOnlyTransactional
+    public Page<Product> searchProducts(ProductCommand.SearchProducts command) {
+        ProductQueryCommand.SearchProducts queryCommand = ProductQueryCommand.SearchProducts.builder()
+                .keyword(command.getKeyword())
+                .brandId(command.getBrandId())
+                .sortType(command.getSortType())
+                .page(command.getPage())
+                .size(command.getSize())
+                .build();
+
+        return productRepository.searchProducts(queryCommand);
+    }
 
     @ReadOnlyTransactional
     public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {

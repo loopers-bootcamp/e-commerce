@@ -1,6 +1,8 @@
 package com.loopers.domain.product;
 
+import com.loopers.domain.product.attribute.ProductSearchSortType;
 import lombok.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -10,16 +12,15 @@ public final class ProductCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class IsEnoughStock {
-        private final List<Item> items;
+    public static class SearchProducts {
+        @Nullable
+        private final String keyword;
+        @Nullable
+        private final Long brandId;
+        private final ProductSearchSortType sortType;
 
-        @Getter
-        @Builder
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        public static class Item {
-            private final Long productOptionId;
-            private final Integer amount;
-        }
+        private final Integer page;
+        private final Integer size;
     }
 
     @Getter
