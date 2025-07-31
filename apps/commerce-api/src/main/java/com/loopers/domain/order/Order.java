@@ -3,6 +3,7 @@ package com.loopers.domain.order;
 import com.loopers.config.jpa.converter.OrderStatusConverter;
 import com.loopers.domain.BaseEntity;
 import com.loopers.domain.order.attribute.OrderStatus;
+import com.loopers.domain.order.error.OrderErrorType;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
@@ -119,14 +120,26 @@ public class Order extends BaseEntity implements Comparable<Order> {
     }
 
     public void complete() {
+        if (this.status.isConcluding()) {
+            throw new BusinessException(OrderErrorType.CONCLUDING);
+        }
+
         this.status = OrderStatus.COMPLETE;
     }
 
     public void expire() {
+        if (this.status.isConcluding()) {
+            throw new BusinessException(OrderErrorType.CONCLUDING);
+        }
+
         this.status = OrderStatus.EXPIRED;
     }
 
     public void cancel() {
+        if (this.status.isConcluding()) {
+            throw new BusinessException(OrderErrorType.CONCLUDING);
+        }
+
         this.status = OrderStatus.CANCELED;
     }
 

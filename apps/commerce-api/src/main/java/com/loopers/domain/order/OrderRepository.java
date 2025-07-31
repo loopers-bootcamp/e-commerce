@@ -1,11 +1,16 @@
 package com.loopers.domain.order;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderRepository {
 
+    Optional<Order> findOrderDetailById(UUID orderId);
+
+    Optional<Order> findByIdForUpdate(UUID orderId);
+
     UUID findNextOrderId();
 
-    Order saveOrder(Order order);
+    Order save(Order order);
 
 }

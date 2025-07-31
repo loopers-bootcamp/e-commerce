@@ -1,5 +1,6 @@
 package com.loopers.domain.order;
 
+import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -15,6 +17,13 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderEventPublisher orderEventPublisher;
+
+    @ReadOnlyTransactional
+    public Optional<OrderResult.GetOrderDetail> getOrderDetail(UUID orderId) {
+        return orderRepository.findOrderDetailById(orderId)
+                .map(OrderResult.GetOrderDetail::from);
+    }
 
     @Transactional
     public OrderResult.Create create(OrderCommand.Create command) {
@@ -41,9 +50,40 @@ public class OrderService {
                 .toList();
         order.addProducts(products);
 
-        orderRepository.saveOrder(order);
+        orderRepository.save(order);
 
         return OrderResult.Create.from(order);
+    }
+
+    @Transactional
+    public void complete(UUID orderId) {
+        Order order = orderRepository.findOrderDetailById(orderId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        order.complete();
+
+        orderRepository.save(order);
+        orderEventPublisher.complete(orderId);
+    }
+
+    @Transactional
+    public void expire(UUID orderId) {
+        Order order = orderRepository.findOrderDetailById(orderId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        order.expire();
+
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void cancel(UUID orderId) {
+        Order order = orderRepository.findOrderDetailById(orderId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        order.cancel();
+
+        orderRepository.save(order);
     }
 
 }

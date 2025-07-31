@@ -9,10 +9,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OrderStatus {
 
-    CREATED(1),
-    COMPLETE(2),
-    EXPIRED(3),
-    CANCELED(4);
+    CREATED(1) {
+        @Override
+        public boolean isConcluding() {
+            return false;
+        }
+    },
+
+    COMPLETE(2) {
+        @Override
+        public boolean isConcluding() {
+            return true;
+        }
+    },
+
+    EXPIRED(3) {
+        @Override
+        public boolean isConcluding() {
+            return true;
+        }
+    },
+
+    CANCELED(4) {
+        @Override
+        public boolean isConcluding() {
+            return true;
+        }
+    };
 
     // -------------------------------------------------------------------------------------------------
 
@@ -32,6 +55,12 @@ public enum OrderStatus {
         }
 
         return null;
+    }
+
+    public abstract boolean isConcluding();
+
+    public boolean isPayable() {
+        return !isConcluding();
     }
 
 }

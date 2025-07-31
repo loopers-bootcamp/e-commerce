@@ -1,5 +1,6 @@
 package com.loopers.application.order;
 
+import com.loopers.domain.order.Order;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderService;
 import com.loopers.domain.order.attribute.OrderStatus;
@@ -12,13 +13,13 @@ import com.loopers.domain.user.UserService;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.utils.DatabaseCleanUp;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -50,7 +51,7 @@ class OrderFacadeIntegrationTest {
     private final PointService pointService;
 
     private final TransactionTemplate transactionTemplate;
-    private final TestEntityManager testEntityManager;
+    private final EntityManager entityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
@@ -75,19 +76,19 @@ class OrderFacadeIntegrationTest {
                     .birthDate(LocalDate.of(1990, 1, 1))
                     .email(new Email("gildong.hong@example.com"))
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
 
             Point point = Point.builder()
                     .balance(500_000L)
                     .userId(user.getId())
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             Product product = Product.builder()
                     .name("Nike Shoes 2025")
                     .basePrice(120_000)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(product));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
 
             ProductOption option1 = ProductOption.builder()
                     .name("260")
@@ -100,8 +101,8 @@ class OrderFacadeIntegrationTest {
                     .productId(product.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(option1);
-                testEntityManager.persist(option2);
+                entityManager.persist(option1);
+                entityManager.persist(option2);
             });
 
             Stock stock1 = Stock.builder()
@@ -113,8 +114,8 @@ class OrderFacadeIntegrationTest {
                     .productOptionId(option2.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(stock1);
-                testEntityManager.persist(stock2);
+                entityManager.persist(stock1);
+                entityManager.persist(stock2);
             });
 
             List<OrderInput.Create.Product> cartItems = List.of(
@@ -142,6 +143,13 @@ class OrderFacadeIntegrationTest {
 
             verify(productService, never()).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, never()).spend(any(PointCommand.Spend.class));
+
+            Order savedOrder = entityManager.find(Order.class, output.getOrderId());
+            assertThat(savedOrder).isNotNull();
+            assertThat(savedOrder.getId()).isEqualTo(output.getOrderId());
+            assertThat(savedOrder.getTotalPrice()).isEqualTo(output.getTotalPrice());
+            assertThat(savedOrder.getStatus()).isEqualTo(OrderStatus.CREATED);
+            assertThat(savedOrder.getUserId()).isEqualTo(user.getId());
         }
 
     }
