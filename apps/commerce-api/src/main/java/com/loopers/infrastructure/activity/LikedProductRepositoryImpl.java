@@ -25,7 +25,7 @@ public class LikedProductRepositoryImpl implements LikedProductRepository {
     }
 
     @Override
-    public Optional<LikedProduct> findByUserIdAndProductId(Long userId, Long productId) {
+    public Optional<LikedProduct> findOne(Long userId, Long productId) {
         return likedProductJpaRepository.findByUserIdAndProductId(userId, productId);
     }
 

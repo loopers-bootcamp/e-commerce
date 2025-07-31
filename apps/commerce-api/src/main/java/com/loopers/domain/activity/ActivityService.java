@@ -16,7 +16,7 @@ public class ActivityService {
         Long userId = command.getUserId();
         Long productId = command.getProductId();
 
-        likedProductRepository.findByUserIdAndProductId(userId, productId)
+        likedProductRepository.findOne(userId, productId)
                 .orElseGet(() -> {
                     LikedProduct likedProduct = LikedProduct.builder()
                             .userId(userId)
@@ -29,7 +29,7 @@ public class ActivityService {
 
     @Transactional
     public void dislike(ActivityCommand.Dislike command) {
-        likedProductRepository.findByUserIdAndProductId(command.getUserId(), command.getProductId())
+        likedProductRepository.findOne(command.getUserId(), command.getProductId())
                 .ifPresent(likedProductRepository::delete);
     }
 
@@ -38,7 +38,7 @@ public class ActivityService {
         Long userId = command.getUserId();
         Long productId = command.getProductId();
 
-        ViewedProduct viewedProduct = viewedProductRepository.findViewedProduct(userId, productId)
+        ViewedProduct viewedProduct = viewedProductRepository.findOne(userId, productId)
                 .orElseGet(() -> ViewedProduct.builder()
                         .viewCount(0L)
                         .userId(userId)
@@ -47,7 +47,7 @@ public class ActivityService {
 
         viewedProduct.view();
 
-        viewedProductRepository.saveViewedProduct(viewedProduct);
+        viewedProductRepository.save(viewedProduct);
 
         return viewedProduct.getViewCount();
     }

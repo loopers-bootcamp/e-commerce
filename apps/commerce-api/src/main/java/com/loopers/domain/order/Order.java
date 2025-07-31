@@ -100,20 +100,30 @@ public class Order extends BaseEntity implements Comparable<Order> {
         }
 
         List<OrderProduct> those = new ArrayList<>(this.products);
-        those.addAll(products);
-
         Set<Long> ids = new HashSet<>();
 
-        for (OrderProduct that : those) {
-            Long id = that.getId();
+        outer:
+        for (OrderProduct product : products) {
+            Long id = product.getId();
             if (id != null && !ids.add(id)) {
                 throw new BusinessException(CommonErrorType.CONFLICT);
             }
 
-            UUID orderId = that.getOrderId();
+            UUID orderId = product.getOrderId();
             if (!Objects.equals(this.id, orderId)) {
                 throw new BusinessException(CommonErrorType.INCONSISTENT);
             }
+
+            // 이미 추가된 주문 상품을 다시 추가하지 않는다.
+            if (id != null) {
+                for (OrderProduct that : those) {
+                    if (Objects.equals(id, that.getId())) {
+                        continue outer;
+                    }
+                }
+            }
+
+            those.add(product);
         }
 
         this.products = List.copyOf(those);

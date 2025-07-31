@@ -14,12 +14,12 @@ public class ViewedProductRepositoryImpl implements ViewedProductRepository {
     private final ViewedProductJpaRepository viewedProductJpaRepository;
 
     @Override
-    public Optional<ViewedProduct> findViewedProduct(Long userId, Long productId) {
+    public Optional<ViewedProduct> findOne(Long userId, Long productId) {
         return viewedProductJpaRepository.findByUserIdAndProductId(userId, productId);
     }
 
     @Override
-    public ViewedProduct saveViewedProduct(ViewedProduct viewedProduct) {
+    public ViewedProduct save(ViewedProduct viewedProduct) {
         return viewedProductJpaRepository.save(viewedProduct);
     }
 

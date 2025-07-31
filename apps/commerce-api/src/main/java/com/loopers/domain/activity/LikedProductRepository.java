@@ -9,7 +9,7 @@ public interface LikedProductRepository {
 
     long countLikedProductsByProductId(Long productId);
 
-    Optional<LikedProduct> findByUserIdAndProductId(Long userId, Long productId);
+    Optional<LikedProduct> findOne(Long userId, Long productId);
 
     LikedProduct save(LikedProduct likedProduct);
 

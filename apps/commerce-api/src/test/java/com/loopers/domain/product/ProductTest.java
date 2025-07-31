@@ -109,48 +109,25 @@ class ProductTest {
             assertThat(product.getOptions()).hasSize(0);
         }
 
-        @DisplayName("중복된 옵션 목록을 추가하면, BusinessException이 발생한다.")
+        @DisplayName("중복된 옵션 목록이 주어지면, BusinessException이 발생한다.")
         @Test
-        void throwException_withDuplicatedOptions() {
+        void throwException_whenDuplicatedOptionsAreProvided() {
             // given
             Product product = Instancio.of(Product.class)
-                    .set(field(Product::getOptions),
-                            IntStream.range(0, 10)
-                                    .mapToObj(i -> Instancio.of(ProductOption.class)
-                                            .set(field(ProductOption::getId), i + 1L)
-                                            .ignore(field(ProductOption::getProductId))
-                                            .create()
-                                    )
-                                    .toList()
-                    )
+                    .set(field(Product::getOptions), List.of())
                     .create();
 
             // when & then
-            List<ProductOption> options1 = IntStream.range(0, 10)
+            List<ProductOption> options = IntStream.range(0, 10)
                     .mapToObj(i -> Instancio.of(ProductOption.class)
-                            .set(field(ProductOption::getId), (long) i)
+                            .set(field(ProductOption::getId), 100L)
                             .ignore(field(ProductOption::getProductId))
                             .create()
                     )
                     .toList();
 
             assertThatException()
-                    .isThrownBy(() -> product.addOptions(options1))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorType", CommonErrorType.CONFLICT);
-
-            // given
-            List<ProductOption> options2 = IntStream.range(0, 10)
-                    .mapToObj(i -> Instancio.of(ProductOption.class)
-                            .set(field(ProductOption::getId), i + 1L)
-                            .ignore(field(ProductOption::getProductId))
-                            .create()
-                    )
-                    .toList();
-
-            // when & then
-            assertThatException()
-                    .isThrownBy(() -> product.addOptions(options2))
+                    .isThrownBy(() -> product.addOptions(options))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.CONFLICT);
         }
@@ -176,6 +153,37 @@ class ProductTest {
                     .isThrownBy(() -> product.addOptions(options))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.INCONSISTENT);
+        }
+
+        @DisplayName("이미 추가된 상품이 주어지면, 추가하지 않는다.")
+        @Test
+        void ignoreOptions_whenProductsAlreadyAddedAreProvided() {
+            // given
+            Product product = Instancio.of(Product.class)
+                    .set(field(Product::getOptions),
+                            IntStream.range(0, 10)
+                                    .mapToObj(i -> Instancio.of(ProductOption.class)
+                                            .set(field(ProductOption::getId), i + 1L)
+                                            .ignore(field(ProductOption::getProductId))
+                                            .create()
+                                    )
+                                    .toList()
+                    )
+                    .create();
+
+            List<ProductOption> options = IntStream.range(5, 15)
+                    .mapToObj(i -> Instancio.of(ProductOption.class)
+                            .set(field(ProductOption::getId), i + 1L)
+                            .ignore(field(ProductOption::getProductId))
+                            .create()
+                    )
+                    .toList();
+
+            // when
+            product.addOptions(options);
+
+            // then
+            assertThat(product.getOptions()).hasSize(15);
         }
 
         @DisplayName("옵션 아이디와 상품 아이디가 없어도, 옵션 목록을 추가할 수 있다.")

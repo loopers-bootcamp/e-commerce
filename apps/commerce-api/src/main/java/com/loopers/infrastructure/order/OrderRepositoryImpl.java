@@ -2,11 +2,12 @@ package com.loopers.infrastructure.order;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.TimeBasedEpochRandomGenerator;
-import com.loopers.domain.order.Order;
-import com.loopers.domain.order.OrderProduct;
-import com.loopers.domain.order.OrderRepository;
+import com.loopers.domain.order.*;
+import com.querydsl.core.Tuple;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,20 +21,35 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     private final OrderJpaRepository orderJpaRepository;
     private final OrderProductJpaRepository orderProductJpaRepository;
+    private final JPAQueryFactory jpaQueryFactory;
 
     @Override
     public Optional<Order> findOrderDetailById(UUID orderId) {
-        return orderJpaRepository.findById(orderId)
-                .stream()
-                .peek(order -> {
-                    List<OrderProduct> products = orderProductJpaRepository.findByOrderId(order.getId());
-                    order.addProducts(products);
-                })
-                .findAny();
+        QOrder o = QOrder.order;
+        QOrderProduct op = QOrderProduct.orderProduct;
+
+        List<Tuple> rows = jpaQueryFactory
+                .select(o, op)
+                .from(o)
+                .join(op).on(op.orderId.eq(o.id))
+                .where(o.id.eq(orderId))
+                .fetch();
+
+        if (CollectionUtils.isEmpty(rows)) {
+            return Optional.empty();
+        }
+
+        Order order = rows.getFirst().get(o);
+        List<OrderProduct> products = rows.stream()
+                .map(row -> row.get(op))
+                .toList();
+        order.addProducts(products);
+
+        return Optional.of(order);
     }
 
     @Override
-    public Optional<Order> findByIdForUpdate(UUID orderId) {
+    public Optional<Order> findOneForUpdate(UUID orderId) {
         return orderJpaRepository.findById(orderId);
     }
 

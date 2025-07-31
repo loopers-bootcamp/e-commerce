@@ -78,33 +78,33 @@ public class Product extends BaseEntity {
         }
 
         List<ProductOption> those = new ArrayList<>(this.options);
-        those.addAll(options);
-
         Set<Long> ids = new HashSet<>();
 
-        for (ProductOption that : those) {
-            Long id = that.getId();
+        outer:
+        for (ProductOption option : options) {
+            Long id = option.getId();
             if (id != null && !ids.add(id)) {
                 throw new BusinessException(CommonErrorType.CONFLICT);
             }
 
-            Long productId = that.getProductId();
+            Long productId = option.getProductId();
             if (productId != null && !Objects.equals(this.id, productId)) {
                 throw new BusinessException(CommonErrorType.INCONSISTENT);
             }
+
+            // 이미 추가된 상품 옵션을 다시 추가하지 않는다.
+            if (id != null) {
+                for (ProductOption that : those) {
+                    if (Objects.equals(id, that.getId())) {
+                        continue outer;
+                    }
+                }
+            }
+
+            those.add(option);
         }
 
         this.options = List.copyOf(those);
-    }
-
-    public int getActualPrice(Long optionId) {
-        ProductOption opt = this.options.stream()
-                .filter(Objects::nonNull)
-                .filter(option -> Objects.equals(option.getId(), optionId))
-                .findFirst()
-                .orElseThrow();
-
-        return this.basePrice + opt.getAdditionalPrice();
     }
 
 }

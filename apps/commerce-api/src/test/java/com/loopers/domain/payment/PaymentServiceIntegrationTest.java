@@ -37,7 +37,7 @@ class PaymentServiceIntegrationTest {
     @Nested
     class Pay {
 
-        @DisplayName("모든 값이 유효하면, 성공적으로 결제가 완료된다.")
+        @DisplayName("모든 값이 유효하면, 결제가 완료된다.")
         @Test
         void completePayment_withValidValues() {
             // given

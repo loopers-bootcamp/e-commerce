@@ -4,8 +4,8 @@ import java.util.Optional;
 
 public interface ViewedProductRepository {
 
-    Optional<ViewedProduct> findViewedProduct(Long userId, Long productId);
+    Optional<ViewedProduct> findOne(Long userId, Long productId);
 
-    ViewedProduct saveViewedProduct(ViewedProduct viewedProduct);
+    ViewedProduct save(ViewedProduct viewedProduct);
 
 }

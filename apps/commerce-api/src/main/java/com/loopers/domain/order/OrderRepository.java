@@ -7,7 +7,7 @@ public interface OrderRepository {
 
     Optional<Order> findOrderDetailById(UUID orderId);
 
-    Optional<Order> findByIdForUpdate(UUID orderId);
+    Optional<Order> findOneForUpdate(UUID orderId);
 
     UUID findNextOrderId();
 

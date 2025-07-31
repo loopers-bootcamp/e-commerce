@@ -57,7 +57,7 @@ public class OrderService {
 
     @Transactional
     public void complete(UUID orderId) {
-        Order order = orderRepository.findOrderDetailById(orderId)
+        Order order = orderRepository.findOneForUpdate(orderId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         order.complete();
@@ -68,7 +68,7 @@ public class OrderService {
 
     @Transactional
     public void expire(UUID orderId) {
-        Order order = orderRepository.findOrderDetailById(orderId)
+        Order order = orderRepository.findOneForUpdate(orderId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         order.expire();
@@ -78,7 +78,7 @@ public class OrderService {
 
     @Transactional
     public void cancel(UUID orderId) {
-        Order order = orderRepository.findOrderDetailById(orderId)
+        Order order = orderRepository.findOneForUpdate(orderId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         order.cancel();

@@ -161,28 +161,20 @@ class OrderTest {
             assertThat(order.getProducts()).hasSize(0);
         }
 
-        @DisplayName("중복된 주문 상품 목록을 추가하면, BusinessException이 발생한다.")
+        @DisplayName("중복된 주문 상품 목록이 주어지면, BusinessException이 발생한다.")
         @Test
-        void throwException_withDuplicatedProductIds() {
+        void throwException_whenDuplicatedProductIdsAreProvided() {
             // given
             UUID orderId = createTimeBasedUuid();
 
             Order order = Instancio.of(Order.class)
                     .set(field(Order::getId), orderId)
-                    .set(field(Order::getProducts),
-                            IntStream.range(0, 10)
-                                    .mapToObj(i -> Instancio.of(OrderProduct.class)
-                                            .set(field(OrderProduct::getId), i + 1L)
-                                            .set(field(OrderProduct::getOrderId), orderId)
-                                            .create()
-                                    )
-                                    .toList()
-                    )
+                    .set(field(Order::getProducts), List.of())
                     .create();
 
-            List<OrderProduct> products1 = IntStream.range(0, 10)
+            List<OrderProduct> products = IntStream.range(0, 10)
                     .mapToObj(i -> Instancio.of(OrderProduct.class)
-                            .set(field(OrderProduct::getId), (long) i)
+                            .set(field(OrderProduct::getId), 100L)
                             .set(field(OrderProduct::getOrderId), orderId)
                             .create()
                     )
@@ -190,22 +182,7 @@ class OrderTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> order.addProducts(products1))
-                    .isInstanceOf(BusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorType", CommonErrorType.CONFLICT);
-
-            // given
-            List<OrderProduct> products2 = IntStream.range(0, 10)
-                    .mapToObj(i -> Instancio.of(OrderProduct.class)
-                            .set(field(OrderProduct::getId), i + 1L)
-                            .set(field(OrderProduct::getOrderId), orderId)
-                            .create()
-                    )
-                    .toList();
-
-            // when & then
-            assertThatException()
-                    .isThrownBy(() -> order.addProducts(products2))
+                    .isThrownBy(() -> order.addProducts(products))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.CONFLICT);
         }
@@ -237,6 +214,40 @@ class OrderTest {
                     .isThrownBy(() -> order.addProducts(products))
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.INCONSISTENT);
+        }
+
+        @DisplayName("이미 추가된 주문 상품이 주어지면, 추가하지 않는다.")
+        @Test
+        void ignoreOptions_whenProductsAlreadyAddedAreProvided() {
+            // given
+            UUID orderId = createTimeBasedUuid();
+
+            Order order = Instancio.of(Order.class)
+                    .set(field(Order::getId), orderId)
+                    .set(field(Order::getProducts),
+                            IntStream.range(0, 10)
+                                    .mapToObj(i -> Instancio.of(OrderProduct.class)
+                                            .set(field(OrderProduct::getId), i + 1L)
+                                            .set(field(OrderProduct::getOrderId), orderId)
+                                            .create()
+                                    )
+                                    .toList()
+                    )
+                    .create();
+
+            List<OrderProduct> products = IntStream.range(5, 15)
+                    .mapToObj(i -> Instancio.of(OrderProduct.class)
+                            .set(field(OrderProduct::getId), i + 1L)
+                            .set(field(OrderProduct::getOrderId), orderId)
+                            .create()
+                    )
+                    .toList();
+
+            // when
+            order.addProducts(products);
+
+            // then
+            assertThat(order.getProducts()).hasSize(15);
         }
 
         @DisplayName("주문 상품 아이디가 없어도, 주문 상품 목록을 추가할 수 있다.")

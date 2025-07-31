@@ -35,7 +35,7 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findByUserIdAndProductId(userId, productId))
+            given(likedProductRepository.findOne(userId, productId))
                     .willReturn(Optional.empty());
             given(likedProductRepository.save(any(LikedProduct.class)))
                     .willAnswer(invocation -> {
@@ -55,7 +55,7 @@ class ActivityServiceTest {
             sut.like(command);
 
             // then
-            verify(likedProductRepository, times(1)).findByUserIdAndProductId(userId, productId);
+            verify(likedProductRepository, times(1)).findOne(userId, productId);
             verify(likedProductRepository, times(1)).save(any(LikedProduct.class));
         }
 
@@ -66,7 +66,7 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findByUserIdAndProductId(userId, productId))
+            given(likedProductRepository.findOne(userId, productId))
                     .willAnswer(invocation ->
                             Instancio.of(LikedProduct.class)
                                     .set(field(LikedProduct::getUserId), userId)
@@ -85,7 +85,7 @@ class ActivityServiceTest {
             sut.like(command);
 
             // then
-            verify(likedProductRepository, times(1)).findByUserIdAndProductId(userId, productId);
+            verify(likedProductRepository, times(1)).findOne(userId, productId);
             verify(likedProductRepository, never()).save(any(LikedProduct.class));
         }
 
@@ -104,7 +104,7 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findByUserIdAndProductId(userId, productId))
+            given(likedProductRepository.findOne(userId, productId))
                     .willAnswer(invocation ->
                             Instancio.of(LikedProduct.class)
                                     .set(field(LikedProduct::getUserId), userId)
@@ -121,7 +121,7 @@ class ActivityServiceTest {
             sut.dislike(command);
 
             // then
-            verify(likedProductRepository, times(1)).findByUserIdAndProductId(userId, productId);
+            verify(likedProductRepository, times(1)).findOne(userId, productId);
             verify(likedProductRepository, times(1)).delete(any(LikedProduct.class));
         }
 
@@ -132,7 +132,7 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findByUserIdAndProductId(userId, productId))
+            given(likedProductRepository.findOne(userId, productId))
                     .willReturn(Optional.empty());
 
             ActivityCommand.Dislike command = ActivityCommand.Dislike.builder()
@@ -144,7 +144,7 @@ class ActivityServiceTest {
             sut.dislike(command);
 
             // then
-            verify(likedProductRepository, times(1)).findByUserIdAndProductId(userId, productId);
+            verify(likedProductRepository, times(1)).findOne(userId, productId);
             verify(likedProductRepository, never()).delete(any(LikedProduct.class));
         }
 
