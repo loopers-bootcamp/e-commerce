@@ -20,7 +20,7 @@ public class LikedProductRepositoryImpl implements LikedProductRepository {
     }
 
     @Override
-    public long countLikedProductsByProductId(Long productId) {
+    public long countByProductId(Long productId) {
         return likedProductJpaRepository.countByProductId(productId);
     }
 

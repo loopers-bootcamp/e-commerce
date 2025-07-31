@@ -1,5 +1,6 @@
 package com.loopers.domain.activity;
 
+import com.loopers.annotation.ReadOnlyTransactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,11 @@ public class ActivityService {
 
     private final LikedProductRepository likedProductRepository;
     private final ViewedProductRepository viewedProductRepository;
+
+    @ReadOnlyTransactional
+    public long getLikeCount(Long productId) {
+        return likedProductRepository.countByProductId(productId);
+    }
 
     @Transactional
     public void like(ActivityCommand.Like command) {

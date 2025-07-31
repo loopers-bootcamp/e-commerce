@@ -7,7 +7,7 @@ public interface LikedProductRepository {
 
     List<LikedProduct> findLikedProductsByUserId(Long userId);
 
-    long countLikedProductsByProductId(Long productId);
+    long countByProductId(Long productId);
 
     Optional<LikedProduct> findOne(Long userId, Long productId);
 
