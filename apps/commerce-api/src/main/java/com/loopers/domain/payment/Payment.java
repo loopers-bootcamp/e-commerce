@@ -5,6 +5,8 @@ import com.loopers.config.jpa.converter.PaymentStatusConverter;
 import com.loopers.domain.BaseEntity;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -73,6 +75,26 @@ public class Payment extends BaseEntity {
             Long userId,
             UUID orderId
     ) {
+        if (amount == null || amount < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "결제 금액은 0 이상이어야 합니다.");
+        }
+
+        if (status == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "결제 상태가 올바르지 않습니다.");
+        }
+
+        if (method == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "결제 수단이 올바르지 않습니다.");
+        }
+
+        if (userId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "사용자 아이디가 올바르지 않습니다.");
+        }
+
+        if (orderId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 아이디가 올바르지 않습니다.");
+        }
+
         this.amount = amount;
         this.status = status;
         this.method = method;
