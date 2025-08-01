@@ -10,7 +10,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.field;
+import static org.instancio.Select.root;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -23,6 +25,35 @@ class ActivityServiceTest {
 
     @Mock
     private LikedProductRepository likedProductRepository;
+
+    @DisplayName("좋아요 수를 조회할 때:")
+    @Nested
+    class GetLikeCount {
+
+        @DisplayName("주어진 상품 아이디의 좋아요 수를 반환한다.")
+        @Test
+        void returnLikeCount_withProductId() {
+            // given
+            Long productId = Instancio.create(Long.class);
+            Long initialLikeCount = Instancio.of(Long.class)
+                    .generate(root(), gen -> gen.longs().range(0L, 10_000L))
+                    .create();
+
+            given(likedProductRepository.countByProductId(productId))
+                    .willReturn(initialLikeCount);
+
+            // when
+            long likeCount = sut.getLikeCount(productId);
+
+            // then
+            assertThat(likeCount).isEqualTo(initialLikeCount);
+
+            verify(likedProductRepository, times(1)).countByProductId(productId);
+        }
+
+    }
+
+    // -------------------------------------------------------------------------------------------------
 
     @DisplayName("상품에 좋아요를 표시할 때:")
     @Nested
