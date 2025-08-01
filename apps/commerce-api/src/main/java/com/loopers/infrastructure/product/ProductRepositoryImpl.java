@@ -1,12 +1,13 @@
 package com.loopers.infrastructure.product;
 
+import com.loopers.domain.activity.QLikedProduct;
+import com.loopers.domain.brand.QBrand;
 import com.loopers.domain.product.*;
+import com.loopers.domain.product.attribute.ProductSearchSortType;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-
-import static com.loopers.domain.activity.QLikedProduct.likedProduct;
-import static com.loopers.domain.brand.QBrand.brand;
-import static com.loopers.domain.product.QProduct.product;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,53 +33,62 @@ public class ProductRepositoryImpl implements ProductRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Product> searchProducts(ProductQueryCommand.SearchProducts queryCommand) {
-        PageRequest pageable = PageRequest.of(queryCommand.getPage(), queryCommand.getSize());
+    public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts queryCommand) {
+        PageRequest pageRequest = PageRequest.of(queryCommand.getPage(), queryCommand.getSize());
+
+        QProduct p = QProduct.product;
+        QBrand b = QBrand.brand;
+        QLikedProduct lp = QLikedProduct.likedProduct;
 
         String keyword = queryCommand.getKeyword();
         Long brandId = queryCommand.getBrandId();
+        ProductSearchSortType sortType = queryCommand.getSortType();
 
-        Predicate containKeywordByProductName = StringUtils.hasText(keyword) ? product.name.containsIgnoreCase(keyword) : null;
-        Predicate matchByBrand = brandId == null ? null : brand.id.eq(brandId);
-
-        OrderSpecifier<? extends Serializable> orderSpecifier = switch (queryCommand.getSortType()) {
-            case LATEST -> product.createdAt.desc();
-            case POPULAR -> new OrderSpecifier<>(
-                    Order.DESC,
-                    JPAExpressions
-                            .select(likedProduct.id.count())
-                            .from(likedProduct)
-                            .where(likedProduct.productId.eq(product.id)),
-                    OrderSpecifier.NullHandling.NullsLast
-            );
-            case CHEAP -> product.basePrice.asc();
-        };
-
-        JPAQuery<Product> query = queryFactory
-                .select(product)
-                .from(product)
-                .leftJoin(brand).on(brand.id.eq(product.brandId))
-                .where(
-                        containKeywordByProductName,
-                        matchByBrand
+        JPAQuery<Tuple> query = queryFactory
+                .select(
+                        p.id
+                        , p.name
+                        , p.basePrice
+                        , p.brandId
                 )
-                .groupBy(product.id)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .orderBy(orderSpecifier, product.id.desc());
-
-        List<Product> products = query.fetch();
-        Long total = queryFactory
-                .select(product.count())
-                .from(product)
-                .leftJoin(brand).on(brand.id.eq(product.brandId))
+                .from(p)
+                .leftJoin(b).on(b.id.eq(p.brandId))
+                .leftJoin(lp).on(lp.productId.eq(p.id))
                 .where(
-                        containKeywordByProductName,
-                        matchByBrand
+                        containKeywordByProductName(keyword),
+                        matchByBrandId(brandId)
+                )
+                .groupBy(
+                        p.id,
+                        p.name,
+                        p.basePrice,
+                        p.brandId
+                )
+                .offset(pageRequest.getOffset())
+                .limit(pageRequest.getPageSize())
+                .orderBy(productsSorter(sortType), tieBreakSorter());
+
+        Long total = queryFactory
+                .select(p.count())
+                .from(p)
+                .leftJoin(b).on(b.id.eq(p.brandId))
+                .where(
+                        containKeywordByProductName(keyword),
+                        matchByBrandId(brandId)
                 )
                 .fetchOne();
 
-        return new PageImpl<>(products, pageable, total);
+        List<ProductQueryResult.Products> products = query.stream()
+                .map(row -> ProductQueryResult.Products.builder()
+                        .productId(row.get(p.id))
+                        .productName(row.get(p.name))
+                        .basePrice(row.get(p.basePrice))
+                        .brandId(row.get(p.brandId))
+                        .build()
+                )
+                .toList();
+
+        return new PageImpl<>(products, pageRequest, Objects.requireNonNullElse(total, 0L));
     }
 
     @Override
@@ -182,6 +188,34 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<Stock> saveStocks(List<Stock> stocks) {
         return stockJpaRepository.saveAll(stocks);
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    private static BooleanExpression containKeywordByProductName(String keyword) {
+        QProduct p = QProduct.product;
+        return StringUtils.hasText(keyword) ? p.name.containsIgnoreCase(keyword) : null;
+    }
+
+    private static BooleanExpression matchByBrandId(Long brandId) {
+        QBrand b = QBrand.brand;
+        return brandId == null ? null : b.id.eq(brandId);
+    }
+
+    private static OrderSpecifier<? extends Comparable<?>> productsSorter(ProductSearchSortType sortType) {
+        QProduct p = QProduct.product;
+        QLikedProduct lp = QLikedProduct.likedProduct;
+
+        return switch (sortType) {
+            case LATEST -> p.createdAt.desc();
+            case POPULAR -> lp.id.count().desc();
+            case CHEAP -> p.basePrice.asc();
+        };
+    }
+
+    private static OrderSpecifier<Long> tieBreakSorter() {
+        QProduct p = QProduct.product;
+        return p.id.desc();
     }
 
 }

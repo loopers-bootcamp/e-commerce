@@ -10,6 +10,18 @@ public final class ProductQueryResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Products {
+        private final Long productId;
+        private final String productName;
+        private final Integer basePrice;
+        private final Long brandId;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ProductDetail {
         private final Long productId;
         private final String productName;
@@ -27,8 +39,9 @@ public final class ProductQueryResult {
             private final Long productId;
             private final Integer stockQuantity;
         }
-
     }
+
+    // -------------------------------------------------------------------------------------------------
 
     @Getter
     @Builder

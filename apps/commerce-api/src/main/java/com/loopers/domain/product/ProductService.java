@@ -23,7 +23,7 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     @ReadOnlyTransactional
-    public Page<Product> searchProducts(ProductCommand.SearchProducts command) {
+    public ProductResult.SearchProducts searchProducts(ProductCommand.SearchProducts command) {
         ProductQueryCommand.SearchProducts queryCommand = ProductQueryCommand.SearchProducts.builder()
                 .keyword(command.getKeyword())
                 .brandId(command.getBrandId())
@@ -32,7 +32,9 @@ public class ProductService {
                 .size(command.getSize())
                 .build();
 
-        return productRepository.searchProducts(queryCommand);
+        Page<ProductQueryResult.Products> page = productRepository.searchProducts(queryCommand);
+
+        return ProductResult.SearchProducts.from(page);
     }
 
     @ReadOnlyTransactional

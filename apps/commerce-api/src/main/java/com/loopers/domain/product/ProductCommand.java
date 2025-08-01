@@ -23,6 +23,8 @@ public final class ProductCommand {
         private final Integer size;
     }
 
+    // -------------------------------------------------------------------------------------------------
+
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -37,6 +39,8 @@ public final class ProductCommand {
             private final Integer amount;
         }
     }
+
+    // -------------------------------------------------------------------------------------------------
 
     @Getter
     @Builder

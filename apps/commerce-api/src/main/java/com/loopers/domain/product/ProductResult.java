@@ -1,11 +1,53 @@
 package com.loopers.domain.product;
 
 import lombok.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ProductResult {
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class SearchProducts {
+        private final Integer totalPages;
+        private final Long totalItems;
+        private final Integer page;
+        private final Integer size;
+        private final List<Item> items;
+
+        public static SearchProducts from(Page<ProductQueryResult.Products> page) {
+            return SearchProducts.builder()
+                    .totalPages(page.getTotalPages())
+                    .totalItems(page.getTotalElements())
+                    .page(page.getPageable().getPageNumber())
+                    .size(page.getPageable().getPageSize())
+                    .items(page.map(content -> Item.builder()
+                                            .productId(content.getProductId())
+                                            .productName(content.getProductName())
+                                            .basePrice(content.getBasePrice())
+                                            .brandId(content.getBrandId())
+                                            .build()
+                                    )
+                                    .toList()
+                    )
+                    .build();
+        }
+
+        @Getter
+        @Builder
+        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+        public static class Item {
+            private final Long productId;
+            private final String productName;
+            private final Integer basePrice;
+            private final Long brandId;
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------
 
     @Getter
     @Builder
