@@ -17,7 +17,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 class PointHistoryTest {
 
-    @DisplayName("포인트 이력을 생성할 때: ")
+    @DisplayName("포인트 이력을 생성할 때:")
     @Nested
     class Create {
 

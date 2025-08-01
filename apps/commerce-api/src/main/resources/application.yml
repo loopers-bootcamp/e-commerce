@@ -13,6 +13,7 @@ server:
 spring:
   main:
     web-application-type: servlet
+  threads.virtual.enabled: true
   application:
     name: commerce-api
   profiles:
@@ -29,29 +30,23 @@ springdoc:
     path: /swagger-ui.html
 
 ---
-spring:
-  config:
-    activate:
-      on-profile: local, test
+
+spring.config.activate.on-profile: local, test
 
 ---
-spring:
-  config:
-    activate:
-      on-profile: dev
+
+spring.config.activate.on-profile: dev
 
 ---
-spring:
-  config:
-    activate:
-      on-profile: qa
+
+spring.config.activate.on-profile: qa
 
 ---
-spring:
-  config:
-    activate:
-      on-profile: prd
+
+spring.config.activate.on-profile: prd
 
 springdoc:
   api-docs:
+    enabled: false
+  swagger-ui:
     enabled: false

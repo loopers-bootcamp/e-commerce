@@ -5,12 +5,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+import java.util.Locale;
+
 @Getter
 @RequiredArgsConstructor
 public enum PointErrorType implements ErrorType {
 
-    TOO_MUCH_BALANCE(HttpStatus.BAD_REQUEST, "포인트의 최대치를 초과하였습니다."),
-    NOT_ENOUGH_BALANCE(HttpStatus.BAD_REQUEST, "포인트가 부족합니다.");
+    EXCESSIVE(HttpStatus.UNPROCESSABLE_ENTITY, "포인트의 최대치를 초과하였습니다."),
+    NOT_ENOUGH(HttpStatus.UNPROCESSABLE_ENTITY, "포인트가 부족합니다.");
 
     private final HttpStatus status;
     private final String code;
@@ -18,7 +20,7 @@ public enum PointErrorType implements ErrorType {
 
     PointErrorType(HttpStatus status, String message) {
         this.status = status;
-        this.code = name();
+        this.code = "point:" + name().toLowerCase(Locale.ROOT);
         this.message = message;
     }
 

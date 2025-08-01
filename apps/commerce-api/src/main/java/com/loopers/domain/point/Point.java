@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "point")
+@Table(name = "points")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Point extends BaseEntity {
 
@@ -50,7 +50,7 @@ public class Point extends BaseEntity {
         }
 
         if (balance > MAX_BALANCE) {
-            throw new BusinessException(PointErrorType.TOO_MUCH_BALANCE);
+            throw new BusinessException(PointErrorType.EXCESSIVE);
         }
 
         if (userId == null) {
@@ -69,7 +69,7 @@ public class Point extends BaseEntity {
 
         long increaseBalance = this.balance + amount;
         if (increaseBalance > MAX_BALANCE) {
-            throw new BusinessException(PointErrorType.TOO_MUCH_BALANCE);
+            throw new BusinessException(PointErrorType.EXCESSIVE);
         }
 
         this.balance = increaseBalance;
@@ -83,7 +83,7 @@ public class Point extends BaseEntity {
 
         long decreasedBalance = this.balance - amount;
         if (decreasedBalance < 0) {
-            throw new BusinessException(PointErrorType.NOT_ENOUGH_BALANCE);
+            throw new BusinessException(PointErrorType.NOT_ENOUGH);
         }
 
         this.balance = decreasedBalance;

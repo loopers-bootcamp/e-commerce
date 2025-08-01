@@ -49,7 +49,7 @@ class PointFacadeIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("포인트를 충전하고 조회할 때: ")
+    @DisplayName("포인트를 충전하고 조회할 때:")
     @Nested
     class ChargeAndGetPoint {
 

@@ -2,7 +2,6 @@ package com.loopers.domain.user;
 
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
-import com.loopers.infrastructure.user.UserJpaRepository;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.support.error.ErrorType;
@@ -13,9 +12,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -38,7 +39,8 @@ class UserServiceIntegrationTest {
     @MockitoSpyBean
     private final UserRepository userRepository;
 
-    private final UserJpaRepository userJpaRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final TestEntityManager testEntityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
@@ -46,7 +48,7 @@ class UserServiceIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("회원 정보를 조회할 때: ")
+    @DisplayName("회원 정보를 조회할 때:")
     @Nested
     class GetUser {
 
@@ -77,7 +79,7 @@ class UserServiceIntegrationTest {
                     .birthDate(LocalDate.of(1990, 1, 1))
                     .email(new Email("gildong.go@example.com"))
                     .build();
-            userJpaRepository.save(user);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
             // when
             Optional<UserResult.GetUser> maybeResult = sut.getUser(userName);
@@ -95,7 +97,7 @@ class UserServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("회원 가입할 때: ")
+    @DisplayName("회원 가입할 때:")
     @Nested
     class Join {
 
@@ -112,7 +114,7 @@ class UserServiceIntegrationTest {
                     .birthDate(LocalDate.of(1990, 1, 1))
                     .email(new Email("gildong.go@example.com"))
                     .build();
-            userJpaRepository.save(user);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
 
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName(user.getName())

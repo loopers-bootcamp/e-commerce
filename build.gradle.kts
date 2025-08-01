@@ -43,6 +43,11 @@ subprojects {
         imports {
             mavenBom("org.springframework.cloud:spring-cloud-dependencies:${project.properties["springCloudDependenciesVersion"]}")
         }
+
+        dependencies {
+            // UUID v7
+            dependency("com.fasterxml.uuid:java-uuid-generator:5.1.0")
+        }
     }
 
     dependencies {
@@ -58,6 +63,10 @@ subprojects {
         annotationProcessor("org.projectlombok:lombok")
         testCompileOnly("org.projectlombok:lombok")
         testAnnotationProcessor("org.projectlombok:lombok")
+
+        // Jetbrains Annotations
+        compileOnly("org.jetbrains:annotations:26.0.2")
+        testCompileOnly("org.jetbrains:annotations:26.0.2")
 
         // Test
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")

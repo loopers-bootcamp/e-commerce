@@ -1,7 +1,6 @@
 package com.loopers.domain.point;
 
 import com.loopers.domain.point.error.PointErrorType;
-import com.loopers.infrastructure.point.PointJpaRepository;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.support.error.ErrorType;
@@ -15,9 +14,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
@@ -38,7 +39,8 @@ class PointServiceIntegrationTest {
     @MockitoSpyBean
     private final PointRepository pointRepository;
 
-    private final PointJpaRepository pointJpaRepository;
+    private final TransactionTemplate transactionTemplate;
+    private final TestEntityManager testEntityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
@@ -46,7 +48,7 @@ class PointServiceIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("포인트를 조회할 때: ")
+    @DisplayName("포인트를 조회할 때:")
     @Nested
     class GetPoint {
 
@@ -75,7 +77,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(userId)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             // when
             Optional<PointResult.GetPoint> maybeResult = sut.getPoint(userId);
@@ -92,7 +94,7 @@ class PointServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 생성할 때: ")
+    @DisplayName("포인트를 생성할 때:")
     @Nested
     class Create {
 
@@ -106,7 +108,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(userId)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             // when & then
             assertThatException()
@@ -144,7 +146,7 @@ class PointServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 충전할 때: ")
+    @DisplayName("포인트를 충전할 때:")
     @Nested
     class Charge {
 
@@ -185,7 +187,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -206,7 +208,7 @@ class PointServiceIntegrationTest {
 
         @DisplayName("""
                 잔액이 최대치를 초과하면,
-                BusinessException(errorType=TOO_MUCH_BALANCE)이 발생한다.
+                BusinessException(errorType=EXCESSIVE)이 발생한다.
                 """)
         @CsvSource(textBlock = """
                 0           | 100_000_001
@@ -222,7 +224,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -233,7 +235,7 @@ class PointServiceIntegrationTest {
             assertThatThrownBy(() -> sut.charge(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
+                    .isEqualTo(PointErrorType.EXCESSIVE);
 
             verify(pointRepository).findPointByUserId(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
@@ -255,7 +257,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -279,7 +281,7 @@ class PointServiceIntegrationTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 차감할 때: ")
+    @DisplayName("포인트를 차감할 때:")
     @Nested
     class Spend {
 
@@ -322,7 +324,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -343,7 +345,7 @@ class PointServiceIntegrationTest {
 
         @DisplayName("""
                 잔액보다 큰 금액이면,
-                BusinessException(errorType=NOT_ENOUGH_BALANCE)이 발생한다.
+                BusinessException(errorType=NOT_ENOUGH)이 발생한다.
                 """)
         @CsvSource(textBlock = """
                 0           | 1
@@ -359,7 +361,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -370,7 +372,7 @@ class PointServiceIntegrationTest {
             assertThatThrownBy(() -> sut.spend(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.NOT_ENOUGH_BALANCE);
+                    .isEqualTo(PointErrorType.NOT_ENOUGH);
 
             verify(pointRepository).findPointByUserId(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
@@ -397,7 +399,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            pointJpaRepository.save(point);
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())

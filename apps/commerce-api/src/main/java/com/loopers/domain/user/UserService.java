@@ -1,10 +1,12 @@
 package com.loopers.domain.user;
 
+import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -14,8 +16,12 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     public Optional<UserResult.GetUser> getUser(String userName) {
+        if (!StringUtils.hasText(userName)) {
+            return Optional.empty();
+        }
+
         return userRepository.findUserByName(userName)
                 .map(UserResult.GetUser::from);
     }

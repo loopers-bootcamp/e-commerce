@@ -18,7 +18,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 class PointTest {
 
-    @DisplayName("포인트를 생성할 때: ")
+    @DisplayName("포인트를 생성할 때:")
     @Nested
     class Create {
 
@@ -45,7 +45,7 @@ class PointTest {
 
         @DisplayName("""
                 잔액이 최대치를 초과하면,
-                BusinessException(errorType=TOO_MUCH_BALANCE)이 발생한다.
+                BusinessException(errorType=EXCESSIVE)이 발생한다.
                 """)
         @ValueSource(longs = {
                 100_000_001, 999_999_999, Long.MAX_VALUE,
@@ -60,7 +60,7 @@ class PointTest {
                             .build())
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
+                    .isEqualTo(PointErrorType.EXCESSIVE);
         }
 
         @DisplayName("""
@@ -102,7 +102,7 @@ class PointTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 충전할 때: ")
+    @DisplayName("포인트를 충전할 때:")
     @Nested
     class Charge {
 
@@ -130,7 +130,7 @@ class PointTest {
 
         @DisplayName("""
                 잔액이 최대치를 초과하면,
-                BusinessException(errorType=TOO_MUCH_BALANCE)이 발생한다.
+                BusinessException(errorType=EXCESSIVE)이 발생한다.
                 """)
         @CsvSource(textBlock = """
                 0           | 100_000_001
@@ -151,7 +151,7 @@ class PointTest {
             assertThatThrownBy(() -> point.charge(amount))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
+                    .isEqualTo(PointErrorType.EXCESSIVE);
         }
 
         @DisplayName("유효한 금액이라면 잔액이 증가한다")
@@ -182,7 +182,7 @@ class PointTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 차감할 때: ")
+    @DisplayName("포인트를 차감할 때:")
     @Nested
     class Spend {
 
@@ -231,7 +231,7 @@ class PointTest {
             assertThatThrownBy(() -> point.spend(amount))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.NOT_ENOUGH_BALANCE);
+                    .isEqualTo(PointErrorType.NOT_ENOUGH);
         }
 
         @DisplayName("유효한 금액이라면, 잔액이 감소한다.")
