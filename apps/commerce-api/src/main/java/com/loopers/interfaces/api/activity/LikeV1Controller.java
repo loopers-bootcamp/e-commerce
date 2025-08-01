@@ -3,7 +3,6 @@ package com.loopers.interfaces.api.activity;
 import com.loopers.application.activity.ActivityFacade;
 import com.loopers.application.activity.ActivityInput;
 import com.loopers.interfaces.api.ApiResponse;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,7 @@ public class LikeV1Controller implements LikeV1ApiSpec {
     public ApiResponse<Boolean> like(
             @RequestHeader("X-USER-ID")
             String userName,
-            @PathVariable @Positive
+            @PathVariable
             Long productId
     ) {
         ActivityInput.Like input = ActivityInput.Like.builder()
@@ -37,7 +36,7 @@ public class LikeV1Controller implements LikeV1ApiSpec {
     public ApiResponse<Boolean> dislike(
             @RequestHeader("X-USER-ID")
             String userName,
-            @PathVariable @Positive
+            @PathVariable
             Long productId
     ) {
         ActivityInput.Dislike input = ActivityInput.Dislike.builder()
