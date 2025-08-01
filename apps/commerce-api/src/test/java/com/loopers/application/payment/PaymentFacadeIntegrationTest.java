@@ -8,6 +8,7 @@ import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
+import com.loopers.domain.payment.error.PaymentErrorType;
 import com.loopers.domain.point.Point;
 import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointService;
@@ -18,6 +19,9 @@ import com.loopers.domain.user.User;
 import com.loopers.domain.user.UserService;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
+import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +37,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -67,6 +74,89 @@ class PaymentFacadeIntegrationTest {
     @DisplayName("주문 건을 결제할 때:")
     @Nested
     class Pay {
+
+        @DisplayName("본인의 주문 건이 아니면, BusinessException이 발생한다.")
+        @Test
+        void throwException_withUserDoesNotOwnOrder() {
+            // given
+            User user = User.builder()
+                    .name("gildong")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
+
+            Long otherUserId = user.getId() + 1;
+
+            Order order = Order.builder()
+                    .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
+                    .totalPrice(0L)
+                    .userId(otherUserId)
+                    .build();
+            OrderProduct orderProduct = OrderProduct.builder()
+                    .price(0)
+                    .quantity(1)
+                    .orderId(order.getId())
+                    .productOptionId(1L)
+                    .build();
+            transactionTemplate.executeWithoutResult(status ->
+                    Stream.of(order, orderProduct).forEach(entityManager::persist));
+
+            PaymentInput.Pay input = PaymentInput.Pay.builder()
+                    .userName(user.getName())
+                    .orderId(order.getId())
+                    .paymentMethod(Instancio.create(PaymentMethod.class))
+                    .build();
+
+            // when & then
+            assertThatException()
+                    .isThrownBy(() -> sut.pay(input))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorType", type(ErrorType.class))
+                    .isEqualTo(CommonErrorType.UNAUTHORIZED);
+        }
+
+        @DisplayName("결제 가능한 주문 건이 아니면, BusinessException이 발생한다.")
+        @Test
+        void throwException_withNonPayableOrder() {
+            // given
+            User user = User.builder()
+                    .name("gildong")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
+
+            Order order = Order.builder()
+                    .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
+                    .totalPrice(0L)
+                    .userId(user.getId())
+                    .build();
+            order.expire();
+            OrderProduct orderProduct = OrderProduct.builder()
+                    .price(0)
+                    .quantity(1)
+                    .orderId(order.getId())
+                    .productOptionId(1L)
+                    .build();
+            transactionTemplate.executeWithoutResult(status ->
+                    Stream.of(order, orderProduct).forEach(entityManager::persist));
+
+            PaymentInput.Pay input = PaymentInput.Pay.builder()
+                    .userName(user.getName())
+                    .orderId(order.getId())
+                    .paymentMethod(Instancio.create(PaymentMethod.class))
+                    .build();
+
+            // when & then
+            assertThatException()
+                    .isThrownBy(() -> sut.pay(input))
+                    .isInstanceOf(BusinessException.class)
+                    .extracting("errorType", type(ErrorType.class))
+                    .isEqualTo(PaymentErrorType.UNPROCESSABLE);
+        }
 
         @DisplayName("결제 금액이 0원이면, 포인트 차감 없이 결제가 완료된다.")
         @Test
