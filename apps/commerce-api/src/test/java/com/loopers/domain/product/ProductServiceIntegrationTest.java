@@ -1,21 +1,26 @@
 package com.loopers.domain.product;
 
+import com.loopers.domain.activity.LikedProduct;
+import com.loopers.domain.brand.Brand;
+import com.loopers.domain.product.attribute.ProductSearchSortType;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.utils.DatabaseCleanUp;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.instancio.Instancio;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
@@ -28,13 +33,140 @@ class ProductServiceIntegrationTest {
     private final ProductService sut;
 
     private final TransactionTemplate transactionTemplate;
-    private final TestEntityManager testEntityManager;
+    private final EntityManager entityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
     void tearDown() {
         databaseCleanUp.truncateAllTables();
     }
+
+    @DisplayName("상품 목록을 검색할 때:")
+    @Nested
+    class SearchProducts {
+
+        private Brand brand;
+
+        @BeforeEach
+        void setUp() {
+            brand = Brand.builder().name("Foo Company").description("Foo Company is a good company for everyone.").build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(brand));
+
+            Product p1 = Product.builder().name("FooBarQux").basePrice(1000).brandId(brand.getId()).build();
+            Product p2 = Product.builder().name("Barricade").basePrice(2000).brandId(brand.getId()).build();
+            Product p3 = Product.builder().name("FC Barcelona").basePrice(3000).brandId(null).build();
+            Product p4 = Product.builder().name("Iron Ballista").basePrice(4000).brandId(brand.getId() + 1).build();
+            transactionTemplate.executeWithoutResult(status ->
+                    Stream.of(p1, p2, p3, p4).forEach(entityManager::persist));
+
+            List<LikedProduct> lp1 = LongStream.range(0, 10).mapToObj(i -> LikedProduct.builder().userId(i).productId(p1.getId()).build()).toList();
+            List<LikedProduct> lp3 = LongStream.range(0, 30).mapToObj(i -> LikedProduct.builder().userId(i).productId(p3.getId()).build()).toList();
+            List<LikedProduct> lp4 = LongStream.range(0, 40).mapToObj(i -> LikedProduct.builder().userId(i).productId(p4.getId()).build()).toList();
+            transactionTemplate.executeWithoutResult(status ->
+                    Stream.of(lp1, lp3, lp4).flatMap(Collection::stream).forEach(entityManager::persist));
+        }
+
+        @DisplayName("검색어를 포함하고 브랜드와 일치하는, 최신순 상품 목록을 검색한다.")
+        @EnumSource(value = ProductSearchSortType.class, names = "LATEST")
+        @ParameterizedTest
+        void searchLatestProducts_containingKeywordAndMatchedByBrand(ProductSearchSortType sortType) {
+            // given
+            String keyword = "bar";
+            Long brandId = brand.getId();
+
+            ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
+                    .keyword(keyword)
+                    .brandId(brandId)
+                    .sortType(sortType)
+                    .page(0)
+                    .size(10)
+                    .build();
+
+            // when
+            ProductResult.SearchProducts result = sut.searchProducts(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getTotalItems()).isEqualTo(2);
+            assertThat(result.getPage()).isEqualTo(command.getPage());
+            assertThat(result.getSize()).isEqualTo(command.getSize());
+            assertThat(result.getItems()).hasSize(2);
+            assertThat(result.getItems()).element(0)
+                    .returns("Barricade", ProductResult.SearchProducts.Item::getProductName);
+            assertThat(result.getItems()).element(1)
+                    .returns("FooBarQux", ProductResult.SearchProducts.Item::getProductName);
+        }
+
+        @DisplayName("검색어를 포함하는, 낮은 가격순 상품 목록을 검색한다.")
+        @EnumSource(value = ProductSearchSortType.class, names = "CHEAP")
+        @ParameterizedTest
+        void searchCheapProducts_containingKeyword(ProductSearchSortType sortType) {
+            // given
+            String keyword = "BAR";
+
+            ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
+                    .keyword(keyword)
+                    .brandId(null)
+                    .sortType(sortType)
+                    .page(0)
+                    .size(10)
+                    .build();
+
+            // when
+            ProductResult.SearchProducts result = sut.searchProducts(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getTotalItems()).isEqualTo(3);
+            assertThat(result.getPage()).isEqualTo(command.getPage());
+            assertThat(result.getSize()).isEqualTo(command.getSize());
+            assertThat(result.getItems()).hasSize(3);
+            assertThat(result.getItems()).element(0)
+                    .returns("FooBarQux", ProductResult.SearchProducts.Item::getProductName);
+            assertThat(result.getItems()).element(1)
+                    .returns("Barricade", ProductResult.SearchProducts.Item::getProductName);
+            assertThat(result.getItems()).element(2)
+                    .returns("FC Barcelona", ProductResult.SearchProducts.Item::getProductName);
+        }
+
+        @DisplayName("인기순 상품 목록을 검색한다.")
+        @EnumSource(value = ProductSearchSortType.class, names = "POPULAR")
+        @ParameterizedTest
+        void searchPopularProducts(ProductSearchSortType sortType) {
+            // given
+            ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
+                    .keyword(null)
+                    .brandId(null)
+                    .sortType(sortType)
+                    .page(0)
+                    .size(10)
+                    .build();
+
+            // when
+            ProductResult.SearchProducts result = sut.searchProducts(command);
+
+            // then
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalPages()).isEqualTo(1);
+            assertThat(result.getTotalItems()).isEqualTo(4);
+            assertThat(result.getPage()).isEqualTo(command.getPage());
+            assertThat(result.getSize()).isEqualTo(command.getSize());
+            assertThat(result.getItems()).hasSize(4);
+            assertThat(result.getItems()).element(0)
+                    .returns("Iron Ballista", ProductResult.SearchProducts.Item::getProductName);
+            assertThat(result.getItems()).element(1)
+                    .returns("FC Barcelona", ProductResult.SearchProducts.Item::getProductName);
+            assertThat(result.getItems()).element(2)
+                    .returns("FooBarQux", ProductResult.SearchProducts.Item::getProductName);
+            assertThat(result.getItems()).element(3)
+                    .returns("Barricade", ProductResult.SearchProducts.Item::getProductName);
+        }
+
+    }
+
+    // -------------------------------------------------------------------------------------------------
 
     @DisplayName("상품 상세를 조회할 때:")
     @Nested
@@ -61,7 +193,7 @@ class ProductServiceIntegrationTest {
                     .name("Nike Shoes")
                     .basePrice(120_000)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(product));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
 
             ProductOption option1 = ProductOption.builder()
                     .name("Small")
@@ -74,8 +206,8 @@ class ProductServiceIntegrationTest {
                     .productId(product.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(option1);
-                testEntityManager.persist(option2);
+                entityManager.persist(option1);
+                entityManager.persist(option2);
             });
 
             Stock stock1 = Stock.builder()
@@ -87,8 +219,8 @@ class ProductServiceIntegrationTest {
                     .productOptionId(option2.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(stock1);
-                testEntityManager.persist(stock2);
+                entityManager.persist(stock1);
+                entityManager.persist(stock2);
             });
 
             // when
@@ -128,20 +260,20 @@ class ProductServiceIntegrationTest {
                     .name("Nike Shoes")
                     .basePrice(120_000)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(product));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
 
             ProductOption option = ProductOption.builder()
                     .name("Small")
                     .additionalPrice(0)
                     .productId(product.getId())
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(option));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(option));
 
             Stock stock = Stock.builder()
                     .quantity(100)
                     .productOptionId(option.getId())
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(stock));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(stock));
 
             Long nonExistingProductOptionId = option.getId() + 1;
             List<ProductCommand.AddStocks.Item> items = List.of(
@@ -156,7 +288,7 @@ class ProductServiceIntegrationTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.NOT_FOUND);
 
-            Stock foundStock = transactionTemplate.execute(status -> testEntityManager.find(Stock.class, stock.getId()));
+            Stock foundStock = entityManager.find(Stock.class, stock.getId());
             assertThat(foundStock).isNotNull();
             assertThat(foundStock.getQuantity()).isEqualTo(stock.getQuantity());
         }
@@ -169,7 +301,7 @@ class ProductServiceIntegrationTest {
                     .name("Nike Shoes")
                     .basePrice(120_000)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(product));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
 
             ProductOption option1 = ProductOption.builder()
                     .name("Small")
@@ -182,8 +314,8 @@ class ProductServiceIntegrationTest {
                     .productId(product.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(option1);
-                testEntityManager.persist(option2);
+                entityManager.persist(option1);
+                entityManager.persist(option2);
             });
 
             Stock stock1 = Stock.builder()
@@ -195,8 +327,8 @@ class ProductServiceIntegrationTest {
                     .productOptionId(option2.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(stock1);
-                testEntityManager.persist(stock2);
+                entityManager.persist(stock1);
+                entityManager.persist(stock2);
             });
 
             int amountToAdd1 = 10;
@@ -212,8 +344,8 @@ class ProductServiceIntegrationTest {
             sut.addStocks(command);
 
             // then
-            Stock foundStock1 = transactionTemplate.execute(status -> testEntityManager.find(Stock.class, stock1.getId()));
-            Stock foundStock2 = transactionTemplate.execute(status -> testEntityManager.find(Stock.class, stock2.getId()));
+            Stock foundStock1 = entityManager.find(Stock.class, stock1.getId());
+            Stock foundStock2 = entityManager.find(Stock.class, stock2.getId());
 
             assertThat(foundStock1).isNotNull();
             assertThat(foundStock2).isNotNull();
@@ -236,20 +368,20 @@ class ProductServiceIntegrationTest {
                     .name("Nike Shoes")
                     .basePrice(120_000)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(product));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
 
             ProductOption option = ProductOption.builder()
                     .name("Small")
                     .additionalPrice(0)
                     .productId(product.getId())
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(option));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(option));
 
             Stock stock = Stock.builder()
                     .quantity(100)
                     .productOptionId(option.getId())
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(stock));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(stock));
 
             Long nonExistingProductOptionId = option.getId() + 1;
             List<ProductCommand.DeductStocks.Item> items = List.of(
@@ -264,7 +396,7 @@ class ProductServiceIntegrationTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.NOT_FOUND);
 
-            Stock foundStock = transactionTemplate.execute(status -> testEntityManager.find(Stock.class, stock.getId()));
+            Stock foundStock = entityManager.find(Stock.class, stock.getId());
             assertThat(foundStock).isNotNull();
             assertThat(foundStock.getQuantity()).isEqualTo(stock.getQuantity());
         }
@@ -277,7 +409,7 @@ class ProductServiceIntegrationTest {
                     .name("Nike Shoes")
                     .basePrice(120_000)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(product));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
 
             ProductOption option1 = ProductOption.builder()
                     .name("Small")
@@ -290,8 +422,8 @@ class ProductServiceIntegrationTest {
                     .productId(product.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(option1);
-                testEntityManager.persist(option2);
+                entityManager.persist(option1);
+                entityManager.persist(option2);
             });
 
             Stock stock1 = Stock.builder()
@@ -303,8 +435,8 @@ class ProductServiceIntegrationTest {
                     .productOptionId(option2.getId())
                     .build();
             transactionTemplate.executeWithoutResult(status -> {
-                testEntityManager.persist(stock1);
-                testEntityManager.persist(stock2);
+                entityManager.persist(stock1);
+                entityManager.persist(stock2);
             });
 
             int amountToDeduct1 = 10;
@@ -320,8 +452,8 @@ class ProductServiceIntegrationTest {
             sut.deductStocks(command);
 
             // then
-            Stock foundStock1 = transactionTemplate.execute(status -> testEntityManager.find(Stock.class, stock1.getId()));
-            Stock foundStock2 = transactionTemplate.execute(status -> testEntityManager.find(Stock.class, stock2.getId()));
+            Stock foundStock1 = entityManager.find(Stock.class, stock1.getId());
+            Stock foundStock2 = entityManager.find(Stock.class, stock2.getId());
 
             assertThat(foundStock1).isNotNull();
             assertThat(foundStock2).isNotNull();

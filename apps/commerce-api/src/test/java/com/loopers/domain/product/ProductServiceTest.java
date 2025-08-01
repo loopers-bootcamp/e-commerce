@@ -1,5 +1,6 @@
 package com.loopers.domain.product;
 
+import com.loopers.domain.product.attribute.ProductSearchSortType;
 import com.loopers.domain.product.error.ProductErrorType;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -13,13 +14,17 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.instancio.Select.field;
+import static org.instancio.Select.root;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -32,6 +37,58 @@ class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @DisplayName("상품 목록을 검색할 때:")
+    @Nested
+    class SearchProducts {
+
+        @DisplayName("검색 결과를 페이지 정보와 상품 목록과 함께 반환한다.")
+        @Test
+        void returnPageAndItemsAsSearchResult() {
+            // given
+            ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
+                    .keyword("nike")
+                    .brandId(10L)
+                    .sortType(ProductSearchSortType.LATEST)
+                    .page(0)
+                    .size(10)
+                    .build();
+
+            List<ProductQueryResult.Products> content = IntStream.range(0, command.getSize())
+                    .mapToObj(i -> ProductQueryResult.Products.builder()
+                            .productId(Instancio.of(Long.class).generate(root(),
+                                    gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1))
+                            .productName(Instancio.of(String.class).generate(root(),
+                                    gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create())
+                            .basePrice(i + 10_000)
+                            .brandId(command.getBrandId())
+                            .build()
+                    )
+                    .toList();
+            long totalItems = Instancio.of(Long.class).generate(root(),
+                    gen -> gen.longs().range((long) content.size(), content.size() * 100L)).create();
+
+            given(productRepository.searchProducts(any(ProductQueryCommand.SearchProducts.class)))
+                    .willReturn(new PageImpl<>(content, PageRequest.of(command.getPage(), command.getSize()), totalItems));
+
+            // when
+            ProductResult.SearchProducts result = sut.searchProducts(command);
+
+            // then
+            long totalPages = totalItems == 0 ? 1 : (long) Math.ceil((double) totalItems / command.getSize());
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalPages()).isEqualTo(totalPages);
+            assertThat(result.getTotalItems()).isEqualTo(totalItems);
+            assertThat(result.getPage()).isEqualTo(command.getPage());
+            assertThat(result.getSize()).isEqualTo(command.getSize());
+            assertThat(result.getItems()).hasSize(content.size());
+
+            verify(productRepository).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+        }
+
+    }
+
+    // -------------------------------------------------------------------------------------------------
 
     @DisplayName("상품 상세를 조회할 때:")
     @Nested
