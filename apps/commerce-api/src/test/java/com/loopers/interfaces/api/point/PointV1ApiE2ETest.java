@@ -6,6 +6,7 @@ import com.loopers.domain.point.error.PointErrorType;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -80,7 +81,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
@@ -115,7 +116,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
@@ -152,7 +153,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
@@ -198,7 +199,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
@@ -247,7 +248,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
@@ -293,7 +294,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
