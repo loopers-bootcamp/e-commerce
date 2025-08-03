@@ -1,5 +1,6 @@
 package com.loopers.application.payment;
 
+import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.PaymentCommand;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -38,12 +38,13 @@ public class PaymentFacade {
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
         UUID orderId = input.getOrderId();
-        OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderId)
-                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
-        if (!Objects.equals(order.getUserId(), user.getUserId())) {
-            throw new BusinessException(CommonErrorType.UNAUTHORIZED);
-        }
+        OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
+                .orderId(orderId)
+                .userId(user.getUserId())
+                .build();
+        OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         if (!order.getStatus().isPayable()) {
             throw new BusinessException(PaymentErrorType.UNPROCESSABLE);

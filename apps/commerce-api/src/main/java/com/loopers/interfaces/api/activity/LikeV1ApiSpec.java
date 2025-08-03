@@ -15,7 +15,7 @@ public interface LikeV1ApiSpec {
             description = "내가 좋아요 한 상품 목록을 조회합니다."
     )
     ApiResponse<LikeResponse.GetLikedProducts> getLikedProducts(
-            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "로그인한 사용자의 ID")
             String userName
     );
 
@@ -24,7 +24,7 @@ public interface LikeV1ApiSpec {
             description = "상품에 좋아요를 등록합니다."
     )
     ApiResponse<Boolean> like(
-            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "로그인한 사용자의 ID")
             String userName,
             @Schema(name = "product id", description = "상품 ID") @Positive
             Long productId
@@ -35,7 +35,7 @@ public interface LikeV1ApiSpec {
             description = "상품에 등록한 좋아요를 취소합니다."
     )
     ApiResponse<Boolean> dislike(
-            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "로그인한 사용자의 ID")
             String userName,
             @Schema(name = "product id", description = "상품 ID") @Positive
             Long productId

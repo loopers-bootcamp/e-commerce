@@ -114,7 +114,7 @@ class PaymentFacadeIntegrationTest {
                     .isThrownBy(() -> sut.pay(input))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(CommonErrorType.UNAUTHORIZED);
+                    .isEqualTo(CommonErrorType.NOT_FOUND);
         }
 
         @DisplayName("결제 가능한 주문 건이 아니면, BusinessException이 발생한다.")

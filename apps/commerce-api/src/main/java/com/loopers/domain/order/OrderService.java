@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,8 +21,9 @@ public class OrderService {
     private final OrderEventPublisher orderEventPublisher;
 
     @ReadOnlyTransactional
-    public Optional<OrderResult.GetOrderDetail> getOrderDetail(UUID orderId) {
-        return orderRepository.findOrderDetailById(orderId)
+    public Optional<OrderResult.GetOrderDetail> getOrderDetail(OrderCommand.GetOrderDetail command) {
+        return orderRepository.findOrderDetailById(command.getOrderId())
+                .filter(order -> Objects.equals(order.getUserId(), command.getUserId()))
                 .map(OrderResult.GetOrderDetail::from);
     }
 

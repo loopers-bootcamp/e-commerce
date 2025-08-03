@@ -1,28 +1,20 @@
-package com.loopers.application.order;
+package com.loopers.interfaces.api.order;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class OrderInput {
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetOrderDetail {
-        private final String userName;
-        private final UUID orderId;
-    }
-
-    // -------------------------------------------------------------------------------------------------
+public final class OrderRequest {
 
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Create {
-        private final String userName;
+        @NotEmpty
+        @Size(max = 100)
         private final List<Product> products;
 
         @Getter

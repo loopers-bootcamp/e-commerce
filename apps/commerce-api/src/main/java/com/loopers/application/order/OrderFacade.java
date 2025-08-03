@@ -1,7 +1,10 @@
 package com.loopers.application.order;
 
+import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
+import com.loopers.domain.payment.PaymentResult;
+import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.point.PointResult;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.point.error.PointErrorType;
@@ -26,6 +29,24 @@ public class OrderFacade {
     private final UserService userService;
     private final ProductService productService;
     private final PointService pointService;
+    private final PaymentService paymentService;
+
+    public OrderOutput.GetOrderDetail getOrderDetail(OrderInput.GetOrderDetail input) {
+        UserResult.GetUser user = userService.getUser(input.getUserName())
+                .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
+
+        OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
+                .orderId(input.getOrderId())
+                .userId(user.getUserId())
+                .build();
+        OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        PaymentResult.GetPayment payment = paymentService.getPayment(order.getOrderId())
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        return OrderOutput.GetOrderDetail.from(order, payment);
+    }
 
     public OrderOutput.Create create(OrderInput.Create input) {
         List<OrderInput.Create.Product> products = input.getProducts();

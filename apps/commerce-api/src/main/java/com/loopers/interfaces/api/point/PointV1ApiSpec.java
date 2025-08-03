@@ -15,7 +15,7 @@ public interface PointV1ApiSpec {
             description = "보유한 포인트를 조회합니다."
     )
     ApiResponse<PointResponse.GetPoint> getPoint(
-            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "로그인한 사용자의 ID")
             String userName
     );
 
@@ -24,7 +24,7 @@ public interface PointV1ApiSpec {
             description = "포인트를 충전합니다."
     )
     ApiResponse<PointResponse.Charge> charge(
-            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "로그인한 사용자의 ID")
             String userName,
 
             @RequestBody(description = "회원 정보")
