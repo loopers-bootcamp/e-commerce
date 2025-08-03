@@ -1,5 +1,6 @@
 package com.loopers.interfaces.api.activity;
 
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,22 +11,31 @@ import jakarta.validation.constraints.Positive;
 public interface LikeV1ApiSpec {
 
     @Operation(
-            summary = "내 정보 조회",
-            description = "아이디로 회원 정보를 조회합니다."
+            summary = "좋아요 상품 목록 조회",
+            description = "내가 좋아요 한 상품 목록을 조회합니다."
+    )
+    ApiResponse<LikeResponse.GetLikedProducts> getLikedProducts(
+            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
+            String userName
+    );
+
+    @Operation(
+            summary = "상품 좋아요 등록",
+            description = "상품에 좋아요를 등록합니다."
     )
     ApiResponse<Boolean> like(
-            @Schema(name = "X-USER-ID", description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
             String userName,
             @Schema(name = "product id", description = "상품 ID") @Positive
             Long productId
     );
 
     @Operation(
-            summary = "회원 가입",
-            description = "새로운 회원을 등록합니다."
+            summary = "상품 좋아요 취소",
+            description = "상품에 등록한 좋아요를 취소합니다."
     )
     ApiResponse<Boolean> dislike(
-            @Schema(name = "X-USER-ID", description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "조회할 사용자의 ID")
             String userName,
             @Schema(name = "product id", description = "상품 ID") @Positive
             Long productId

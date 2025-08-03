@@ -14,8 +14,11 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.temporal.ChronoUnit;
+import java.util.Random;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.instancio.Select.root;
 
 @SpringBootTest
 @RequiredArgsConstructor
@@ -32,6 +35,39 @@ class ActivityServiceIntegrationTest {
     void tearDown() {
         databaseCleanUp.truncateAllTables();
     }
+
+    @DisplayName("좋아요 수를 조회할 때:")
+    @Nested
+    class GetLikeCount {
+
+        @DisplayName("주어진 상품 아이디의 좋아요 수를 반환한다.")
+        @Test
+        void returnLikeCount_withProductId() {
+            // given
+            int initialLikeCount = new Random().nextInt(1, 10);
+            Long productId = Instancio.of(Long.class)
+                    .generate(root(), gen -> gen.longs().range(1000L, 10_000L))
+                    .create();
+
+            transactionTemplate.executeWithoutResult(status ->
+                    IntStream.range(0, initialLikeCount)
+                            .mapToObj(i -> LikedProduct.builder()
+                                    .userId(i + 1L)
+                                    .productId(productId)
+                                    .build()
+                            )
+                            .forEach(entityManager::persist));
+
+            // when
+            long likeCount = sut.getLikeCount(productId);
+
+            // then
+            assertThat(likeCount).isEqualTo(initialLikeCount);
+        }
+
+    }
+
+    // -------------------------------------------------------------------------------------------------
 
     @DisplayName("상품에 좋아요를 표시할 때:")
     @Nested

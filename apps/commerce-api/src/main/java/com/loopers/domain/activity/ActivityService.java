@@ -5,12 +5,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ActivityService {
 
     private final LikedProductRepository likedProductRepository;
     private final ViewedProductRepository viewedProductRepository;
+
+    @ReadOnlyTransactional
+    public ActivityResult.GetLikedProducts getLikedProducts(Long userId) {
+        List<ActivityQueryResult.GetLikedProducts> products = likedProductRepository.findByUserId(userId);
+        return ActivityResult.GetLikedProducts.from(products);
+    }
 
     @ReadOnlyTransactional
     public long getLikeCount(Long productId) {

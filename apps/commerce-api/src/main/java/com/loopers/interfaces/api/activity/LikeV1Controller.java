@@ -2,6 +2,8 @@ package com.loopers.interfaces.api.activity;
 
 import com.loopers.application.activity.ActivityFacade;
 import com.loopers.application.activity.ActivityInput;
+import com.loopers.application.activity.ActivityOutput;
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +15,22 @@ public class LikeV1Controller implements LikeV1ApiSpec {
 
     private final ActivityFacade activityFacade;
 
+    @GetMapping("/products")
+    @Override
+    public ApiResponse<LikeResponse.GetLikedProducts> getLikedProducts(
+            @RequestHeader(ApiHeader.USER_ID)
+            String userName
+    ) {
+        ActivityOutput.GetLikedProducts likedProducts = activityFacade.getLikedProducts(userName);
+        LikeResponse.GetLikedProducts response = LikeResponse.GetLikedProducts.from(likedProducts);
+
+        return ApiResponse.success(response);
+    }
+
     @PostMapping("/products/{productId}")
     @Override
     public ApiResponse<Boolean> like(
-            @RequestHeader("X-USER-ID")
+            @RequestHeader(ApiHeader.USER_ID)
             String userName,
             @PathVariable
             Long productId
@@ -34,7 +48,7 @@ public class LikeV1Controller implements LikeV1ApiSpec {
     @DeleteMapping("/products/{productId}")
     @Override
     public ApiResponse<Boolean> dislike(
-            @RequestHeader("X-USER-ID")
+            @RequestHeader(ApiHeader.USER_ID)
             String userName,
             @PathVariable
             Long productId

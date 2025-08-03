@@ -1,13 +1,16 @@
 package com.loopers.interfaces.api.activity;
 
 import com.loopers.annotation.SpringE2ETest;
+import com.loopers.domain.activity.LikedProduct;
 import com.loopers.domain.product.Product;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.utils.DatabaseCleanUp;
 import lombok.RequiredArgsConstructor;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,9 +26,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.instancio.Select.root;
 
 @SpringE2ETest
 @RequiredArgsConstructor
@@ -42,6 +47,67 @@ class LikeV1ApiE2ETest {
     void tearDown() {
         databaseCleanUp.truncateAllTables();
     }
+
+    @DisplayName("GET " + BASE_ENDPOINT + "/products")
+    @Nested
+    class GetLikedProducts {
+
+        private static final String REQUEST_URL = BASE_ENDPOINT + "/products";
+
+        @DisplayName("사용자가 좋아요 한 상품 목록 정보를 보낸다.")
+        @Test
+        void sendProductsUserLiked() {
+            // given
+            String userName = "gildong";
+
+            User user = User.builder()
+                    .name(userName)
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(user));
+
+            Integer initialLikeCount = Instancio.of(Integer.class)
+                    .generate(root(), gen -> gen.ints().range(0, 100))
+                    .create();
+
+            transactionTemplate.executeWithoutResult(status ->
+                    IntStream.range(0, initialLikeCount)
+                            .mapToObj(i -> Product.builder()
+                                    .name("product: " + (i + 1L))
+                                    .basePrice(i * 100)
+                                    .build()
+                            )
+                            .forEach(testEntityManager::persist));
+
+            transactionTemplate.executeWithoutResult(status ->
+                    IntStream.range(0, initialLikeCount)
+                            .mapToObj(i -> LikedProduct.builder()
+                                    .userId(user.getId())
+                                    .productId(i + 1L)
+                                    .build()
+                            )
+                            .forEach(testEntityManager::persist));
+
+            // when
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(ApiHeader.USER_ID, userName);
+            HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
+
+            ResponseEntity<ApiResponse<LikeResponse.GetLikedProducts>> response =
+                    testRestTemplate.exchange(REQUEST_URL, HttpMethod.GET, requestEntity, new ParameterizedTypeReference<>() {
+                    });
+
+            // then
+            assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+            assertThat(response.getBody().data().getProducts()).hasSize(initialLikeCount);
+        }
+
+    }
+
+
+    // -------------------------------------------------------------------------------------------------
 
     @DisplayName("POST " + BASE_ENDPOINT + "/products/{productId}")
     @Nested
@@ -72,7 +138,7 @@ class LikeV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             String url = UriComponentsBuilder.fromPath(REQUEST_URL)
@@ -123,7 +189,7 @@ class LikeV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             String url = UriComponentsBuilder.fromPath(REQUEST_URL)

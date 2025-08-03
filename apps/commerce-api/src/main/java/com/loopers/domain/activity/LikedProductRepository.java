@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface LikedProductRepository {
 
-    List<LikedProduct> findLikedProductsByUserId(Long userId);
+    List<ActivityQueryResult.GetLikedProducts> findByUserId(Long userId);
 
     long countByProductId(Long productId);
 

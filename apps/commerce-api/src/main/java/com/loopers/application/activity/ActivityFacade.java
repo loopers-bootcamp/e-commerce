@@ -1,6 +1,7 @@
 package com.loopers.application.activity;
 
 import com.loopers.domain.activity.ActivityCommand;
+import com.loopers.domain.activity.ActivityResult;
 import com.loopers.domain.activity.ActivityService;
 import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserResult;
@@ -17,6 +18,15 @@ public class ActivityFacade {
     private final ActivityService activityService;
     private final UserService userService;
     private final ProductService productService;
+
+    public ActivityOutput.GetLikedProducts getLikedProducts(String userName) {
+        UserResult.GetUser user = userService.getUser(userName)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
+
+        ActivityResult.GetLikedProducts likedProducts = activityService.getLikedProducts(user.getUserId());
+
+        return ActivityOutput.GetLikedProducts.from(likedProducts);
+    }
 
     public void like(ActivityInput.Like input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())
