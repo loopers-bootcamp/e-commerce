@@ -1,6 +1,7 @@
 package com.loopers.application.payment;
 
 import com.loopers.domain.order.Order;
+import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderProduct;
 import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.Payment;
@@ -213,7 +214,7 @@ class PaymentFacadeIntegrationTest {
             assertThat(output.getPaymentStatus()).isEqualTo(PaymentStatus.COMPLETE);
 
             verify(userService, times(1)).getUser(user.getName());
-            verify(orderService, times(1)).getOrderDetail(order.getId());
+            verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
             verify(productService, times(1)).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, never()).spend(any(PointCommand.Spend.class));
             verify(paymentService, times(1)).pay(any(PaymentCommand.Pay.class));
@@ -298,7 +299,7 @@ class PaymentFacadeIntegrationTest {
             assertThat(output.getPaymentStatus()).isEqualTo(PaymentStatus.COMPLETE);
 
             verify(userService, times(1)).getUser(user.getName());
-            verify(orderService, times(1)).getOrderDetail(order.getId());
+            verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
             verify(productService, times(1)).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, times(1)).spend(any(PointCommand.Spend.class));
             verify(paymentService, times(1)).pay(any(PaymentCommand.Pay.class));
