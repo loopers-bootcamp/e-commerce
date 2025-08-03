@@ -17,7 +17,7 @@ public final class ProductCommand {
         private final String keyword;
         @Nullable
         private final Long brandId;
-        private final ProductSearchSortType sortType;
+        private final ProductSearchSortType sort;
 
         private final Integer page;
         private final Integer size;

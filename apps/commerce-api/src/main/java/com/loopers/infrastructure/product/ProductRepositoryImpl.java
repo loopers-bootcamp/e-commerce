@@ -42,7 +42,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
         String keyword = queryCommand.getKeyword();
         Long brandId = queryCommand.getBrandId();
-        ProductSearchSortType sortType = queryCommand.getSortType();
+        ProductSearchSortType sortType = queryCommand.getSort();
 
         JPAQuery<Tuple> query = queryFactory
                 .select(
@@ -50,6 +50,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                         , p.name
                         , p.basePrice
                         , p.brandId
+                        , b.name
                 )
                 .from(p)
                 .leftJoin(b).on(b.id.eq(p.brandId))
@@ -59,10 +60,11 @@ public class ProductRepositoryImpl implements ProductRepository {
                         matchByBrandId(brandId)
                 )
                 .groupBy(
-                        p.id,
-                        p.name,
-                        p.basePrice,
-                        p.brandId
+                        p.id
+                        , p.name
+                        , p.basePrice
+                        , p.brandId
+                        , b.name
                 )
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -84,6 +86,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                         .productName(row.get(p.name))
                         .basePrice(row.get(p.basePrice))
                         .brandId(row.get(p.brandId))
+                        .brandName(row.get(b.name))
                         .build()
                 )
                 .toList();

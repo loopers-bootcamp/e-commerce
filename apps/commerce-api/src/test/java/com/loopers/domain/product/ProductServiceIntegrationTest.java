@@ -77,7 +77,7 @@ class ProductServiceIntegrationTest {
             ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
                     .keyword(keyword)
                     .brandId(brandId)
-                    .sortType(sortType)
+                    .sort(sortType)
                     .page(0)
                     .size(10)
                     .build();
@@ -108,7 +108,7 @@ class ProductServiceIntegrationTest {
             ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
                     .keyword(keyword)
                     .brandId(null)
-                    .sortType(sortType)
+                    .sort(sortType)
                     .page(0)
                     .size(10)
                     .build();
@@ -139,7 +139,7 @@ class ProductServiceIntegrationTest {
             ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
                     .keyword(null)
                     .brandId(null)
-                    .sortType(sortType)
+                    .sort(sortType)
                     .page(0)
                     .size(10)
                     .build();

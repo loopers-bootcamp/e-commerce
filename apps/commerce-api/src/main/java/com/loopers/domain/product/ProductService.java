@@ -27,7 +27,7 @@ public class ProductService {
         ProductQueryCommand.SearchProducts queryCommand = ProductQueryCommand.SearchProducts.builder()
                 .keyword(command.getKeyword())
                 .brandId(command.getBrandId())
-                .sortType(command.getSortType())
+                .sort(command.getSort())
                 .page(command.getPage())
                 .size(command.getSize())
                 .build();

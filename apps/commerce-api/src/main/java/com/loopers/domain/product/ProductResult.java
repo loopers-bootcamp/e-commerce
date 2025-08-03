@@ -19,7 +19,7 @@ public final class ProductResult {
         private final List<Item> items;
 
         public static SearchProducts from(Page<ProductQueryResult.Products> page) {
-            return SearchProducts.builder()
+            return builder()
                     .totalPages(page.getTotalPages())
                     .totalItems(page.getTotalElements())
                     .page(page.getPageable().getPageNumber())
@@ -29,6 +29,7 @@ public final class ProductResult {
                                             .productName(content.getProductName())
                                             .basePrice(content.getBasePrice())
                                             .brandId(content.getBrandId())
+                                            .brandName(content.getBrandName())
                                             .build()
                                     )
                                     .toList()
@@ -44,6 +45,7 @@ public final class ProductResult {
             private final String productName;
             private final Integer basePrice;
             private final Long brandId;
+            private final String brandName;
         }
     }
 

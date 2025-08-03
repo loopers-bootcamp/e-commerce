@@ -49,7 +49,7 @@ class ProductServiceTest {
             ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
                     .keyword("nike")
                     .brandId(10L)
-                    .sortType(ProductSearchSortType.LATEST)
+                    .sort(ProductSearchSortType.LATEST)
                     .page(0)
                     .size(10)
                     .build();
