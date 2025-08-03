@@ -10,6 +10,12 @@ spring:
         default_batch_fetch_size: 100
         timezone.default_storage: NORMALIZE_UTC
         jdbc.time_zone: UTC
+  # org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection.
+#        connection.provider_disables_autocommit: true # Make Hibernate skip to check autocommit mode.
+
+  datasource:
+    hikari:
+      auto-commit: false # Avoid to query for 'SET AUTOCOMMIT=0' each transaction.
 
 datasource:
   mysql-jpa:
