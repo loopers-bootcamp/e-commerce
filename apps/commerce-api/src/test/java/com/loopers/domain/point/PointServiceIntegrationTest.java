@@ -493,6 +493,54 @@ class PointServiceIntegrationTest {
             assertThat(pointHistory.getAmount()).isEqualTo(amount);
         }
 
+        @DisplayName("사용자가 동시에 포인트를 사용하면, 하나의 요청만 받아들인다.")
+        @Test
+        void acceptOnlyOneRequest_whenUserSpendsPointConcurrently() {
+            // given
+            int threadCount = 10;
+
+            User user = User.builder()
+                    .name("gildong")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
+
+            Point point = Point.builder()
+                    .balance(1000L)
+                    .userId(user.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
+
+            PointCommand.Spend command = PointCommand.Spend.builder()
+                    .userId(user.getId())
+                    .amount(100L)
+                    .build();
+
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.spend(command))
+                    .isDone()
+                    .isThrownBy(OptimisticLockingFailureException.class);
+
+            verify(pointRepository, times(threadCount)).findOne(user.getId());
+            verify(pointRepository, times(threadCount)).savePoint(any(Point.class));
+            verify(pointRepository, times(threadCount)).savePointHistory(any(PointHistory.class));
+
+            Long balance = entityManager.createQuery("select p.balance from Point p where p.userId = :userId", Long.class)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+            assertThat(balance).isPositive();
+
+            long pointHistoryCount = entityManager
+                    .createQuery("SELECT count(ph) FROM PointHistory ph WHERE ph.userId = :userId", long.class)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+            assertThat(pointHistoryCount).isPositive();
+        }
+
     }
 
 }

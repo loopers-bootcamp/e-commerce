@@ -352,6 +352,7 @@ class ProductServiceIntegrationTest {
             assertThat(foundStock1.getQuantity()).isEqualTo(100 + amountToAdd1);
             assertThat(foundStock2.getQuantity()).isEqualTo(50 + amountToAdd2);
         }
+
     }
 
     // -------------------------------------------------------------------------------------------------

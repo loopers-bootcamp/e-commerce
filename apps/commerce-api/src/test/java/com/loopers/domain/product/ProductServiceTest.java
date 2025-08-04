@@ -164,7 +164,7 @@ class ProductServiceTest {
             sut.addStocks(command);
 
             // then
-            verify(productRepository, never()).findStocksByProductOptionIdsForUpdate(anyList());
+            verify(productRepository, never()).findStocksForUpdate(anyList());
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -187,7 +187,7 @@ class ProductServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.INVALID);
 
-            verify(productRepository, never()).findStocksByProductOptionIdsForUpdate(anyList());
+            verify(productRepository, never()).findStocksForUpdate(anyList());
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -204,7 +204,7 @@ class ProductServiceTest {
             );
             ProductCommand.AddStocks command = ProductCommand.AddStocks.builder().items(items).build();
 
-            given(productRepository.findStocksByProductOptionIdsForUpdate(anyList()))
+            given(productRepository.findStocksForUpdate(anyList()))
                     .willReturn(List.of(
                             Stock.builder().productOptionId(savedId).quantity(0).build()
                     ));
@@ -215,7 +215,7 @@ class ProductServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.NOT_FOUND);
 
-            verify(productRepository).findStocksByProductOptionIdsForUpdate(List.of(savedId, nonSavedId));
+            verify(productRepository).findStocksForUpdate(List.of(savedId, nonSavedId));
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -246,7 +246,7 @@ class ProductServiceTest {
             ProductCommand.AddStocks command = ProductCommand.AddStocks.builder().items(items).build();
 
             // Repository Mocking
-            given(productRepository.findStocksByProductOptionIdsForUpdate(List.of(productOptionId1, productOptionId2)))
+            given(productRepository.findStocksForUpdate(List.of(productOptionId1, productOptionId2)))
                     .willReturn(List.of(stock1, stock2));
 
             // when
@@ -281,7 +281,7 @@ class ProductServiceTest {
             sut.deductStocks(command);
 
             // then
-            verify(productRepository, never()).findStocksByProductOptionIdsForUpdate(anyList());
+            verify(productRepository, never()).findStocksForUpdate(anyList());
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -304,7 +304,7 @@ class ProductServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.INVALID);
 
-            verify(productRepository, never()).findStocksByProductOptionIdsForUpdate(anyList());
+            verify(productRepository, never()).findStocksForUpdate(anyList());
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -321,7 +321,7 @@ class ProductServiceTest {
             );
             ProductCommand.DeductStocks command = ProductCommand.DeductStocks.builder().items(items).build();
 
-            given(productRepository.findStocksByProductOptionIdsForUpdate(anyList()))
+            given(productRepository.findStocksForUpdate(anyList()))
                     .willReturn(List.of(
                             Stock.builder().productOptionId(savedId).quantity(0).build()
                     ));
@@ -332,7 +332,7 @@ class ProductServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.NOT_FOUND);
 
-            verify(productRepository).findStocksByProductOptionIdsForUpdate(List.of(savedId, nonSavedId));
+            verify(productRepository).findStocksForUpdate(List.of(savedId, nonSavedId));
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -354,7 +354,7 @@ class ProductServiceTest {
             );
             ProductCommand.DeductStocks command = ProductCommand.DeductStocks.builder().items(items).build();
 
-            given(productRepository.findStocksByProductOptionIdsForUpdate(List.of(productOptionId)))
+            given(productRepository.findStocksForUpdate(List.of(productOptionId)))
                     .willReturn(List.of(stock));
 
             // when & then
@@ -363,7 +363,7 @@ class ProductServiceTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", ProductErrorType.NOT_ENOUGH);
 
-            verify(productRepository).findStocksByProductOptionIdsForUpdate(List.of(productOptionId));
+            verify(productRepository).findStocksForUpdate(List.of(productOptionId));
             verify(productRepository, never()).saveStocks(anyList());
         }
 
@@ -394,7 +394,7 @@ class ProductServiceTest {
             ProductCommand.DeductStocks command = ProductCommand.DeductStocks.builder().items(items).build();
 
             // Repository Mocking
-            given(productRepository.findStocksByProductOptionIdsForUpdate(List.of(productOptionId1, productOptionId2)))
+            given(productRepository.findStocksForUpdate(List.of(productOptionId1, productOptionId2)))
                     .willReturn(List.of(stock1, stock2));
 
             // when

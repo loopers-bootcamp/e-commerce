@@ -69,7 +69,7 @@ public class ProductService {
         }
 
         List<Long> productOptionIds = items.stream().map(ProductCommand.AddStocks.Item::getProductOptionId).toList();
-        Map<Long, Stock> stockMap = productRepository.findStocksByProductOptionIdsForUpdate(productOptionIds)
+        Map<Long, Stock> stockMap = productRepository.findStocksForUpdate(productOptionIds)
                 .stream().collect(toMap(Stock::getProductOptionId, Function.identity()));
 
         if (stockMap.size() != productOptionIds.size()) {
@@ -96,7 +96,7 @@ public class ProductService {
         }
 
         List<Long> productOptionIds = items.stream().map(ProductCommand.DeductStocks.Item::getProductOptionId).toList();
-        Map<Long, Stock> stockMap = productRepository.findStocksByProductOptionIdsForUpdate(productOptionIds)
+        Map<Long, Stock> stockMap = productRepository.findStocksForUpdate(productOptionIds)
                 .stream().collect(toMap(Stock::getProductOptionId, Function.identity()));
 
         if (stockMap.size() != productOptionIds.size()) {

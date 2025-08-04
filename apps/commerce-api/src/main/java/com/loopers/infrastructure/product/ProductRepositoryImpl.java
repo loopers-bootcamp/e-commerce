@@ -184,7 +184,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<Stock> findStocksByProductOptionIdsForUpdate(List<Long> productOptionIds) {
+    public List<Stock> findStocksForUpdate(List<Long> productOptionIds) {
         return stockJpaRepository.findByProductOptionIdIn(productOptionIds);
     }
 
