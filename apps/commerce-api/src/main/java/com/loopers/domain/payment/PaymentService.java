@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,8 +17,9 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
 
     @ReadOnlyTransactional
-    public Optional<PaymentResult.GetPayment> getPayment(UUID orderId) {
-        return paymentRepository.findOneByOrderId(orderId)
+    public Optional<PaymentResult.GetPayment> getPayment(PaymentCommand.GetPayment command) {
+        return paymentRepository.findOneByOrderId(command.getOrderId())
+                .filter(payment -> Objects.equals(payment.getUserId(), command.getUserId()))
                 .map(PaymentResult.GetPayment::from);
     }
 

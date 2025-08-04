@@ -3,6 +3,7 @@ package com.loopers.application.order;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
+import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.point.PointResult;
@@ -42,7 +43,11 @@ public class OrderFacade {
         OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
-        PaymentResult.GetPayment payment = paymentService.getPayment(order.getOrderId())
+        PaymentCommand.GetPayment paymentCommand = PaymentCommand.GetPayment.builder()
+                .orderId(input.getOrderId())
+                .userId(user.getUserId())
+                .build();
+        PaymentResult.GetPayment payment = paymentService.getPayment(paymentCommand)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         return OrderOutput.GetOrderDetail.from(order, payment);
