@@ -30,7 +30,7 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @DisplayName("사용자를 조회할 때: ")
+    @DisplayName("사용자를 조회할 때:")
     @Nested
     class GetUser {
 
@@ -56,7 +56,7 @@ class UserServiceTest {
             String name = "gildong";
 
             User foundUser = Instancio.of(User.class)
-                    .set(field("name"), name)
+                    .set(field(User::getName), name)
                     .create();
             given(userRepository.findUserByName(name))
                     .willReturn(Optional.of(foundUser));
@@ -77,7 +77,7 @@ class UserServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("회원 가입할 때: ")
+    @DisplayName("회원 가입할 때:")
     @Nested
     class Join {
 

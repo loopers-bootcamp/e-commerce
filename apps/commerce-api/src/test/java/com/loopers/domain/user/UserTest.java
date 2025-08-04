@@ -21,7 +21,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.type;
 
 class UserTest {
 
-    @DisplayName("사용자를 생성할 때: ")
+    @DisplayName("사용자를 생성할 때:")
     @Nested
     class Create {
 

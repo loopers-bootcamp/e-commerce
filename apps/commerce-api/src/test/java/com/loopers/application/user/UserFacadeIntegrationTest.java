@@ -48,7 +48,7 @@ class UserFacadeIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("회원 가입하고 회원 정보를 조회할 때: ")
+    @DisplayName("회원 가입하고 회원 정보를 조회할 때:")
     @Nested
     class JoinAndGetUser {
 

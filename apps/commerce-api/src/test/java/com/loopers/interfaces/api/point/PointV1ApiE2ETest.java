@@ -6,6 +6,7 @@ import com.loopers.domain.point.error.PointErrorType;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -80,7 +81,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
@@ -115,7 +116,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<PointResponse.GetPoint>> response =
@@ -152,7 +153,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
@@ -198,7 +199,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
@@ -213,7 +214,7 @@ class PointV1ApiE2ETest {
 
         @DisplayName("""
                     잔액이 최대치를 초과하면,
-                    400 응답과 { meta=TOO_MUCH_BALANCE, data=null }를 보낸다.
+                    422 응답과 { meta=EXCESSIVE, data=null }를 보낸다.
                 """)
         @CsvSource(textBlock = """
                 0           | 100_000_001
@@ -247,7 +248,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =
@@ -255,8 +256,8 @@ class PointV1ApiE2ETest {
                     });
 
             // then
-            assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)).isTrue();
-            assertThat(response.getBody().meta().errorCode()).isEqualTo(PointErrorType.TOO_MUCH_BALANCE.getCode());
+            assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.UNPROCESSABLE_ENTITY)).isTrue();
+            assertThat(response.getBody().meta().errorCode()).isEqualTo(PointErrorType.EXCESSIVE.getCode());
             assertThat(response.getBody().data()).isNull();
         }
 
@@ -293,7 +294,7 @@ class PointV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<ApiResponse<PointResponse.Charge>> response =

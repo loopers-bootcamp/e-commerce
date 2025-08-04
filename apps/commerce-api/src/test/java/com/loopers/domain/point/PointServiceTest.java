@@ -32,7 +32,7 @@ class PointServiceTest {
     @Mock
     private PointRepository pointRepository;
 
-    @DisplayName("포인트를 조회할 때: ")
+    @DisplayName("포인트를 조회할 때:")
     @Nested
     class GetPoint {
 
@@ -82,7 +82,7 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 생성할 때: ")
+    @DisplayName("포인트를 생성할 때:")
     @Nested
     class Create {
 
@@ -137,7 +137,7 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 충전할 때: ")
+    @DisplayName("포인트를 충전할 때:")
     @Nested
     class Charge {
 
@@ -208,7 +208,7 @@ class PointServiceTest {
 
         @DisplayName("""
                 잔액이 최대치를 초과하면,
-                BusinessException(errorType=TOO_MUCH_BALANCE)이 발생한다.
+                BusinessException(errorType=EXCESSIVE)이 발생한다.
                 """)
         @CsvSource(textBlock = """
                 0           | 100_000_001
@@ -239,7 +239,7 @@ class PointServiceTest {
             assertThatThrownBy(() -> sut.charge(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.TOO_MUCH_BALANCE);
+                    .isEqualTo(PointErrorType.EXCESSIVE);
 
             verify(pointRepository).findPointByUserId(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
@@ -289,7 +289,7 @@ class PointServiceTest {
 
     // -------------------------------------------------------------------------------------------------
 
-    @DisplayName("포인트를 차감할 때: ")
+    @DisplayName("포인트를 차감할 때:")
     @Nested
     class Spend {
 
@@ -391,7 +391,7 @@ class PointServiceTest {
             assertThatThrownBy(() -> sut.spend(command))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
-                    .isEqualTo(PointErrorType.NOT_ENOUGH_BALANCE);
+                    .isEqualTo(PointErrorType.NOT_ENOUGH);
 
             verify(pointRepository).findPointByUserId(any());
             verify(pointRepository, never()).savePoint(any(Point.class));

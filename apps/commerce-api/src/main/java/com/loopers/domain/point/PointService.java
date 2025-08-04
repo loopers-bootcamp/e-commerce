@@ -1,5 +1,6 @@
 package com.loopers.domain.point;
 
+import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.domain.point.attribute.Cause;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -16,13 +17,13 @@ public class PointService {
 
     private final PointRepository pointRepository;
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     public Optional<PointResult.GetPoint> getPoint(Long userId) {
         return pointRepository.findPointByUserId(userId)
                 .map(PointResult.GetPoint::from);
     }
 
-    @Transactional(readOnly = true)
+    @ReadOnlyTransactional
     public List<PointHistory> getPointHistories(Long userId) {
         return pointRepository.findPointHistoriesByUserId(userId);
     }

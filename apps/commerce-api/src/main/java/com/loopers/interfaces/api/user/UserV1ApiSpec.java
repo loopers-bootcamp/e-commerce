@@ -1,5 +1,6 @@
 package com.loopers.interfaces.api.user;
 
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +15,7 @@ public interface UserV1ApiSpec {
             description = "아이디로 회원 정보를 조회합니다."
     )
     ApiResponse<UserResponse.GetUser> getUser(
-            @Schema(name = "X-USER-ID", description = "조회할 사용자의 ID")
+            @Schema(name = ApiHeader.USER_ID, description = "로그인한 사용자의 ID")
             String userName
     );
 

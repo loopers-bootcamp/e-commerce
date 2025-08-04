@@ -4,6 +4,7 @@ import com.loopers.annotation.SpringE2ETest;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -80,7 +81,7 @@ class UserV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =
@@ -109,7 +110,7 @@ class UserV1ApiE2ETest {
 
             // when
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-USER-ID", userName);
+            headers.set(ApiHeader.USER_ID, userName);
             HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
 
             ResponseEntity<ApiResponse<UserResponse.GetUser>> response =

@@ -3,6 +3,7 @@ package com.loopers.interfaces.api.point;
 import com.loopers.application.point.PointFacade;
 import com.loopers.application.point.PointInput;
 import com.loopers.application.point.PointOutput;
+import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class PointV1Controller implements PointV1ApiSpec {
     @GetMapping
     @Override
     public ApiResponse<PointResponse.GetPoint> getPoint(
-            @RequestHeader("X-USER-ID")
+            @RequestHeader(ApiHeader.USER_ID)
             String userName
     ) {
         PointOutput.GetPoint output = pointFacade.getPoint(userName);
@@ -30,7 +31,7 @@ public class PointV1Controller implements PointV1ApiSpec {
     @PostMapping("/charge")
     @Override
     public ApiResponse<PointResponse.Charge> charge(
-            @RequestHeader("X-USER-ID")
+            @RequestHeader(ApiHeader.USER_ID)
             String userName,
 
             @Valid
