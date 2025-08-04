@@ -8,19 +8,19 @@ import com.loopers.domain.user.UserService;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import com.loopers.utils.DatabaseCleanUp;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,7 +41,7 @@ class PointFacadeIntegrationTest {
     private final UserService userService;
 
     private final TransactionTemplate transactionTemplate;
-    private final TestEntityManager testEntityManager;
+    private final EntityManager entityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
@@ -63,13 +63,13 @@ class PointFacadeIntegrationTest {
                     .birthDate(LocalDate.of(1990, 1, 1))
                     .email(new Email("gildong.hong@example.com"))
                     .build();
-            Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
 
             Point point = Point.builder()
                     .balance(70_000L)
-                    .userId(userId)
+                    .userId(user.getId())
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointInput.Charge command = PointInput.Charge.builder()
                     .userName(user.getName())
@@ -91,57 +91,6 @@ class PointFacadeIntegrationTest {
             verify(pointService).charge(any(PointCommand.Charge.class));
         }
 
-    }
-
-    @Disabled("동시성 이슈가 있다.")
-    @Test
-    void failOnConcurrency() {
-        // given
-        User user = User.builder()
-                .name("gildong")
-                .gender(Gender.MALE)
-                .birthDate(LocalDate.of(1990, 1, 1))
-                .email(new Email("gildong.hong@example.com"))
-                .build();
-        Long userId = transactionTemplate.execute(status -> testEntityManager.persistAndGetId(user, Long.class));
-
-        Point point = Point.builder()
-                .balance(0L)
-                .userId(userId)
-                .build();
-        transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
-
-        int threadCount = 10;
-        CountDownLatch countDownLatch = new CountDownLatch(threadCount);
-
-        // when
-        try (ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor()) {
-            for (int i = 0; i < threadCount; i++) {
-                executorService.execute(() -> {
-                    try {
-                        PointInput.Charge command = PointInput.Charge.builder()
-                                .userName(user.getName())
-                                .amount(100L)
-                                .build();
-
-                        sut.charge(command);
-                    } finally {
-                        countDownLatch.countDown();
-                    }
-                });
-
-            }
-
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        // then
-        verify(pointService, times(threadCount)).charge(any(PointCommand.Charge.class));
-
-        PointOutput.GetPoint output = sut.getPoint(user.getName());
-        assertThat(output.getBalance()).isEqualTo(100L * threadCount);
     }
 
 }

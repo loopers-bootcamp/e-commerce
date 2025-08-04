@@ -40,6 +40,9 @@ public class Point extends BaseEntity {
 
     // -------------------------------------------------------------------------------------------------
 
+    @Version
+    private Long version;
+
     private static final long MAX_BALANCE = 100_000_000L;
 
     @Builder
