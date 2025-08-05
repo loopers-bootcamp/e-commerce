@@ -1,0 +1,26 @@
+package com.loopers.domain.coupon;
+
+import lombok.*;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class CouponCommand {
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class AddStocks {
+        private final Long couponId;
+        private final Integer amount;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class DeductStocks {
+        private final Long couponId;
+        private final Integer amount;
+    }
+
+}
