@@ -127,7 +127,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 continue;
             }
 
-            Stock stock = row.get(s);
+            ProductStock stock = row.get(s);
             ProductQueryResult.ProductDetail.Option item = ProductQueryResult.ProductDetail.Option.builder()
                     .productOptionId(option.getId())
                     .productOptionName(option.getName())
@@ -184,12 +184,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<Stock> findStocksForUpdate(List<Long> productOptionIds) {
+    public List<ProductStock> findStocksForUpdate(List<Long> productOptionIds) {
         return stockJpaRepository.findByProductOptionIdIn(productOptionIds);
     }
 
     @Override
-    public List<Stock> saveStocks(List<Stock> stocks) {
+    public List<ProductStock> saveStocks(List<ProductStock> stocks) {
         return stockJpaRepository.saveAll(stocks);
     }
 

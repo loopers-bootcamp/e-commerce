@@ -105,11 +105,11 @@ class OrderFacadeIntegrationTest {
                 entityManager.persist(option2);
             });
 
-            Stock stock1 = Stock.builder()
+            ProductStock stock1 = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(option1.getId())
                     .build();
-            Stock stock2 = Stock.builder()
+            ProductStock stock2 = ProductStock.builder()
                     .quantity(50)
                     .productOptionId(option2.getId())
                     .build();

@@ -206,7 +206,7 @@ class ProductServiceTest {
 
             given(productRepository.findStocksForUpdate(anyList()))
                     .willReturn(List.of(
-                            Stock.builder().productOptionId(savedId).quantity(0).build()
+                            ProductStock.builder().productOptionId(savedId).quantity(0).build()
                     ));
 
             // when & then
@@ -230,13 +230,13 @@ class ProductServiceTest {
             int addAmount1 = 10;
             int addAmount2 = 20;
 
-            Stock stock1 = Instancio.of(Stock.class)
-                    .set(field(Stock::getProductOptionId), productOptionId1)
-                    .set(field(Stock::getQuantity), initialQuantity1)
+            ProductStock stock1 = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getProductOptionId), productOptionId1)
+                    .set(field(ProductStock::getQuantity), initialQuantity1)
                     .create();
-            Stock stock2 = Instancio.of(Stock.class)
-                    .set(field(Stock::getProductOptionId), productOptionId2)
-                    .set(field(Stock::getQuantity), initialQuantity2)
+            ProductStock stock2 = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getProductOptionId), productOptionId2)
+                    .set(field(ProductStock::getQuantity), initialQuantity2)
                     .create();
 
             List<ProductCommand.AddStocks.Item> items = List.of(
@@ -323,7 +323,7 @@ class ProductServiceTest {
 
             given(productRepository.findStocksForUpdate(anyList()))
                     .willReturn(List.of(
-                            Stock.builder().productOptionId(savedId).quantity(0).build()
+                            ProductStock.builder().productOptionId(savedId).quantity(0).build()
                     ));
 
             // when & then
@@ -344,9 +344,9 @@ class ProductServiceTest {
             int initialQuantity = 5;
             int deductAmount = initialQuantity + 5;
 
-            Stock stock = Instancio.of(Stock.class)
-                    .set(field(Stock::getQuantity), initialQuantity)
-                    .set(field(Stock::getProductOptionId), productOptionId)
+            ProductStock stock = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getQuantity), initialQuantity)
+                    .set(field(ProductStock::getProductOptionId), productOptionId)
                     .create();
 
             List<ProductCommand.DeductStocks.Item> items = List.of(
@@ -378,13 +378,13 @@ class ProductServiceTest {
             int deductAmount1 = 10;
             int deductAmount2 = 20;
 
-            Stock stock1 = Instancio.of(Stock.class)
-                    .set(field(Stock::getProductOptionId), productOptionId1)
-                    .set(field(Stock::getQuantity), initialQuantity1)
+            ProductStock stock1 = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getProductOptionId), productOptionId1)
+                    .set(field(ProductStock::getQuantity), initialQuantity1)
                     .create();
-            Stock stock2 = Instancio.of(Stock.class)
-                    .set(field(Stock::getProductOptionId), productOptionId2)
-                    .set(field(Stock::getQuantity), initialQuantity2)
+            ProductStock stock2 = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getProductOptionId), productOptionId2)
+                    .set(field(ProductStock::getQuantity), initialQuantity2)
                     .create();
 
             List<ProductCommand.DeductStocks.Item> items = List.of(

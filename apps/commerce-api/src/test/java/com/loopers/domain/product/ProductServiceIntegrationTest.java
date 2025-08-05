@@ -210,11 +210,11 @@ class ProductServiceIntegrationTest {
                 entityManager.persist(option2);
             });
 
-            Stock stock1 = Stock.builder()
+            ProductStock stock1 = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(option1.getId())
                     .build();
-            Stock stock2 = Stock.builder()
+            ProductStock stock2 = ProductStock.builder()
                     .quantity(50)
                     .productOptionId(option2.getId())
                     .build();
@@ -269,7 +269,7 @@ class ProductServiceIntegrationTest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(option));
 
-            Stock stock = Stock.builder()
+            ProductStock stock = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(option.getId())
                     .build();
@@ -288,7 +288,7 @@ class ProductServiceIntegrationTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.NOT_FOUND);
 
-            Stock foundStock = entityManager.find(Stock.class, stock.getId());
+            ProductStock foundStock = entityManager.find(ProductStock.class, stock.getId());
             assertThat(foundStock).isNotNull();
             assertThat(foundStock.getQuantity()).isEqualTo(stock.getQuantity());
         }
@@ -318,11 +318,11 @@ class ProductServiceIntegrationTest {
                 entityManager.persist(option2);
             });
 
-            Stock stock1 = Stock.builder()
+            ProductStock stock1 = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(option1.getId())
                     .build();
-            Stock stock2 = Stock.builder()
+            ProductStock stock2 = ProductStock.builder()
                     .quantity(50)
                     .productOptionId(option2.getId())
                     .build();
@@ -344,8 +344,8 @@ class ProductServiceIntegrationTest {
             sut.addStocks(command);
 
             // then
-            Stock foundStock1 = entityManager.find(Stock.class, stock1.getId());
-            Stock foundStock2 = entityManager.find(Stock.class, stock2.getId());
+            ProductStock foundStock1 = entityManager.find(ProductStock.class, stock1.getId());
+            ProductStock foundStock2 = entityManager.find(ProductStock.class, stock2.getId());
 
             assertThat(foundStock1).isNotNull();
             assertThat(foundStock2).isNotNull();
@@ -378,7 +378,7 @@ class ProductServiceIntegrationTest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(option));
 
-            Stock stock = Stock.builder()
+            ProductStock stock = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(option.getId())
                     .build();
@@ -397,7 +397,7 @@ class ProductServiceIntegrationTest {
                     .isInstanceOf(BusinessException.class)
                     .hasFieldOrPropertyWithValue("errorType", CommonErrorType.NOT_FOUND);
 
-            Stock foundStock = entityManager.find(Stock.class, stock.getId());
+            ProductStock foundStock = entityManager.find(ProductStock.class, stock.getId());
             assertThat(foundStock).isNotNull();
             assertThat(foundStock.getQuantity()).isEqualTo(stock.getQuantity());
         }
@@ -427,11 +427,11 @@ class ProductServiceIntegrationTest {
                 entityManager.persist(option2);
             });
 
-            Stock stock1 = Stock.builder()
+            ProductStock stock1 = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(option1.getId())
                     .build();
-            Stock stock2 = Stock.builder()
+            ProductStock stock2 = ProductStock.builder()
                     .quantity(50)
                     .productOptionId(option2.getId())
                     .build();
@@ -453,8 +453,8 @@ class ProductServiceIntegrationTest {
             sut.deductStocks(command);
 
             // then
-            Stock foundStock1 = entityManager.find(Stock.class, stock1.getId());
-            Stock foundStock2 = entityManager.find(Stock.class, stock2.getId());
+            ProductStock foundStock1 = entityManager.find(ProductStock.class, stock1.getId());
+            ProductStock foundStock2 = entityManager.find(ProductStock.class, stock2.getId());
 
             assertThat(foundStock1).isNotNull();
             assertThat(foundStock2).isNotNull();

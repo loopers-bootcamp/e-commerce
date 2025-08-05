@@ -12,20 +12,20 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "stocks")
+@Table(name = "product_stocks")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Stock extends BaseEntity {
+public class ProductStock extends BaseEntity {
 
     /**
      * 아이디
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stock_id", nullable = false, updatable = false)
+    @Column(name = "product_stock_id", nullable = false, updatable = false)
     private Long id;
 
     /**
-     * 재고 수량
+     * 상품 재고 수량
      */
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -41,9 +41,9 @@ public class Stock extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private Stock(Integer quantity, Long productOptionId) {
+    private ProductStock(Integer quantity, Long productOptionId) {
         if (quantity == null || quantity < 0) {
-            throw new BusinessException(CommonErrorType.INVALID, "재고 수량은 0 이상이어야 합니다.");
+            throw new BusinessException(CommonErrorType.INVALID, "상품 재고 수량은 0 이상이어야 합니다.");
         }
 
         if (productOptionId == null) {
@@ -57,7 +57,7 @@ public class Stock extends BaseEntity {
     public void add(int amount) {
         if (amount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID,
-                    "0 이하의 값으로 재고를 증가할 수 없습니다.");
+                    "0 이하의 값으로 상품 재고를 증가할 수 없습니다.");
         }
 
         this.quantity += amount;
@@ -66,7 +66,7 @@ public class Stock extends BaseEntity {
     public void deduct(int amount) {
         if (amount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID,
-                    "0 이하의 값으로 재고를 차감할 수 없습니다.");
+                    "0 이하의 값으로 상품 재고를 차감할 수 없습니다.");
         }
 
         int deductedQuantity = this.quantity - amount;

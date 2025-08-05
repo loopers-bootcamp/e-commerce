@@ -15,7 +15,7 @@ import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.product.Stock;
+import com.loopers.domain.product.ProductStock;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.UserService;
 import com.loopers.domain.user.attribute.Email;
@@ -177,7 +177,7 @@ class PaymentFacadeIntegrationTest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
-            Stock stock = Stock.builder()
+            ProductStock stock = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(1L)
                     .build();
@@ -248,11 +248,11 @@ class PaymentFacadeIntegrationTest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
-            Stock stock1 = Stock.builder()
+            ProductStock stock1 = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(1L)
                     .build();
-            Stock stock2 = Stock.builder()
+            ProductStock stock2 = ProductStock.builder()
                     .quantity(50)
                     .productOptionId(2L)
                     .build();
