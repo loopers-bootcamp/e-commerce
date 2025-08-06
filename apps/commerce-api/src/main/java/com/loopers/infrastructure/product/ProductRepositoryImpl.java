@@ -98,13 +98,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId) {
         QProduct p = QProduct.product;
         QProductOption po = QProductOption.productOption;
-        QStock s = QStock.stock;
+        QProductStock ps = QProductStock.productStock;
 
         List<Tuple> rows = queryFactory
-                .select(p, po, s)
+                .select(p, po, ps)
                 .from(p)
                 .leftJoin(po).on(po.productId.eq(p.id))
-                .leftJoin(s).on(s.productOptionId.eq(po.id))
+                .leftJoin(ps).on(ps.productOptionId.eq(po.id))
                 .where(p.id.eq(productId))
                 .fetch();
 
@@ -127,7 +127,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 continue;
             }
 
-            ProductStock stock = row.get(s);
+            ProductStock stock = row.get(ps);
             ProductQueryResult.ProductDetail.Option item = ProductQueryResult.ProductDetail.Option.builder()
                     .productOptionId(option.getId())
                     .productOptionName(option.getName())
@@ -146,7 +146,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds) {
         QProduct p = QProduct.product;
         QProductOption po = QProductOption.productOption;
-        QStock s = QStock.stock;
+        QProductStock ps = QProductStock.productStock;
 
         NumberExpression<Integer> salePrice = p.basePrice.add(po.additionalPrice).as("salePrice");
 
@@ -154,19 +154,19 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .select(
                         po.id,
                         salePrice,
-                        s.quantity,
+                        ps.quantity,
                         p.id
                 )
                 .from(po)
                 .join(p).on(p.id.eq(po.productId))
-                .join(s).on(s.productOptionId.eq(po.id))
+                .join(ps).on(ps.productOptionId.eq(po.id))
                 .where(po.id.in(productOptionIds))
                 .stream()
                 .map(row ->
                         ProductQueryResult.ProductOptions.Item.builder()
                                 .productOptionId(row.get(po.id))
                                 .salePrice(row.get(salePrice))
-                                .stockQuantity(row.get(s.quantity))
+                                .stockQuantity(row.get(ps.quantity))
                                 .productId(row.get(p.id))
                                 .build()
                 )

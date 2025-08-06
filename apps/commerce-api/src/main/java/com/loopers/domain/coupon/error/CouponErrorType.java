@@ -12,6 +12,7 @@ import java.util.Locale;
 public enum CouponErrorType implements ErrorType {
 
     REVOKED(HttpStatus.UNPROCESSABLE_ENTITY, "쿠폰이 폐기되었습니다."),
+    NOT_ISSUABLE(HttpStatus.UNPROCESSABLE_ENTITY, "발급할 수 없는 쿠폰입니다."),
     UNAVAILABLE(HttpStatus.UNPROCESSABLE_ENTITY, "사용할 수 없는 쿠폰입니다.");
 
     private final HttpStatus status;

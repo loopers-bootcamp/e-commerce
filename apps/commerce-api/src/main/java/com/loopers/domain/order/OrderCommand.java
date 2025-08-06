@@ -22,7 +22,9 @@ public final class OrderCommand {
     public static class Create {
         private final Long userId;
         private final Long totalPrice;
+        private final Integer discountAmount;
         private final List<Product> products;
+        private final List<Long> userCouponIds;
 
         @Getter
         @Builder

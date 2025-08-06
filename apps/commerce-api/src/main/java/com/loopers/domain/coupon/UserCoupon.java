@@ -61,6 +61,9 @@ public class UserCoupon extends BaseEntity {
 
     // -------------------------------------------------------------------------------------------------
 
+    @Version
+    private Long version;
+
     @Builder
     private UserCoupon(TimeRange validRange, Long userId, Long couponId) {
         if (validRange == null) {
@@ -81,12 +84,12 @@ public class UserCoupon extends BaseEntity {
         this.couponId = couponId;
     }
 
-    public void use() {
-        if (this.used) {
-            return;
-        }
+    public boolean isUsable() {
+        return !this.used && this.validRange.contains(Instant.now());
+    }
 
-        if (!this.validRange.contains(Instant.now())) {
+    public void use() {
+        if (!isUsable()) {
             throw new BusinessException(CouponErrorType.UNAVAILABLE);
         }
 

@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,7 +29,7 @@ public class DiscountPolicy {
      * 할인 값
      */
     @Column(name = "discount_value", nullable = false)
-    private Integer discountValue;
+    private BigDecimal discountValue;
 
     /**
      * 최대 할인 가능 금액
@@ -40,14 +42,14 @@ public class DiscountPolicy {
     @Builder
     private DiscountPolicy(
             DiscountRule discountRule,
-            Integer discountValue,
+            BigDecimal discountValue,
             Integer maxDiscountAmount
     ) {
         if (discountRule == null) {
             throw new BusinessException(CommonErrorType.INVALID, "할인 방법이 올바르지 않습니다.");
         }
 
-        if (discountValue == null || discountValue <= 0) {
+        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException(CommonErrorType.INVALID, "할인 값은 1 이상이어야 합니다.");
         }
 
@@ -58,6 +60,10 @@ public class DiscountPolicy {
         this.discountRule = discountRule;
         this.discountValue = discountValue;
         this.maxDiscountAmount = maxDiscountAmount;
+    }
+
+    public int calculateDiscountAmount(Long totalPrice) {
+        return this.discountRule.getCalculator().applyAsInt(totalPrice, this.discountValue);
     }
 
 }

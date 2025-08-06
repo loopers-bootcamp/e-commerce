@@ -1,5 +1,7 @@
 package com.loopers.application.order;
 
+import com.loopers.domain.coupon.CouponCommand;
+import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
@@ -29,6 +31,7 @@ public class OrderFacade {
     private final OrderService orderService;
     private final UserService userService;
     private final ProductService productService;
+    private final CouponService couponService;
     private final PointService pointService;
     private final PaymentService paymentService;
 
@@ -71,15 +74,22 @@ public class OrderFacade {
             throw new BusinessException(ProductErrorType.NOT_ENOUGH);
         }
 
+        CouponCommand.GetDiscountAmount couponCommand = CouponCommand.GetDiscountAmount.builder()
+                .totalPrice(cart.getTotalPrice())
+                .userCouponIds(input.getUserCouponIds())
+                .build();
+        int discountAmount = couponService.getDiscountAmount(couponCommand);
+
         Long userId = user.getUserId();
         PointResult.GetPoint point = pointService.getPoint(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
-        if (!cart.isEnoughPoint(point.getBalance())) {
+        long balanceWithIncreasedPurchasingPower = point.getBalance() + discountAmount;
+        if (!cart.isEnoughPoint(balanceWithIncreasedPurchasingPower)) {
             throw new BusinessException(PointErrorType.NOT_ENOUGH);
         }
 
         // 후차감: 주문 시 재화 검증만 하고, 결제 시 비로소 재화를 차감한다.
-        OrderResult.Create order = orderService.create(cart.toCommand(userId));
+        OrderResult.Create order = orderService.create(cart.toCommand(userId, discountAmount));
 
         return OrderOutput.Create.from(order);
     }

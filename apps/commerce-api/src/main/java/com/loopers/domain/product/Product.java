@@ -1,6 +1,7 @@
 package com.loopers.domain.product;
 
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.ItemAdder;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
@@ -8,10 +9,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Entity
@@ -73,38 +74,7 @@ public class Product extends BaseEntity {
     }
 
     public void addOptions(List<ProductOption> options) {
-        if (CollectionUtils.isEmpty(options)) {
-            return;
-        }
-
-        List<ProductOption> those = new ArrayList<>(this.options);
-        Set<Long> ids = new HashSet<>();
-
-        outer:
-        for (ProductOption option : options) {
-            Long id = option.getId();
-            if (id != null && !ids.add(id)) {
-                throw new BusinessException(CommonErrorType.CONFLICT);
-            }
-
-            Long productId = option.getProductId();
-            if (productId != null && !Objects.equals(this.id, productId)) {
-                throw new BusinessException(CommonErrorType.INCONSISTENT);
-            }
-
-            // 이미 추가된 상품 옵션을 다시 추가하지 않는다.
-            if (id != null) {
-                for (ProductOption that : those) {
-                    if (Objects.equals(id, that.getId())) {
-                        continue outer;
-                    }
-                }
-            }
-
-            those.add(option);
-        }
-
-        this.options = List.copyOf(those);
+        this.options = ItemAdder.addItemsTo(this.id, this.options, options, false);
     }
 
 }

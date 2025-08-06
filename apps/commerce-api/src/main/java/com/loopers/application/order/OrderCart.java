@@ -21,6 +21,7 @@ public class OrderCart {
 
     private final Map<Long, OrderInput.Create.Product> cartMap;
     private final Map<Long, ProductResult.GetProductOptions.Item> optionMap;
+    private final List<Long> userCouponIds;
 
     public static OrderCart from(OrderInput.Create input, ProductResult.GetProductOptions options) {
         Map<Long, OrderInput.Create.Product> cartMap = input.getProducts()
@@ -38,7 +39,7 @@ public class OrderCart {
             throw new BusinessException(CommonErrorType.NOT_FOUND);
         }
 
-        return new OrderCart(cartMap, optionMap);
+        return new OrderCart(cartMap, optionMap, input.getUserCouponIds());
     }
 
     public boolean isEnoughStock() {
@@ -70,7 +71,7 @@ public class OrderCart {
         return totalPrice;
     }
 
-    public OrderCommand.Create toCommand(Long userId) {
+    public OrderCommand.Create toCommand(Long userId, Integer discountAmount) {
         List<OrderCommand.Create.Product> products = new ArrayList<>();
 
         for (Map.Entry<Long, OrderInput.Create.Product> e : this.cartMap.entrySet()) {
@@ -90,7 +91,9 @@ public class OrderCart {
         return OrderCommand.Create.builder()
                 .userId(userId)
                 .totalPrice(getTotalPrice())
+                .discountAmount(discountAmount)
                 .products(List.copyOf(products))
+                .userCouponIds(List.copyOf(this.userCouponIds))
                 .build();
     }
 

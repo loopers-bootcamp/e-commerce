@@ -15,14 +15,17 @@ public final class OrderResult {
     public static class GetOrderDetail {
         private final UUID orderId;
         private final Long totalPrice;
+        private final Integer discountAmount;
         private final OrderStatus status;
         private final Long userId;
         private final List<Product> products;
+        private final List<Long> userCouponIds;
 
         public static GetOrderDetail from(Order order) {
             return builder()
                     .orderId(order.getId())
                     .totalPrice(order.getTotalPrice())
+                    .discountAmount(order.getDiscountAmount())
                     .status(order.getStatus())
                     .userId(order.getUserId())
                     .products(order.getProducts()
@@ -35,6 +38,11 @@ public final class OrderResult {
                                     .productOptionId(product.getProductOptionId())
                                     .build()
                             )
+                            .toList()
+                    )
+                    .userCouponIds(order.getCoupons()
+                            .stream()
+                            .map(OrderCoupon::getUserCouponId)
                             .toList()
                     )
                     .build();

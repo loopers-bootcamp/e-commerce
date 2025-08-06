@@ -38,6 +38,7 @@ public class OrderService {
         Order order = Order.builder()
                 .id(id)
                 .totalPrice(command.getTotalPrice())
+                .discountAmount(command.getDiscountAmount())
                 .userId(command.getUserId())
                 .build();
 
@@ -51,6 +52,15 @@ public class OrderService {
                         .build())
                 .toList();
         order.addProducts(products);
+
+        List<OrderCoupon> coupons = command.getUserCouponIds()
+                .stream()
+                .map(userCouponId -> OrderCoupon.builder()
+                        .orderId(order.getId())
+                        .userCouponId(userCouponId)
+                        .build())
+                .toList();
+        order.addCoupons(coupons);
 
         orderRepository.save(order);
 

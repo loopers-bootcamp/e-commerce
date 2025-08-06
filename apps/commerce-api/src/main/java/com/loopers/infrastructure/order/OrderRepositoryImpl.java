@@ -21,6 +21,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     private final OrderJpaRepository orderJpaRepository;
     private final OrderProductJpaRepository orderProductJpaRepository;
+    private final OrderCouponJpaRepository orderCouponJpaRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
@@ -39,11 +40,14 @@ public class OrderRepositoryImpl implements OrderRepository {
             return Optional.empty();
         }
 
+        List<OrderCoupon> coupons = orderCouponJpaRepository.findByOrderId(orderId);
+
         Order order = rows.getFirst().get(o);
         List<OrderProduct> products = rows.stream()
                 .map(row -> row.get(op))
                 .toList();
         order.addProducts(products);
+        order.addCoupons(coupons);
 
         return Optional.of(order);
     }
@@ -62,6 +66,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     public Order save(Order order) {
         Order savedOrder = orderJpaRepository.save(order);
         orderProductJpaRepository.saveAll(order.getProducts());
+        orderCouponJpaRepository.saveAll(order.getCoupons());
 
         return savedOrder;
     }

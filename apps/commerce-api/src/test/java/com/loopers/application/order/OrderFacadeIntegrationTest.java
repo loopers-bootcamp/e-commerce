@@ -1,5 +1,6 @@
 package com.loopers.application.order;
 
+import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.order.Order;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderService;
@@ -49,6 +50,8 @@ class OrderFacadeIntegrationTest {
     private final ProductService productService;
     @MockitoSpyBean
     private final PointService pointService;
+    @MockitoSpyBean
+    private final CouponService couponService;
 
     private final TransactionTemplate transactionTemplate;
     private final EntityManager entityManager;

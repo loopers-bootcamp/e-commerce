@@ -5,7 +5,6 @@ import jakarta.persistence.Embeddable;
 import lombok.*;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 
 /**
  * @see <a href="https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/codedeploy/model/TimeRange.html">
@@ -50,10 +49,6 @@ public final class TimeRange {
         range.endedAt = endedAt;
 
         return range;
-    }
-
-    public boolean contains(ZonedDateTime dateTime) {
-        return contains(dateTime.toInstant());
     }
 
     public boolean contains(Instant time) {

@@ -8,6 +8,7 @@ import com.loopers.interfaces.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -50,7 +51,9 @@ public class OrderV1Controller implements OrderV1ApiSpec {
                                 .quantity(product.getQuantity())
                                 .build()
                         )
-                        .toList())
+                        .toList()
+                )
+                .userCouponIds(List.copyOf(request.getUserCouponIds()))
                 .build();
 
         OrderOutput.Create output = orderFacade.create(input);
