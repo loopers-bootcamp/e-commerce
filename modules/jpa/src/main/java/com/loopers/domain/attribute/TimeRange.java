@@ -4,7 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
-import java.time.Instant;
+import java.time.*;
+import java.time.temporal.TemporalAmount;
 
 /**
  * @see <a href="https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/codedeploy/model/TimeRange.html">
@@ -22,16 +23,33 @@ public final class TimeRange {
      */
     @EqualsAndHashCode.Include
     @Column(name = "started_at", nullable = false)
-    private Instant startedAt;
+    private ZonedDateTime startedAt;
 
     /**
      * 종료일시
      */
     @EqualsAndHashCode.Include
     @Column(name = "ended_at", nullable = false)
-    private Instant endedAt;
+    private ZonedDateTime endedAt;
 
-    public static TimeRange of(Instant startedAt, Instant endedAt) {
+    // -------------------------------------------------------------------------------------------------
+
+    public static final TimeRange WHENEVER = new TimeRange(
+            ZonedDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC),
+            ZonedDateTime.of(LocalDateTime.MAX.withYear(9999).minusSeconds(1), ZoneOffset.UTC)
+    );
+
+    public static TimeRange of(ZonedDateTime startedAt, ZonedDateTime endedAt) {
+        return new TimeRange(startedAt, endedAt);
+    }
+
+    public static TimeRange of(TemporalAmount amountToAdd) {
+        ZonedDateTime startedAt = ZonedDateTime.now();
+        ZonedDateTime endedAt = startedAt.plus(amountToAdd);
+        return new TimeRange(startedAt, endedAt);
+    }
+
+    private TimeRange(ZonedDateTime startedAt, ZonedDateTime endedAt) {
         if (startedAt == null) {
             throw new IllegalArgumentException("startedAt cannot be null");
         }
@@ -44,11 +62,8 @@ public final class TimeRange {
             throw new IllegalArgumentException("startedAt cannot be after endedAt");
         }
 
-        TimeRange range = new TimeRange();
-        range.startedAt = startedAt;
-        range.endedAt = endedAt;
-
-        return range;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
     }
 
     public boolean contains(Instant time) {
@@ -56,7 +71,7 @@ public final class TimeRange {
             return false;
         }
 
-        return !time.isBefore(this.startedAt) && !time.isAfter(this.endedAt);
+        return !time.isBefore(this.startedAt.toInstant()) && !time.isAfter(this.endedAt.toInstant());
     }
 
 }
