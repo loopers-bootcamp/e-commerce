@@ -33,6 +33,11 @@ public class ConcurrentAssertion<V> {
         return this;
     }
 
+    public ConcurrentAssertion<V> hasErrorCount(int errorCount) {
+        assertThat(this.errors).hasSize(errorCount);
+        return this;
+    }
+
     public ConcurrentAssertion<V> isThrown() {
         assertThat(this.errors).isNotEmpty();
         return this;
