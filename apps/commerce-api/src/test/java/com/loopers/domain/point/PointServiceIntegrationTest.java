@@ -293,7 +293,7 @@ class PointServiceIntegrationTest {
             assertThat(pointHistory.getAmount()).isEqualTo(amount);
         }
 
-        @DisplayName("사용자가 동시에 포인트를 충전하면, 하나의 요청만 받아들인다.")
+        @DisplayName("사용자가 동시에 포인트를 충전하면, 하나의 요청만 받는다.")
         @Test
         void acceptOnlyOneRequest_whenUserChargesPointConcurrently() {
             // given
@@ -493,7 +493,7 @@ class PointServiceIntegrationTest {
             assertThat(pointHistory.getAmount()).isEqualTo(amount);
         }
 
-        @DisplayName("사용자가 동시에 포인트를 사용하면, 하나의 요청만 받아들인다.")
+        @DisplayName("사용자가 동시에 포인트를 사용하면, 하나의 요청만 받는다.")
         @Test
         void acceptOnlyOneRequest_whenUserSpendsPointConcurrently() {
             // given

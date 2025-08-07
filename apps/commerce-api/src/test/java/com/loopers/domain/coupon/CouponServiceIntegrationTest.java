@@ -136,7 +136,7 @@ class CouponServiceIntegrationTest {
             assertThat(foundUserCoupon.isUsable()).isFalse();
         }
 
-        @DisplayName("사용자가 동시에 같은 쿠폰을 사용하면, 하나의 요청만 받아들인다.")
+        @DisplayName("사용자가 동시에 같은 쿠폰을 사용하면, 하나의 요청만 받는다.")
         @Test
         void acceptOnlyOneRequest_whenUserUsesSameCouponConcurrently() {
             // given
@@ -166,7 +166,7 @@ class CouponServiceIntegrationTest {
                     .userCouponIds(List.of(userCoupon.getId()))
                     .build();
 
-            // when
+            // when & then
             assertThatConcurrence()
                     .withThreadCount(threadCount)
                     .isExecutedBy(() -> sut.use(command))

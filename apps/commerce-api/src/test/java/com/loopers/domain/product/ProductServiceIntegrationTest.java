@@ -3,6 +3,7 @@ package com.loopers.domain.product;
 import com.loopers.domain.activity.LikedProduct;
 import com.loopers.domain.brand.Brand;
 import com.loopers.domain.product.attribute.ProductSearchSortType;
+import com.loopers.domain.product.error.ProductErrorType;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.utils.DatabaseCleanUp;
@@ -12,8 +13,10 @@ import org.instancio.Instancio;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Collection;
@@ -22,15 +25,23 @@ import java.util.Optional;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import static com.loopers.test.assertion.ConcurrentAssertion.assertThatConcurrence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class ProductServiceIntegrationTest {
 
+    @InjectMocks
     private final ProductService sut;
+
+    @MockitoSpyBean
+    private final ProductRepository productRepository;
 
     private final TransactionTemplate transactionTemplate;
     private final EntityManager entityManager;
@@ -460,6 +471,104 @@ class ProductServiceIntegrationTest {
             assertThat(foundStock2).isNotNull();
             assertThat(foundStock1.getQuantity()).isEqualTo(100 - amountToDeduct1);
             assertThat(foundStock2.getQuantity()).isEqualTo(50 - amountToDeduct2);
+        }
+
+        @DisplayName("동시에 같은 상품 옵션을 출고하면, 재고가 부족해야 BusinessException이 발생한다.")
+        @Test
+        void throwException_withInsufficientStock_whenSameProductOptionIsShippedConcurrently() {
+            // given
+            int threadCount = 10;
+
+            Product product = Product.builder()
+                    .name("Nike Shoes")
+                    .basePrice(120_000)
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
+
+            ProductOption option = ProductOption.builder()
+                    .name("Small")
+                    .additionalPrice(0)
+                    .productId(product.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(option));
+
+            ProductStock stock = ProductStock.builder()
+                    .quantity(70)
+                    .productOptionId(option.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(stock));
+
+            int amountToDeduct = 10;
+
+            List<ProductCommand.DeductStocks.Item> items = List.of(
+                    ProductCommand.DeductStocks.Item.builder().productOptionId(option.getId()).amount(amountToDeduct).build()
+            );
+            ProductCommand.DeductStocks command = ProductCommand.DeductStocks.builder().items(items).build();
+
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.deductStocks(command))
+                    .isDone()
+                    .hasErrorCount(3)
+                    .isThrownBy(BusinessException.class)
+                    .hasFieldOrPropertyWithValue("errorType", ProductErrorType.NOT_ENOUGH);
+
+            List<Long> productOptionIds = items.stream().map(ProductCommand.DeductStocks.Item::getProductOptionId).toList();
+            verify(productRepository, times(threadCount)).findStocksForUpdate(productOptionIds);
+            verify(productRepository, times(7)).saveStocks(anyList());
+
+            ProductStock foundStock = entityManager.find(ProductStock.class, stock.getId());
+            assertThat(foundStock).isNotNull();
+            assertThat(foundStock.getQuantity()).isZero();
+        }
+
+        @DisplayName("동시에 같은 상품 옵션을 출고하면, 재고가 부족하지 않는 한 모든 요청을 받는다.")
+        @Test
+        void acceptAllRequestsAsLongAsStockIsSufficient_whenSameProductOptionIsShippedConcurrently() {
+            // given
+            int threadCount = 10;
+
+            Product product = Product.builder()
+                    .name("Nike Shoes")
+                    .basePrice(120_000)
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(product));
+
+            ProductOption option = ProductOption.builder()
+                    .name("Small")
+                    .additionalPrice(0)
+                    .productId(product.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(option));
+
+            ProductStock stock = ProductStock.builder()
+                    .quantity(120)
+                    .productOptionId(option.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(stock));
+
+            int amountToDeduct = 10;
+
+            List<ProductCommand.DeductStocks.Item> items = List.of(
+                    ProductCommand.DeductStocks.Item.builder().productOptionId(option.getId()).amount(amountToDeduct).build()
+            );
+            ProductCommand.DeductStocks command = ProductCommand.DeductStocks.builder().items(items).build();
+
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.deductStocks(command))
+                    .isDone()
+                    .hasNoError();
+
+            List<Long> productOptionIds = items.stream().map(ProductCommand.DeductStocks.Item::getProductOptionId).toList();
+            verify(productRepository, times(threadCount)).findStocksForUpdate(productOptionIds);
+            verify(productRepository, times(threadCount)).saveStocks(anyList());
+
+            ProductStock foundStock = entityManager.find(ProductStock.class, stock.getId());
+            assertThat(foundStock).isNotNull();
+            assertThat(foundStock.getQuantity()).isEqualTo(stock.getQuantity() - (amountToDeduct * threadCount));
         }
 
     }

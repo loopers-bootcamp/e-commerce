@@ -44,7 +44,12 @@ public class ConcurrentAssertion<V> {
     }
 
     public <T extends Throwable> ConcurrentAssertion<V> isThrownBy(Class<T> type) {
-        assertThat(this.errors).isNotEmpty().anyMatch(type::isInstance);
+        assertThat(this.errors).isNotEmpty().allMatch(type::isInstance);
+        return this;
+    }
+
+    public ConcurrentAssertion<V> hasFieldOrPropertyWithValue(String name, Object value) {
+        assertThat(this.errors).isNotEmpty().element(0).hasFieldOrPropertyWithValue(name, value);
         return this;
     }
 
