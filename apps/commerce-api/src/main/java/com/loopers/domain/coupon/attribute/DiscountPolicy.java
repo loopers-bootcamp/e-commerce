@@ -6,21 +6,20 @@ import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embeddable;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Getter
 @Embeddable
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DiscountPolicy {
 
     /**
      * 할인 방법
      */
+    @EqualsAndHashCode.Include
     @Convert(converter = DiscountRuleConverter.class)
     @Column(name = "discount_rule", nullable = false)
     private DiscountRule discountRule;
@@ -28,12 +27,14 @@ public class DiscountPolicy {
     /**
      * 할인 값
      */
+    @EqualsAndHashCode.Include
     @Column(name = "discount_value", nullable = false)
     private BigDecimal discountValue;
 
     /**
      * 최대 할인 가능 금액
      */
+    @EqualsAndHashCode.Include
     @Column(name = "max_discount_amount")
     private Integer maxDiscountAmount;
 

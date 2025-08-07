@@ -53,7 +53,7 @@ public class OrderService {
                 .toList();
         order.addProducts(products);
 
-        List<OrderCoupon> coupons = command.getUserCouponIds()
+        List<OrderCoupon> coupons = Objects.requireNonNullElseGet(command.getUserCouponIds(), List::<Long>of)
                 .stream()
                 .map(userCouponId -> OrderCoupon.builder()
                         .orderId(order.getId())

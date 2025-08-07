@@ -7,6 +7,8 @@ public interface PointRepository {
 
     Optional<Point> findOne(Long userId);
 
+    Optional<Point> findOneForUpdate(Long userId);
+
     boolean existsPointByUserId(Long userId);
 
     List<PointHistory> findPointHistoriesByUserId(Long userId);

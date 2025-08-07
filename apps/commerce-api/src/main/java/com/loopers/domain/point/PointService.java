@@ -49,7 +49,7 @@ public class PointService {
         Long userId = command.getUserId();
         Long amount = command.getAmount();
 
-        Point point = pointRepository.findOne(userId)
+        Point point = pointRepository.findOneForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         point.charge(amount);
@@ -70,7 +70,7 @@ public class PointService {
         Long userId = command.getUserId();
         Long amount = command.getAmount();
 
-        Point point = pointRepository.findOne(userId)
+        Point point = pointRepository.findOneForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         point.spend(amount);
