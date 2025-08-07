@@ -154,7 +154,7 @@ class PointServiceTest {
                     .userId(userId)
                     .build();
 
-            given(pointRepository.findOne(userId))
+            given(pointRepository.findOneForUpdate(userId))
                     .willReturn(Optional.empty());
 
             // when & then
@@ -164,7 +164,7 @@ class PointServiceTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
 
-            verify(pointRepository).findOne(userId);
+            verify(pointRepository).findOneForUpdate(userId);
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -184,7 +184,7 @@ class PointServiceTest {
                     .userId(1L)
                     .build();
 
-            given(pointRepository.findOne(any()))
+            given(pointRepository.findOneForUpdate(any()))
                     .willReturn(
                             Optional.of(
                                     Point.builder()
@@ -201,7 +201,7 @@ class PointServiceTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
 
-            verify(pointRepository).findOne(any());
+            verify(pointRepository).findOneForUpdate(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -225,7 +225,7 @@ class PointServiceTest {
                     .userId(1L)
                     .build();
 
-            given(pointRepository.findOne(any()))
+            given(pointRepository.findOneForUpdate(any()))
                     .willReturn(
                             Optional.of(
                                     Point.builder()
@@ -241,7 +241,7 @@ class PointServiceTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.EXCESSIVE);
 
-            verify(pointRepository).findOne(any());
+            verify(pointRepository).findOneForUpdate(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -262,7 +262,7 @@ class PointServiceTest {
                     .userId(1L)
                     .build();
 
-            given(pointRepository.findOne(any()))
+            given(pointRepository.findOneForUpdate(any()))
                     .willReturn(
                             Optional.of(
                                     Point.builder()
@@ -280,7 +280,7 @@ class PointServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.getBalance()).isEqualTo(increasedBalance);
 
-            verify(pointRepository).findOne(any());
+            verify(pointRepository).findOneForUpdate(any());
             verify(pointRepository).savePoint(any(Point.class));
             verify(pointRepository).savePointHistory(any(PointHistory.class));
         }
@@ -306,7 +306,7 @@ class PointServiceTest {
                     .userId(userId)
                     .build();
 
-            given(pointRepository.findOne(userId))
+            given(pointRepository.findOneForUpdate(userId))
                     .willReturn(Optional.empty());
 
             // when & then
@@ -316,7 +316,7 @@ class PointServiceTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
 
-            verify(pointRepository).findOne(userId);
+            verify(pointRepository).findOneForUpdate(userId);
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -336,7 +336,7 @@ class PointServiceTest {
                     .userId(1L)
                     .build();
 
-            given(pointRepository.findOne(any()))
+            given(pointRepository.findOneForUpdate(any()))
                     .willReturn(
                             Optional.of(
                                     Point.builder()
@@ -353,7 +353,7 @@ class PointServiceTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
 
-            verify(pointRepository).findOne(any());
+            verify(pointRepository).findOneForUpdate(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -377,7 +377,7 @@ class PointServiceTest {
                     .userId(1L)
                     .build();
 
-            given(pointRepository.findOne(any()))
+            given(pointRepository.findOneForUpdate(any()))
                     .willReturn(
                             Optional.of(
                                     Point.builder()
@@ -393,7 +393,7 @@ class PointServiceTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.NOT_ENOUGH);
 
-            verify(pointRepository).findOne(any());
+            verify(pointRepository).findOneForUpdate(any());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -416,7 +416,7 @@ class PointServiceTest {
                     .userId(1L)
                     .build();
 
-            given(pointRepository.findOne(any()))
+            given(pointRepository.findOneForUpdate(any()))
                     .willReturn(
                             Optional.of(
                                     Point.builder()
@@ -434,7 +434,7 @@ class PointServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.getBalance()).isEqualTo(decreasedBalance);
 
-            verify(pointRepository).findOne(any());
+            verify(pointRepository).findOneForUpdate(any());
             verify(pointRepository).savePoint(any(Point.class));
             verify(pointRepository).savePointHistory(any(PointHistory.class));
         }

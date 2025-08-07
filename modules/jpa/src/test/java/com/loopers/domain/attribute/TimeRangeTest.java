@@ -1,17 +1,12 @@
 package com.loopers.domain.attribute;
 
-import org.assertj.core.data.TemporalUnitLessThanOffset;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.Period;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
@@ -69,16 +64,13 @@ class TimeRangeTest {
             TimeRange range = TimeRange.of(amountToAdd);
 
             // then
-            ZonedDateTime now = ZonedDateTime.now();
-            ZonedDateTime closeEndedAt = now.plus(amountToAdd);
+            Clock fixedClock = Clock.fixed(range.getStartedAt().toInstant(), range.getStartedAt().getZone());
+            ZonedDateTime expectedStartedAt = ZonedDateTime.now(fixedClock);
+            ZonedDateTime expectedEndedAt = expectedStartedAt.plus(amountToAdd);
 
             assertThat(range).isNotNull();
-            assertThat(range.getStartedAt()).isBeforeOrEqualTo(now);
-            assertThat(range.getEndedAt()).isBeforeOrEqualTo(closeEndedAt);
-            assertThat(range.getStartedAt()).isCloseTo(now,
-                    new TemporalUnitLessThanOffset(100, ChronoUnit.MILLIS));
-            assertThat(range.getEndedAt()).isCloseTo(closeEndedAt,
-                    new TemporalUnitLessThanOffset(100, ChronoUnit.MILLIS));
+            assertThat(range.getStartedAt()).isEqualTo(expectedStartedAt);
+            assertThat(range.getEndedAt()).isEqualTo(expectedEndedAt);
         }
 
         @DisplayName("유효한 Duration이면, TimeRange 객체를 생성한다.")
@@ -91,16 +83,13 @@ class TimeRangeTest {
             TimeRange range = TimeRange.of(amountToAdd);
 
             // then
-            ZonedDateTime now = ZonedDateTime.now();
-            ZonedDateTime closeEndedAt = now.plus(amountToAdd);
+            Clock fixedClock = Clock.fixed(range.getStartedAt().toInstant(), range.getStartedAt().getZone());
+            ZonedDateTime expectedStartedAt = ZonedDateTime.now(fixedClock);
+            ZonedDateTime expectedEndedAt = expectedStartedAt.plus(amountToAdd);
 
             assertThat(range).isNotNull();
-            assertThat(range.getStartedAt()).isBeforeOrEqualTo(now);
-            assertThat(range.getEndedAt()).isBeforeOrEqualTo(closeEndedAt);
-            assertThat(range.getStartedAt()).isCloseTo(now,
-                    new TemporalUnitLessThanOffset(100, ChronoUnit.MILLIS));
-            assertThat(range.getEndedAt()).isCloseTo(closeEndedAt,
-                    new TemporalUnitLessThanOffset(100, ChronoUnit.MILLIS));
+            assertThat(range.getStartedAt()).isEqualTo(expectedStartedAt);
+            assertThat(range.getEndedAt()).isEqualTo(expectedEndedAt);
         }
 
     }

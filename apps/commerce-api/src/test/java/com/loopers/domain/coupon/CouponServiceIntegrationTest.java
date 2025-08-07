@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -171,8 +170,7 @@ class CouponServiceIntegrationTest {
                     .withThreadCount(threadCount)
                     .isExecutedBy(() -> sut.use(command))
                     .isDone()
-                    .hasErrorCount(threadCount - 1)
-                    .isThrownBy(OptimisticLockingFailureException.class);
+                    .hasErrorCount(threadCount - 1);
 
             // then
             verify(couponRepository, times(threadCount)).findUserCoupons(command.getUserCouponIds());

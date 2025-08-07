@@ -93,6 +93,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(0L)
+                    .discountAmount(0)
                     .userId(otherUserId)
                     .build();
             OrderProduct orderProduct = OrderProduct.builder()
@@ -133,6 +134,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(0L)
+                    .discountAmount(0)
                     .userId(user.getId())
                     .build();
             order.expire();
@@ -186,6 +188,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(0L)
+                    .discountAmount(0)
                     .userId(user.getId())
                     .build();
             OrderProduct orderProduct = OrderProduct.builder()
@@ -264,6 +267,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(139_000L)
+                    .discountAmount(0)
                     .userId(user.getId())
                     .build();
             OrderProduct orderProduct1 = OrderProduct.builder()
