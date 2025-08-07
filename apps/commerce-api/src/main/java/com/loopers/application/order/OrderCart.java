@@ -7,10 +7,7 @@ import com.loopers.support.error.CommonErrorType;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.collectingAndThen;
@@ -39,7 +36,7 @@ public class OrderCart {
             throw new BusinessException(CommonErrorType.NOT_FOUND);
         }
 
-        return new OrderCart(cartMap, optionMap, input.getUserCouponIds());
+        return new OrderCart(cartMap, optionMap, Objects.requireNonNullElseGet(input.getUserCouponIds(), List::of));
     }
 
     public boolean isEnoughStock() {

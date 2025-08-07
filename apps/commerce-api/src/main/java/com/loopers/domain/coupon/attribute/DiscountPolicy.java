@@ -53,6 +53,10 @@ public class DiscountPolicy {
             throw new BusinessException(CommonErrorType.INVALID, "할인 값은 1 이상이어야 합니다.");
         }
 
+        if (discountRule == DiscountRule.FIXED_AMOUNT && maxDiscountAmount == null) {
+            maxDiscountAmount = discountValue.intValue();
+        }
+
         if (maxDiscountAmount != null && maxDiscountAmount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID, "최대 할인 가능 금액은 1 이상이어야 합니다.");
         }

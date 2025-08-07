@@ -68,6 +68,7 @@ public final class OrderResult {
     public static class Create {
         private final UUID orderId;
         private final Long totalPrice;
+        private final Integer discountAmount;
         private final OrderStatus status;
         private final Long userId;
         private final List<Product> products;
@@ -76,6 +77,7 @@ public final class OrderResult {
             return builder()
                     .orderId(order.getId())
                     .totalPrice(order.getTotalPrice())
+                    .discountAmount(order.getDiscountAmount())
                     .status(order.getStatus())
                     .userId(order.getUserId())
                     .products(order.getProducts()

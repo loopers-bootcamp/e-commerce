@@ -70,8 +70,7 @@ public class Coupon extends BaseEntity {
             String name,
             DiscountPolicy discountPolicy,
             Period validityPeriod,
-            TimeRange issuedRange,
-            ZonedDateTime revokedAt
+            TimeRange issuedRange
     ) {
         if (!StringUtils.hasText(name)) {
             throw new BusinessException(CommonErrorType.INVALID, "이름이 올바르지 않습니다.");
@@ -89,15 +88,10 @@ public class Coupon extends BaseEntity {
             throw new BusinessException(CommonErrorType.INVALID, "쿠폰 발급 기간이 올바르지 않습니다.");
         }
 
-        if (revokedAt == null) {
-            throw new BusinessException(CommonErrorType.INVALID, "폐기일시가 올바르지 않습니다.");
-        }
-
         this.name = name;
         this.discountPolicy = discountPolicy;
         this.validityPeriod = validityPeriod;
         this.issuedRange = issuedRange;
-        this.revokedAt = revokedAt;
     }
 
     public void revoke() {
