@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +61,10 @@ public class CouponService {
             return;
         }
 
-        List<Pair<Coupon, UserCoupon>> pairs = couponRepository.findUserCoupons(userCouponIds);
+        List<Pair<Coupon, UserCoupon>> pairs = couponRepository.findUserCoupons(userCouponIds)
+                .stream()
+                .filter(pair -> Objects.equals(pair.getSecond().getUserId(), command.getUserId()))
+                .toList();
         if (pairs.size() != userCouponIds.size()) {
             throw new BusinessException(CommonErrorType.NOT_FOUND);
         }

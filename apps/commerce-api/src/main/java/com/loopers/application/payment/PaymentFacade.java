@@ -66,6 +66,7 @@ public class PaymentFacade {
         productService.deductStocks(productCommand);
 
         CouponCommand.Use couponCommand = CouponCommand.Use.builder()
+                .userId(user.getUserId())
                 .userCouponIds(order.getUserCouponIds())
                 .build();
         couponService.use(couponCommand);

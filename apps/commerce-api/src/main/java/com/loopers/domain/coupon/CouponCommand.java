@@ -21,6 +21,7 @@ public final class CouponCommand {
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Use {
+        private final Long userId;
         private final List<Long> userCouponIds;
     }
 

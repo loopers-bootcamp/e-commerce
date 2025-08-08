@@ -81,6 +81,7 @@ class CouponServiceIntegrationTest {
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(userCoupon));
 
             CouponCommand.Use command = CouponCommand.Use.builder()
+                    .userId(userCoupon.getUserId())
                     .userCouponIds(List.of(userCoupon.getId()))
                     .build();
 
@@ -119,6 +120,7 @@ class CouponServiceIntegrationTest {
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(userCoupon));
 
             CouponCommand.Use command = CouponCommand.Use.builder()
+                    .userId(userCoupon.getUserId())
                     .userCouponIds(List.of(userCoupon.getId()))
                     .build();
 
@@ -162,6 +164,7 @@ class CouponServiceIntegrationTest {
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(userCoupon));
 
             CouponCommand.Use command = CouponCommand.Use.builder()
+                    .userId(userCoupon.getUserId())
                     .userCouponIds(List.of(userCoupon.getId()))
                     .build();
 
