@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -16,7 +17,7 @@ public class ConcurrentAssertion<V> {
     private final int threadCount;
     private final Supplier<ExecutorService> executorServiceProvider;
 
-    private final List<Future.State> states = new CopyOnWriteArrayList<>();
+    private final AtomicInteger successCount = new AtomicInteger(0);
     private final List<Throwable> errors = new CopyOnWriteArrayList<>();
 
     public static Initializer assertThatConcurrence() {
@@ -24,11 +25,12 @@ public class ConcurrentAssertion<V> {
     }
 
     public ConcurrentAssertion<V> isDone() {
-        assertThat(this.states).hasSize(this.threadCount);
+        assertThat(this.successCount.get() + this.errors.size()).isEqualTo(this.threadCount);
         return this;
     }
 
     public ConcurrentAssertion<V> hasNoError() {
+        assertThat(this.successCount).hasValue(this.threadCount);
         assertThat(this.errors).isEmpty();
         return this;
     }
@@ -59,9 +61,11 @@ public class ConcurrentAssertion<V> {
         try (ExecutorService executorService = this.executorServiceProvider.get()) {
             for (int i = 0; i < this.threadCount; i++) {
                 int n = i;
-                Future<V> future = executorService.submit(() -> {
+                executorService.submit(() -> {
                     try {
-                        return adapter.execute(n);
+                        V executed = adapter.execute(n);
+                        this.successCount.incrementAndGet();
+                        return executed;
                     } catch (Throwable t) {
                         this.errors.add(t);
                         return null;
@@ -69,8 +73,6 @@ public class ConcurrentAssertion<V> {
                         countDownLatch.countDown();
                     }
                 });
-
-                this.states.add(future.state());
             }
 
             countDownLatch.await();
