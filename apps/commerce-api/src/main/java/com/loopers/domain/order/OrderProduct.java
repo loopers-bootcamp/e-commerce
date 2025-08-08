@@ -1,5 +1,6 @@
 package com.loopers.domain.order;
 
+import com.loopers.support.AddedItem;
 import com.loopers.domain.BaseEntity;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -28,7 +29,7 @@ import java.util.UUID;
         @Index(columnList = "ref_product_option_id"),
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderProduct extends BaseEntity {
+public class OrderProduct extends BaseEntity implements AddedItem<Long, UUID> {
 
     /**
      * 아이디
@@ -93,6 +94,11 @@ public class OrderProduct extends BaseEntity {
         this.quantity = quantity;
         this.orderId = orderId;
         this.productOptionId = productOptionId;
+    }
+
+    @Override
+    public UUID getParentId() {
+        return this.orderId;
     }
 
 }

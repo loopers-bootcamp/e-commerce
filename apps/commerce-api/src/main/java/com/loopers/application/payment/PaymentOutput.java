@@ -1,6 +1,5 @@
 package com.loopers.application.payment;
 
-import com.loopers.domain.payment.Payment;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import lombok.*;

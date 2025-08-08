@@ -32,6 +32,7 @@ public class LikeV1Controller implements LikeV1ApiSpec {
     public ApiResponse<Boolean> like(
             @RequestHeader(ApiHeader.USER_ID)
             String userName,
+
             @PathVariable
             Long productId
     ) {

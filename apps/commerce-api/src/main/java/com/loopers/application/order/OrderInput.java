@@ -24,6 +24,7 @@ public final class OrderInput {
     public static class Create {
         private final String userName;
         private final List<Product> products;
+        private final List<Long> userCouponIds;
 
         @Getter
         @Builder

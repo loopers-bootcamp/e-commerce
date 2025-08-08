@@ -1,5 +1,7 @@
 package com.loopers.application.payment;
 
+import com.loopers.domain.coupon.CouponCommand;
+import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
@@ -30,6 +32,7 @@ public class PaymentFacade {
     private final OrderService orderService;
     private final UserService userService;
     private final ProductService productService;
+    private final CouponService couponService;
     private final PointService pointService;
 
     @Transactional
@@ -62,18 +65,24 @@ public class PaymentFacade {
         ProductCommand.DeductStocks productCommand = ProductCommand.DeductStocks.builder().items(items).build();
         productService.deductStocks(productCommand);
 
+        CouponCommand.Use couponCommand = CouponCommand.Use.builder()
+                .userId(user.getUserId())
+                .userCouponIds(order.getUserCouponIds())
+                .build();
+        couponService.use(couponCommand);
+
         // 결제 금액이 0원이면 포인트를 차감할 필요가 없다.
-        Long totalPrice = order.getTotalPrice();
-        if (totalPrice > 0) {
+        Long paymentAmount = order.getTotalPrice() - order.getDiscountAmount();
+        if (paymentAmount > 0) {
             PointCommand.Spend pointCommand = PointCommand.Spend.builder()
-                    .amount(totalPrice)
+                    .amount(paymentAmount)
                     .userId(user.getUserId())
                     .build();
             pointService.spend(pointCommand);
         }
 
         PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
-                .amount(totalPrice)
+                .amount(paymentAmount)
                 .paymentMethod(input.getPaymentMethod())
                 .userId(user.getUserId())
                 .orderId(orderId)

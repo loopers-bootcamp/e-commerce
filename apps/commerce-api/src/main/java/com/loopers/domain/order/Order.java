@@ -4,6 +4,7 @@ import com.loopers.config.jpa.converter.OrderStatusConverter;
 import com.loopers.domain.BaseEntity;
 import com.loopers.domain.order.attribute.OrderStatus;
 import com.loopers.domain.order.error.OrderErrorType;
+import com.loopers.support.ItemAdder;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
@@ -12,9 +13,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.proxy.HibernateProxy;
-import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 @Entity
@@ -36,6 +39,12 @@ public class Order extends BaseEntity implements Comparable<Order> {
      */
     @Column(name = "total_price", nullable = false)
     private Long totalPrice;
+
+    /**
+     * 할인 금액
+     */
+    @Column(name = "discount_amount", nullable = false)
+    private Integer discountAmount;
 
     /**
      * 주문 상태
@@ -60,12 +69,19 @@ public class Order extends BaseEntity implements Comparable<Order> {
     @Transient
     private List<OrderProduct> products = Collections.emptyList();
 
+    /**
+     * 사용한 쿠폰 목록
+     */
+    @Transient
+    private List<OrderCoupon> coupons = Collections.emptyList();
+
     // -------------------------------------------------------------------------------------------------
 
     @Builder
     private Order(
             UUID id,
             Long totalPrice,
+            Integer discountAmount,
             Long userId
     ) {
         if (id == null) {
@@ -84,49 +100,34 @@ public class Order extends BaseEntity implements Comparable<Order> {
             throw new BusinessException(CommonErrorType.INVALID, "총 가격은 0 이상이어야 합니다.");
         }
 
+        if (discountAmount == null || discountAmount < 0) {
+            throw new BusinessException(CommonErrorType.INVALID, "할인 금액은 0 이상이어야 합니다.");
+        }
+
+        if (discountAmount > totalPrice) {
+            throw new BusinessException(CommonErrorType.INVALID, "할인 금액이 총 가격보다 클 수 없습니다.");
+        }
+
         if (userId == null) {
             throw new BusinessException(CommonErrorType.INVALID, "사용자 아이디가 올바르지 않습니다.");
         }
 
         this.id = id;
         this.totalPrice = totalPrice;
+        this.discountAmount = discountAmount;
         this.status = OrderStatus.CREATED;
         this.userId = userId;
     }
 
     public void addProducts(List<OrderProduct> products) {
-        if (CollectionUtils.isEmpty(products)) {
-            return;
+        this.products = ItemAdder.addItemsTo(this.id, this.products, products, true);
+    }
+
+    public void addCoupons(List<OrderCoupon> coupons) {
+        // 할인 금액이 0원이면, 쿠폰을 사용하지 않는다.
+        if (this.discountAmount > 0) {
+            this.coupons = ItemAdder.addItemsTo(this.id, this.coupons, coupons, true);
         }
-
-        List<OrderProduct> those = new ArrayList<>(this.products);
-        Set<Long> ids = new HashSet<>();
-
-        outer:
-        for (OrderProduct product : products) {
-            Long id = product.getId();
-            if (id != null && !ids.add(id)) {
-                throw new BusinessException(CommonErrorType.CONFLICT);
-            }
-
-            UUID orderId = product.getOrderId();
-            if (!Objects.equals(this.id, orderId)) {
-                throw new BusinessException(CommonErrorType.INCONSISTENT);
-            }
-
-            // 이미 추가된 주문 상품을 다시 추가하지 않는다.
-            if (id != null) {
-                for (OrderProduct that : those) {
-                    if (Objects.equals(id, that.getId())) {
-                        continue outer;
-                    }
-                }
-            }
-
-            those.add(product);
-        }
-
-        this.products = List.copyOf(those);
     }
 
     public void complete() {

@@ -8,6 +8,7 @@ import com.loopers.interfaces.api.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,6 +23,7 @@ public class OrderV1Controller implements OrderV1ApiSpec {
     public ApiResponse<OrderResponse.GetOrderDetail> getOrderDetail(
             @RequestHeader(ApiHeader.USER_ID)
             String userName,
+
             @PathVariable
             UUID orderId
     ) {
@@ -38,7 +40,10 @@ public class OrderV1Controller implements OrderV1ApiSpec {
     @PostMapping
     @Override
     public ApiResponse<OrderResponse.Create> create(
+            @RequestHeader(ApiHeader.USER_ID)
             String userName,
+
+            @RequestBody
             OrderRequest.Create request
     ) {
         OrderInput.Create input = OrderInput.Create.builder()
@@ -50,7 +55,9 @@ public class OrderV1Controller implements OrderV1ApiSpec {
                                 .quantity(product.getQuantity())
                                 .build()
                         )
-                        .toList())
+                        .toList()
+                )
+                .userCouponIds(List.copyOf(request.getUserCouponIds()))
                 .build();
 
         OrderOutput.Create output = orderFacade.create(input);

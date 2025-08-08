@@ -2,8 +2,6 @@ package com.loopers.application.activity;
 
 import lombok.*;
 
-import java.util.List;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ActivityInput {
 

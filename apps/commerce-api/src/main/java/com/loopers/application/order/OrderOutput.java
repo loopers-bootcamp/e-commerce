@@ -66,12 +66,14 @@ public final class OrderOutput {
     public static class Create {
         private final UUID orderId;
         private final Long totalPrice;
+        private final Integer discountAmount;
         private final OrderStatus status;
 
         public static Create from(OrderResult.Create result) {
             return builder()
                     .orderId(result.getOrderId())
                     .totalPrice(result.getTotalPrice())
+                    .discountAmount(result.getDiscountAmount())
                     .status(result.getStatus())
                     .build();
         }

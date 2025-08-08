@@ -1,10 +1,15 @@
 package com.loopers.domain.point;
 
+import com.loopers.domain.point.attribute.Cause;
 import com.loopers.domain.point.error.PointErrorType;
+import com.loopers.domain.user.User;
+import com.loopers.domain.user.attribute.Email;
+import com.loopers.domain.user.attribute.Gender;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.support.error.ErrorType;
 import com.loopers.utils.DatabaseCleanUp;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,19 +19,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
+import static com.loopers.test.assertion.ConcurrentAssertion.assertThatConcurrence;
 import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @RequiredArgsConstructor
@@ -40,7 +45,7 @@ class PointServiceIntegrationTest {
     private final PointRepository pointRepository;
 
     private final TransactionTemplate transactionTemplate;
-    private final TestEntityManager testEntityManager;
+    private final EntityManager entityManager;
     private final DatabaseCleanUp databaseCleanUp;
 
     @AfterEach
@@ -64,7 +69,7 @@ class PointServiceIntegrationTest {
             // then
             assertThat(maybeResult).isEmpty();
 
-            verify(pointRepository).findPointByUserId(userId);
+            verify(pointRepository).findOne(userId);
         }
 
         @DisplayName("해당 아이디의 사용자가 있으면, 포인트를 반환한다.")
@@ -77,7 +82,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(userId)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             // when
             Optional<PointResult.GetPoint> maybeResult = sut.getPoint(userId);
@@ -87,7 +92,7 @@ class PointServiceIntegrationTest {
             assertThat(maybeResult.get().getBalance()).isNotNull();
             assertThat(maybeResult.get().getUserId()).isEqualTo(userId);
 
-            verify(pointRepository).findPointByUserId(userId);
+            verify(pointRepository).findOne(userId);
         }
 
     }
@@ -108,7 +113,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(userId)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             // when & then
             assertThatException()
@@ -170,7 +175,7 @@ class PointServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
 
-            verify(pointRepository).findPointByUserId(userId);
+            verify(pointRepository).findOneForUpdate(userId);
         }
 
         @DisplayName("""
@@ -187,7 +192,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(1L)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -201,7 +206,7 @@ class PointServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
 
-            verify(pointRepository).findPointByUserId(any());
+            verify(pointRepository).findOneForUpdate(point.getUserId());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -224,7 +229,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -237,7 +242,7 @@ class PointServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.EXCESSIVE);
 
-            verify(pointRepository).findPointByUserId(any());
+            verify(pointRepository).findOneForUpdate(point.getUserId());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -253,11 +258,13 @@ class PointServiceIntegrationTest {
         @ParameterizedTest
         void savePointAndHistoryAndReturnChargedPoint_whenValidAmountIsProvided(long balance, long amount) {
             // given
+            Long userId = 1L;
+
             Point point = Point.builder()
                     .balance(balance)
-                    .userId(1L)
+                    .userId(userId)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointCommand.Charge command = PointCommand.Charge.builder()
                     .userId(point.getUserId())
@@ -272,9 +279,66 @@ class PointServiceIntegrationTest {
             assertThat(result).isNotNull();
             assertThat(result.getBalance()).isEqualTo(increasedBalance);
 
-            verify(pointRepository).findPointByUserId(any());
+            verify(pointRepository).findOneForUpdate(userId);
             verify(pointRepository).savePoint(any(Point.class));
             verify(pointRepository).savePointHistory(any(PointHistory.class));
+
+            PointHistory pointHistory = entityManager
+                    .createQuery("SELECT ph FROM PointHistory ph WHERE ph.userId = :userId", PointHistory.class)
+                    .setParameter("userId", userId)
+                    .getSingleResult();
+            assertThat(pointHistory).isNotNull();
+            assertThat(pointHistory.getCause()).isEqualTo(Cause.CHARGE);
+            assertThat(pointHistory.getAmount()).isEqualTo(amount);
+        }
+
+        @DisplayName("사용자가 동시에 포인트를 충전하면, 잔액이 부족하지 않는 한 모든 요청을 받는다.")
+        @Test
+        void acceptAllRequestsAsLongAsBalanceIsSufficient_whenUserChargesPointConcurrently() {
+            // given
+            int threadCount = 10;
+
+            User user = User.builder()
+                    .name("gildong")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
+
+            Point point = Point.builder()
+                    .balance(0L)
+                    .userId(user.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
+
+            PointCommand.Charge command = PointCommand.Charge.builder()
+                    .userId(user.getId())
+                    .amount(100L)
+                    .build();
+
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.charge(command))
+                    .isDone()
+                    .hasNoError();
+
+            verify(pointRepository, times(threadCount)).findOneForUpdate(user.getId());
+            verify(pointRepository, times(threadCount)).savePoint(any(Point.class));
+            verify(pointRepository, times(threadCount)).savePointHistory(any(PointHistory.class));
+
+            Long balance = entityManager
+                    .createQuery("select p.balance from Point p where p.userId = :userId", Long.class)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+            assertThat(balance).isEqualTo(command.getAmount() * threadCount);
+
+            long pointHistoryCount = entityManager
+                    .createQuery("SELECT count(ph) FROM PointHistory ph WHERE ph.userId = :userId", long.class)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+            assertThat(pointHistoryCount).isEqualTo(threadCount);
         }
 
     }
@@ -305,7 +369,7 @@ class PointServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
 
-            verify(pointRepository).findPointByUserId(userId);
+            verify(pointRepository).findOneForUpdate(userId);
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -324,7 +388,7 @@ class PointServiceIntegrationTest {
                     .balance(0L)
                     .userId(1L)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -338,7 +402,7 @@ class PointServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.INVALID);
 
-            verify(pointRepository).findPointByUserId(any());
+            verify(pointRepository).findOneForUpdate(point.getUserId());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -361,7 +425,7 @@ class PointServiceIntegrationTest {
                     .balance(balance)
                     .userId(1L)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -374,7 +438,7 @@ class PointServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PointErrorType.NOT_ENOUGH);
 
-            verify(pointRepository).findPointByUserId(any());
+            verify(pointRepository).findOneForUpdate(point.getUserId());
             verify(pointRepository, never()).savePoint(any(Point.class));
             verify(pointRepository, never()).savePointHistory(any(PointHistory.class));
         }
@@ -395,11 +459,13 @@ class PointServiceIntegrationTest {
         @ParameterizedTest
         void savePointAndHistoryAndReturnSpentPoint_whenValidAmountIsProvided(long balance, long amount) {
             // given
+            Long userId = 1L;
+
             Point point = Point.builder()
                     .balance(balance)
-                    .userId(1L)
+                    .userId(userId)
                     .build();
-            transactionTemplate.executeWithoutResult(status -> testEntityManager.persist(point));
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
             PointCommand.Spend command = PointCommand.Spend.builder()
                     .userId(point.getUserId())
@@ -414,9 +480,66 @@ class PointServiceIntegrationTest {
             assertThat(result).isNotNull();
             assertThat(result.getBalance()).isEqualTo(decreasedBalance);
 
-            verify(pointRepository).findPointByUserId(any());
+            verify(pointRepository).findOneForUpdate(userId);
             verify(pointRepository).savePoint(any(Point.class));
             verify(pointRepository).savePointHistory(any(PointHistory.class));
+
+            PointHistory pointHistory = entityManager
+                    .createQuery("SELECT ph FROM PointHistory ph WHERE ph.userId = :userId", PointHistory.class)
+                    .setParameter("userId", userId)
+                    .getSingleResult();
+            assertThat(pointHistory).isNotNull();
+            assertThat(pointHistory.getCause()).isEqualTo(Cause.PURCHASE);
+            assertThat(pointHistory.getAmount()).isEqualTo(amount);
+        }
+
+        @DisplayName("사용자가 동시에 포인트를 사용하면, 잔액이 부족하지 않는 한 모든 요청을 받는다.")
+        @Test
+        void acceptAllRequestsAsLongAsBalanceIsSufficient_whenUserSpendsPointConcurrently() {
+            // given
+            int threadCount = 10;
+
+            User user = User.builder()
+                    .name("gildong")
+                    .gender(Gender.MALE)
+                    .birthDate(LocalDate.of(1990, 1, 1))
+                    .email(new Email("gildong.hong@example.com"))
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(user));
+
+            Point point = Point.builder()
+                    .balance(1050L)
+                    .userId(user.getId())
+                    .build();
+            transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
+
+            PointCommand.Spend command = PointCommand.Spend.builder()
+                    .userId(user.getId())
+                    .amount(100L)
+                    .build();
+
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.spend(command))
+                    .isDone()
+                    .hasNoError();
+
+            verify(pointRepository, times(threadCount)).findOneForUpdate(user.getId());
+            verify(pointRepository, times(threadCount)).savePoint(any(Point.class));
+            verify(pointRepository, times(threadCount)).savePointHistory(any(PointHistory.class));
+
+            Long balance = entityManager
+                    .createQuery("select p.balance from Point p where p.userId = :userId", Long.class)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+            assertThat(balance).isEqualTo(50);
+
+            long pointHistoryCount = entityManager
+                    .createQuery("SELECT count(ph) FROM PointHistory ph WHERE ph.userId = :userId", long.class)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+            assertThat(pointHistoryCount).isEqualTo(threadCount);
         }
 
     }

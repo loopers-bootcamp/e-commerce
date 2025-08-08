@@ -8,14 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.instancio.Select.field;
 import static org.instancio.Select.root;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @MockitoSettings
 class ActivityServiceTest {
@@ -66,17 +64,6 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findOne(userId, productId))
-                    .willReturn(Optional.empty());
-            given(likedProductRepository.save(any(LikedProduct.class)))
-                    .willAnswer(invocation -> {
-                        LikedProduct saved = invocation.getArgument(0);
-                        return Instancio.of(LikedProduct.class)
-                                .set(field(LikedProduct::getUserId), saved.getUserId())
-                                .set(field(LikedProduct::getProductId), saved.getProductId())
-                                .create();
-                    });
-
             ActivityCommand.Like command = ActivityCommand.Like.builder()
                     .userId(userId)
                     .productId(productId)
@@ -86,8 +73,7 @@ class ActivityServiceTest {
             sut.like(command);
 
             // then
-            verify(likedProductRepository, times(1)).findOne(userId, productId);
-            verify(likedProductRepository, times(1)).save(any(LikedProduct.class));
+            verify(likedProductRepository, times(1)).saveIfAbsent(any(LikedProduct.class));
         }
 
         @DisplayName("이미 좋아요 한 상품이라면, 아무것도 하지 않는다. (멱등성 보장)")
@@ -97,27 +83,16 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findOne(userId, productId))
-                    .willAnswer(invocation ->
-                            Instancio.of(LikedProduct.class)
-                                    .set(field(LikedProduct::getUserId), userId)
-                                    .set(field(LikedProduct::getProductId), productId)
-                                    .stream().findAny()
-                    );
-
-
             ActivityCommand.Like command = ActivityCommand.Like.builder()
                     .userId(userId)
                     .productId(productId)
                     .build();
 
-
             // when
             sut.like(command);
 
             // then
-            verify(likedProductRepository, times(1)).findOne(userId, productId);
-            verify(likedProductRepository, never()).save(any(LikedProduct.class));
+            verify(likedProductRepository, times(1)).saveIfAbsent(any(LikedProduct.class));
         }
 
     }
@@ -135,14 +110,6 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findOne(userId, productId))
-                    .willAnswer(invocation ->
-                            Instancio.of(LikedProduct.class)
-                                    .set(field(LikedProduct::getUserId), userId)
-                                    .set(field(LikedProduct::getProductId), productId)
-                                    .stream().findAny()
-                    );
-
             ActivityCommand.Dislike command = ActivityCommand.Dislike.builder()
                     .userId(userId)
                     .productId(productId)
@@ -152,8 +119,7 @@ class ActivityServiceTest {
             sut.dislike(command);
 
             // then
-            verify(likedProductRepository, times(1)).findOne(userId, productId);
-            verify(likedProductRepository, times(1)).delete(any(LikedProduct.class));
+            verify(likedProductRepository, times(1)).deleteIfPresent(any(LikedProduct.class));
         }
 
         @DisplayName("좋아요 한 상품이 아니라면, 아무것도 하지 않는다. (멱등성 보장)")
@@ -163,9 +129,6 @@ class ActivityServiceTest {
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
 
-            given(likedProductRepository.findOne(userId, productId))
-                    .willReturn(Optional.empty());
-
             ActivityCommand.Dislike command = ActivityCommand.Dislike.builder()
                     .userId(userId)
                     .productId(productId)
@@ -175,8 +138,7 @@ class ActivityServiceTest {
             sut.dislike(command);
 
             // then
-            verify(likedProductRepository, times(1)).findOne(userId, productId);
-            verify(likedProductRepository, never()).delete(any(LikedProduct.class));
+            verify(likedProductRepository, times(1)).deleteIfPresent(any(LikedProduct.class));
         }
 
     }

@@ -1,5 +1,6 @@
 package com.loopers.domain.product;
 
+import com.loopers.support.AddedItem;
 import com.loopers.domain.BaseEntity;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -17,7 +18,7 @@ import org.springframework.util.StringUtils;
         indexes = @Index(columnList = "ref_product_id")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductOption extends BaseEntity {
+public class ProductOption extends BaseEntity implements AddedItem<Long, Long> {
 
     /**
      * 아이디
@@ -66,6 +67,11 @@ public class ProductOption extends BaseEntity {
         this.name = name;
         this.additionalPrice = additionalPrice;
         this.productId = productId;
+    }
+
+    @Override
+    public Long getParentId() {
+        return this.productId;
     }
 
 }

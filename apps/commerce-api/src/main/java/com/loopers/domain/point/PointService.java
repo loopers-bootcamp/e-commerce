@@ -19,7 +19,7 @@ public class PointService {
 
     @ReadOnlyTransactional
     public Optional<PointResult.GetPoint> getPoint(Long userId) {
-        return pointRepository.findPointByUserId(userId)
+        return pointRepository.findOne(userId)
                 .map(PointResult.GetPoint::from);
     }
 
@@ -49,7 +49,7 @@ public class PointService {
         Long userId = command.getUserId();
         Long amount = command.getAmount();
 
-        Point point = pointRepository.findPointByUserId(userId)
+        Point point = pointRepository.findOneForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         point.charge(amount);
@@ -70,7 +70,7 @@ public class PointService {
         Long userId = command.getUserId();
         Long amount = command.getAmount();
 
-        Point point = pointRepository.findPointByUserId(userId)
+        Point point = pointRepository.findOneForUpdate(userId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         point.spend(amount);

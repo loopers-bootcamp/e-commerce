@@ -13,6 +13,8 @@ public interface LikedProductRepository {
 
     LikedProduct save(LikedProduct likedProduct);
 
-    void delete(LikedProduct likedProduct);
+    void saveIfAbsent(LikedProduct likedProduct);
+
+    void deleteIfPresent(LikedProduct likedProduct);
 
 }

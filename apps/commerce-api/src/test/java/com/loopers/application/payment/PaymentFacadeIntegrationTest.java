@@ -15,7 +15,7 @@ import com.loopers.domain.point.PointCommand;
 import com.loopers.domain.point.PointService;
 import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.product.Stock;
+import com.loopers.domain.product.ProductStock;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.UserService;
 import com.loopers.domain.user.attribute.Email;
@@ -93,6 +93,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(0L)
+                    .discountAmount(0)
                     .userId(otherUserId)
                     .build();
             OrderProduct orderProduct = OrderProduct.builder()
@@ -133,6 +134,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(0L)
+                    .discountAmount(0)
                     .userId(user.getId())
                     .build();
             order.expire();
@@ -177,7 +179,7 @@ class PaymentFacadeIntegrationTest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
-            Stock stock = Stock.builder()
+            ProductStock stock = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(1L)
                     .build();
@@ -186,6 +188,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(0L)
+                    .discountAmount(0)
                     .userId(user.getId())
                     .build();
             OrderProduct orderProduct = OrderProduct.builder()
@@ -248,11 +251,11 @@ class PaymentFacadeIntegrationTest {
                     .build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(point));
 
-            Stock stock1 = Stock.builder()
+            ProductStock stock1 = ProductStock.builder()
                     .quantity(100)
                     .productOptionId(1L)
                     .build();
-            Stock stock2 = Stock.builder()
+            ProductStock stock2 = ProductStock.builder()
                     .quantity(50)
                     .productOptionId(2L)
                     .build();
@@ -264,6 +267,7 @@ class PaymentFacadeIntegrationTest {
             Order order = Order.builder()
                     .id(UUID.fromString("00000000-0000-1000-8000-000000000000"))
                     .totalPrice(139_000L)
+                    .discountAmount(0)
                     .userId(user.getId())
                     .build();
             OrderProduct orderProduct1 = OrderProduct.builder()

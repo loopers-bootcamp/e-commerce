@@ -3,7 +3,7 @@ package com.loopers.interfaces.api.product;
 import com.loopers.annotation.SpringE2ETest;
 import com.loopers.domain.product.Product;
 import com.loopers.domain.product.ProductOption;
-import com.loopers.domain.product.Stock;
+import com.loopers.domain.product.ProductStock;
 import com.loopers.domain.product.attribute.ProductSearchSortType;
 import com.loopers.domain.user.User;
 import com.loopers.domain.user.attribute.Email;
@@ -162,8 +162,8 @@ class ProductV1ApiE2ETest {
                     .toList();
             transactionTemplate.executeWithoutResult(status -> options.forEach(testEntityManager::persist));
 
-            List<Stock> stocks = IntStream.range(0, options.size())
-                    .mapToObj(i -> Stock.builder()
+            List<ProductStock> stocks = IntStream.range(0, options.size())
+                    .mapToObj(i -> ProductStock.builder()
                             .productOptionId(options.get(i).getId())
                             .quantity((i + 1) * 10)
                             .build()

@@ -48,6 +48,7 @@ class OrderServiceTest {
             OrderCommand.Create command = OrderCommand.Create.builder()
                     .userId(userId)
                     .totalPrice(totalPrice)
+                    .discountAmount(0)
                     .products(products)
                     .build();
 
