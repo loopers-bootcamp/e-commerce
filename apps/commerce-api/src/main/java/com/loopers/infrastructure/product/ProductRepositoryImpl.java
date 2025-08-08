@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -70,15 +71,14 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .limit(pageRequest.getPageSize())
                 .orderBy(productsSorter(sortType), tieBreakSorter());
 
-        Long total = queryFactory
+        JPAQuery<Long> countQuery = queryFactory
                 .select(p.count())
                 .from(p)
                 .leftJoin(b).on(b.id.eq(p.brandId))
                 .where(
                         containKeywordByProductName(keyword),
                         matchByBrandId(brandId)
-                )
-                .fetchOne();
+                );
 
         List<ProductQueryResult.Products> products = query.stream()
                 .map(row -> ProductQueryResult.Products.builder()
@@ -91,7 +91,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 )
                 .toList();
 
-        return new PageImpl<>(products, pageRequest, Objects.requireNonNullElse(total, 0L));
+        return PageableExecutionUtils.getPage(products, pageRequest, countQuery::fetchOne);
     }
 
     @Override
