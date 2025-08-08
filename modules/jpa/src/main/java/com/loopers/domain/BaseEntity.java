@@ -42,7 +42,7 @@ public abstract class BaseEntity {
     }
 
     @PrePersist
-    private void prePersist() {
+    public void prePersist() {
         guard();
 
         ZonedDateTime now = ZonedDateTime.now();

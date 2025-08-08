@@ -3,14 +3,12 @@ package com.loopers.domain.activity;
 import com.loopers.utils.DatabaseCleanUp;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.assertj.core.data.TemporalUnitLessThanOffset;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
@@ -107,35 +105,30 @@ class ActivityServiceIntegrationTest {
         @Test
         void doNothing_whenAlreadyLiked() {
             // given
+            int threadCount = 10;
+
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
-
-            LikedProduct initialLikedProduct = LikedProduct.builder()
-                    .userId(userId)
-                    .productId(productId)
-                    .build();
-            transactionTemplate.executeWithoutResult(status -> entityManager.persist(initialLikedProduct));
 
             ActivityCommand.Like command = ActivityCommand.Like.builder()
                     .userId(userId)
                     .productId(productId)
                     .build();
 
-            // when
-            sut.like(command);
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.like(command))
+                    .isDone()
+                    .hasNoError();
 
             // then
-            LikedProduct foundLikedProduct = entityManager
-                    .createQuery("SELECT pl FROM LikedProduct pl WHERE pl.userId = :userId AND pl.productId = :productId", LikedProduct.class)
+            long likeCount = entityManager
+                    .createQuery("SELECT count(pl) FROM LikedProduct pl WHERE pl.userId = :userId AND pl.productId = :productId", long.class)
                     .setParameter("userId", userId)
                     .setParameter("productId", productId)
                     .getSingleResult();
-            assertThat(foundLikedProduct).isNotNull();
-            assertThat(foundLikedProduct.getId()).isEqualTo(initialLikedProduct.getId());
-            assertThat(foundLikedProduct.getCreatedAt()).isCloseTo(initialLikedProduct.getCreatedAt(),
-                    new TemporalUnitLessThanOffset(1, ChronoUnit.MILLIS));
-            assertThat(foundLikedProduct.getUpdatedAt()).isCloseTo(initialLikedProduct.getUpdatedAt(),
-                    new TemporalUnitLessThanOffset(1, ChronoUnit.MILLIS));
+            assertThat(likeCount).isOne();
         }
 
     }
@@ -180,31 +173,29 @@ class ActivityServiceIntegrationTest {
         @Test
         void doNothing_whenNonexistent() {
             // given
+            int threadCount = 10;
             Long userId = Instancio.create(Long.class);
             Long productId = Instancio.create(Long.class);
-
-            long initialLikeCount = entityManager
-                    .createQuery("SELECT count(pl) FROM LikedProduct pl WHERE pl.userId = :userId AND pl.productId = :productId", long.class)
-                    .setParameter("userId", userId)
-                    .setParameter("productId", productId)
-                    .getSingleResult();
-            assertThat(initialLikeCount).isZero();
 
             ActivityCommand.Dislike command = ActivityCommand.Dislike.builder()
                     .userId(userId)
                     .productId(productId)
                     .build();
 
-            // when
-            sut.dislike(command);
+            // when & then
+            assertThatConcurrence()
+                    .withThreadCount(threadCount)
+                    .isExecutedBy(() -> sut.dislike(command))
+                    .isDone()
+                    .hasNoError();
 
             // then
-            long actualLikeCount = entityManager
+            long likeCount = entityManager
                     .createQuery("SELECT count(pl) FROM LikedProduct pl WHERE pl.userId = :userId AND pl.productId = :productId", long.class)
                     .setParameter("userId", userId)
                     .setParameter("productId", productId)
                     .getSingleResult();
-            assertThat(actualLikeCount).isZero();
+            assertThat(likeCount).isZero();
         }
 
     }
