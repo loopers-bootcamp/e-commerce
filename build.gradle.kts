@@ -45,6 +45,9 @@ subprojects {
         }
 
         dependencies {
+            // P6Spy
+            dependency("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0")
+
             // UUID v7
             dependency("com.fasterxml.uuid:java-uuid-generator:5.1.0")
         }

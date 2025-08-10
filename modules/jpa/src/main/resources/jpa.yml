@@ -37,13 +37,28 @@ datasource:
         rewriteBatchedStatements: true
 
 ---
+
 spring.config.activate.on-profile: local
 
 spring:
   jpa:
-    show-sql: true
+    show-sql: false # Replaced with P6Spy
     hibernate:
       ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: false # Replaced with P6Spy
+        format_sql: false # Replaced with P6Spy
+        highlight_sql: false # Replaced with P6Spy
+        use_sql_comments: false # Replaced with P6Spy
+        generate_statistics: false # Replaced with P6Spy
+        globally_quoted_identifiers: true
+
+# P6Spy
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
 
 datasource:
   mysql-jpa:
@@ -53,13 +68,28 @@ datasource:
       password: application
 
 ---
+
 spring.config.activate.on-profile: test
 
 spring:
   jpa:
-    show-sql: true
+    show-sql: false # Replaced with P6Spy
     hibernate:
       ddl-auto: create
+  properties:
+    hibernate:
+      show_sql: false # Replaced with P6Spy
+      format_sql: false # Replaced with P6Spy
+      highlight_sql: false # Replaced with P6Spy
+      use_sql_comments: false # Replaced with P6Spy
+      generate_statistics: false # Replaced with P6Spy
+      globally_quoted_identifiers: true
+
+# P6Spy
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
 
 datasource:
   mysql-jpa:
