@@ -81,9 +81,9 @@ class UserServiceTest {
     @Nested
     class Join {
 
-        @DisplayName("이름, 성별, 생년월일, 이메일이 모두 올바르면 사용자 정보를 반환한다.")
+        @DisplayName("이미 가입된 회원의 이름이면, BusinessException이 발생한다.")
         @Test
-        void throwException_whenUserDoesNotExistByName() {
+        void throwException_whenUserExistsByName() {
             // given
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName("gildong")
@@ -102,7 +102,7 @@ class UserServiceTest {
 
         @DisplayName("이미 가입된 회원의 이름이 아니고 모든 속성이 올바르면, 사용자 정보를 반환한다.")
         @Test
-        void returnUser_whenUserExistsByName() {
+        void returnUser_whenUserDoesNotExistByName() {
             // given
             UserCommand.Join command = UserCommand.Join.builder()
                     .userName("gildong")
