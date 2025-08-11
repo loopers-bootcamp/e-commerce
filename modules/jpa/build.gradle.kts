@@ -21,6 +21,9 @@ dependencies {
 
     testImplementation("org.testcontainers:mysql")
 
+    testFixturesCompileOnly("org.projectlombok:lombok")
+    testFixturesAnnotationProcessor("org.projectlombok:lombok")
+
     testFixturesImplementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testFixturesImplementation("org.springframework.boot:spring-boot-test-autoconfigure")
     testFixturesImplementation("org.testcontainers:mysql")
