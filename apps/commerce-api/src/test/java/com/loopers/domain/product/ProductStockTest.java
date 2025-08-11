@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.instancio.Select.field;
 
-class StockTest {
+class ProductStockTest {
 
     @DisplayName("재고를 생성할 때:")
     @Nested
@@ -33,7 +33,7 @@ class StockTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> Stock.builder()
+                    .isThrownBy(() -> ProductStock.builder()
                             .quantity(quantity)
                             .productOptionId(productOptionId)
                             .build()
@@ -51,7 +51,7 @@ class StockTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> Stock.builder()
+                    .isThrownBy(() -> ProductStock.builder()
                             .quantity(quantity)
                             .productOptionId(productOptionId)
                             .build()
@@ -69,7 +69,7 @@ class StockTest {
         @ParameterizedTest
         void createNewStock_withValidValues(Integer quantity, Long productOptionId) {
             // when
-            Stock stock = Stock.builder()
+            ProductStock stock = ProductStock.builder()
                     .quantity(quantity)
                     .productOptionId(productOptionId)
                     .build();
@@ -95,8 +95,8 @@ class StockTest {
         @ParameterizedTest
         void throwException_whenAmountIsZeroOrNegative(int amount) {
             // given
-            Stock stock = Instancio.of(Stock.class)
-                    .set(field(Stock::getQuantity), 100)
+            ProductStock stock = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getQuantity), 100)
                     .create();
 
             // when & then
@@ -115,8 +115,8 @@ class StockTest {
         @ParameterizedTest
         void addQuantity_withValidAmount(int initialQuantity, int amountToAdd, int expectedQuantity) {
             // given
-            Stock stock = Instancio.of(Stock.class)
-                    .set(field(Stock::getQuantity), initialQuantity)
+            ProductStock stock = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getQuantity), initialQuantity)
                     .create();
 
             // when
@@ -141,8 +141,8 @@ class StockTest {
         @ParameterizedTest
         void throwException_whenAmountIsZeroOrNegative(int amount) {
             // given
-            Stock stock = Instancio.of(Stock.class)
-                    .set(field(Stock::getQuantity), 100)
+            ProductStock stock = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getQuantity), 100)
                     .create();
 
             // when & then
@@ -161,8 +161,8 @@ class StockTest {
         @ParameterizedTest
         void throwException_whenQuantityIsNotEnough(int initialQuantity, int amountToDeduct) {
             // given
-            Stock stock = Instancio.of(Stock.class)
-                    .set(field(Stock::getQuantity), initialQuantity)
+            ProductStock stock = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getQuantity), initialQuantity)
                     .create();
 
             // when & then
@@ -181,8 +181,8 @@ class StockTest {
         @ParameterizedTest
         void deductQuantity_withValidAmount(int initialQuantity, int amountToDeduct, int expectedQuantity) {
             // given
-            Stock stock = Instancio.of(Stock.class)
-                    .set(field(Stock::getQuantity), initialQuantity)
+            ProductStock stock = Instancio.of(ProductStock.class)
+                    .set(field(ProductStock::getQuantity), initialQuantity)
                     .create();
 
             // when

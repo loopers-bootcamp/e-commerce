@@ -61,8 +61,22 @@ public class LikedProductRepositoryImpl implements LikedProductRepository {
     }
 
     @Override
-    public void delete(LikedProduct likedProduct) {
-        likedProductJpaRepository.delete(likedProduct);
+    public void saveIfAbsent(LikedProduct likedProduct) {
+        likedProduct.prePersist();
+        likedProductJpaRepository.insertIfNotExists(
+                likedProduct.getUserId(),
+                likedProduct.getProductId(),
+                likedProduct.getCreatedAt(),
+                likedProduct.getUpdatedAt()
+        );
+    }
+
+    @Override
+    public void deleteIfPresent(LikedProduct likedProduct) {
+        likedProductJpaRepository.delete(
+                likedProduct.getUserId(),
+                likedProduct.getProductId()
+        );
     }
 
 }

@@ -1,4 +1,4 @@
-package com.loopers.domain.product;
+package com.loopers.domain.coupon;
 
 import com.loopers.domain.BaseEntity;
 import com.loopers.domain.product.error.ProductErrorType;
@@ -12,20 +12,20 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "stocks")
+@Table(name = "coupon_stocks")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Stock extends BaseEntity {
+public class CouponStock extends BaseEntity {
 
     /**
      * 아이디
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stock_id", nullable = false, updatable = false)
+    @Column(name = "coupon_stock_id", nullable = false, updatable = false)
     private Long id;
 
     /**
-     * 재고 수량
+     * 쿠폰 재고 수량
      */
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
@@ -33,31 +33,31 @@ public class Stock extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     /**
-     * 상품 옵션 아이디
+     * 쿠폰 아이디
      */
-    @Column(name = "ref_product_option_id", nullable = false, updatable = false, unique = true)
-    private Long productOptionId;
+    @Column(name = "ref_coupon_id", nullable = false, updatable = false, unique = true)
+    private Long couponId;
 
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private Stock(Integer quantity, Long productOptionId) {
+    private CouponStock(Integer quantity, Long couponId) {
         if (quantity == null || quantity < 0) {
-            throw new BusinessException(CommonErrorType.INVALID, "재고 수량은 0 이상이어야 합니다.");
+            throw new BusinessException(CommonErrorType.INVALID, "쿠폰 재고 수량은 0 이상이어야 합니다.");
         }
 
-        if (productOptionId == null) {
-            throw new BusinessException(CommonErrorType.INVALID, "상품 옵션 아이디가 올바르지 않습니다.");
+        if (couponId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "쿠폰 아이디가 올바르지 않습니다.");
         }
 
         this.quantity = quantity;
-        this.productOptionId = productOptionId;
+        this.couponId = couponId;
     }
 
     public void add(int amount) {
         if (amount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID,
-                    "0 이하의 값으로 재고를 증가할 수 없습니다.");
+                    "0 이하의 값으로 쿠폰 재고를 증가할 수 없습니다.");
         }
 
         this.quantity += amount;
@@ -66,7 +66,7 @@ public class Stock extends BaseEntity {
     public void deduct(int amount) {
         if (amount <= 0) {
             throw new BusinessException(CommonErrorType.INVALID,
-                    "0 이하의 값으로 재고를 차감할 수 없습니다.");
+                    "0 이하의 값으로 쿠폰 재고를 차감할 수 없습니다.");
         }
 
         int deductedQuantity = this.quantity - amount;

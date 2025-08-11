@@ -126,6 +126,7 @@ class OrderTest {
             Order order = Order.builder()
                     .id(id)
                     .totalPrice(totalPrice)
+                    .discountAmount(0)
                     .userId(userId)
                     .build();
 

@@ -69,15 +69,15 @@ public class ProductService {
         }
 
         List<Long> productOptionIds = items.stream().map(ProductCommand.AddStocks.Item::getProductOptionId).toList();
-        Map<Long, Stock> stockMap = productRepository.findStocksByProductOptionIdsForUpdate(productOptionIds)
-                .stream().collect(toMap(Stock::getProductOptionId, Function.identity()));
+        Map<Long, ProductStock> stockMap = productRepository.findStocksForUpdate(productOptionIds)
+                .stream().collect(toMap(ProductStock::getProductOptionId, Function.identity()));
 
         if (stockMap.size() != productOptionIds.size()) {
             throw new BusinessException(CommonErrorType.NOT_FOUND, "상품 재고를 찾을 수 없습니다.");
         }
 
         for (ProductCommand.AddStocks.Item item : items) {
-            Stock stock = stockMap.get(item.getProductOptionId());
+            ProductStock stock = stockMap.get(item.getProductOptionId());
             stock.add(item.getAmount());
         }
 
@@ -96,15 +96,15 @@ public class ProductService {
         }
 
         List<Long> productOptionIds = items.stream().map(ProductCommand.DeductStocks.Item::getProductOptionId).toList();
-        Map<Long, Stock> stockMap = productRepository.findStocksByProductOptionIdsForUpdate(productOptionIds)
-                .stream().collect(toMap(Stock::getProductOptionId, Function.identity()));
+        Map<Long, ProductStock> stockMap = productRepository.findStocksForUpdate(productOptionIds)
+                .stream().collect(toMap(ProductStock::getProductOptionId, Function.identity()));
 
         if (stockMap.size() != productOptionIds.size()) {
             throw new BusinessException(CommonErrorType.NOT_FOUND, "상품 재고를 찾을 수 없습니다.");
         }
 
         for (ProductCommand.DeductStocks.Item item : items) {
-            Stock stock = stockMap.get(item.getProductOptionId());
+            ProductStock stock = stockMap.get(item.getProductOptionId());
             stock.deduct(item.getAmount());
         }
 

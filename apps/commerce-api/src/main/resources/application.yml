@@ -11,6 +11,7 @@ server:
   max-http-request-header-size: 8KB
 
 spring:
+  mvc.format.date: iso
   main:
     web-application-type: servlet
   threads.virtual.enabled: true
