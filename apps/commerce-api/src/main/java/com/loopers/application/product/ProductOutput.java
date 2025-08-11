@@ -28,7 +28,6 @@ public final class ProductOutput {
 
         public static GetProductDetail from(
                 ProductResult.GetProductDetail product,
-                long likeCount,
                 @Nullable
                 BrandResult.GetBrand brand
         ) {
@@ -36,7 +35,7 @@ public final class ProductOutput {
                     .productId(product.getProductId())
                     .productName(product.getProductName())
                     .basePrice(product.getBasePrice())
-                    .likeCount(likeCount)
+                    .likeCount(product.getLikeCount())
                     .options(product.getOptions().stream().map(Option::from).toList())
                     .brandId(brand == null ? null : brand.getBrandId())
                     .brandName(brand == null ? null : brand.getBrandName())

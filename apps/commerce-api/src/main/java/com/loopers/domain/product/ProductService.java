@@ -58,6 +58,24 @@ public class ProductService {
     }
 
     @Transactional
+    public void like(Long productId) {
+        Product product = productRepository.findProductForUpdate(productId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        product.like();
+        productRepository.saveProduct(product);
+    }
+
+    @Transactional
+    public void dislike(Long productId) {
+        Product product = productRepository.findProductForUpdate(productId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        product.dislike();
+        productRepository.saveProduct(product);
+    }
+
+    @Transactional
     public void addStocks(ProductCommand.AddStocks command) {
         List<ProductCommand.AddStocks.Item> items = command.getItems();
         if (CollectionUtils.isEmpty(items)) {

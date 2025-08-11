@@ -40,6 +40,12 @@ public class Product extends BaseEntity {
     @Column(name = "base_price", nullable = false)
     private Integer basePrice;
 
+    /**
+     * 상품 좋아요 수
+     */
+    @Column(name = "like_count", nullable = false)
+    private Long likeCount;
+
     // -------------------------------------------------------------------------------------------------
 
     /**
@@ -71,6 +77,21 @@ public class Product extends BaseEntity {
         this.name = name;
         this.basePrice = basePrice;
         this.brandId = brandId;
+        this.likeCount = 0L;
+    }
+
+    public void like() {
+        // 오버플로우를 방지한다.
+        if (this.likeCount < Long.MAX_VALUE) {
+            this.likeCount++;
+        }
+    }
+
+    public void dislike() {
+        // 언더플로우를 방지한다.
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
     }
 
     public void addOptions(List<ProductOption> options) {

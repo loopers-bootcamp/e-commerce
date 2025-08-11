@@ -13,7 +13,11 @@ public interface ProductRepository {
 
     Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds);
 
+    Optional<Product> findProductForUpdate(Long productId);
+
     List<ProductStock> findStocksForUpdate(List<Long> productOptionIds);
+
+    Product saveProduct(Product product);
 
     List<ProductStock> saveStocks(List<ProductStock> stocks);
 

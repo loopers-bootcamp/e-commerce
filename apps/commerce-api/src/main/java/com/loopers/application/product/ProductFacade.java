@@ -36,8 +36,6 @@ public class ProductFacade {
 
         BrandResult.GetBrand brand = brandService.getBrand(detail.getBrandId()).orElse(null);
 
-        long likeCount = activityService.getLikeCount(productId);
-
         // 회원이면 비동기로 조회수를 증가한다.
         String userName = input.getUserName();
         if (StringUtils.hasText(userName)) {
@@ -54,7 +52,7 @@ public class ProductFacade {
             });
         }
 
-        return ProductOutput.GetProductDetail.from(detail, likeCount, brand);
+        return ProductOutput.GetProductDetail.from(detail, brand);
     }
 
 }

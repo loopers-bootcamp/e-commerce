@@ -242,6 +242,7 @@ class ProductServiceIntegrationTest {
             assertThat(maybeDetail.get().getProductId()).isEqualTo(product.getId());
             assertThat(maybeDetail.get().getProductName()).isEqualTo(product.getName());
             assertThat(maybeDetail.get().getBasePrice()).isEqualTo(product.getBasePrice());
+            assertThat(maybeDetail.get().getLikeCount()).isEqualTo(product.getLikeCount());
             assertThat(maybeDetail.get().getBrandId()).isEqualTo(product.getBrandId());
             assertThat(maybeDetail.get().getOptions()).hasSize(2);
             assertThat(maybeDetail.get().getOptions())

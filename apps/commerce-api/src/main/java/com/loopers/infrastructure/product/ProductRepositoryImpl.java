@@ -117,6 +117,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .productId(product.getId())
                 .productName(product.getName())
                 .basePrice(product.getBasePrice())
+                .likeCount(product.getLikeCount())
                 .brandId(product.getBrandId())
                 .options(new ArrayList<>())
                 .build();
@@ -184,8 +185,18 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    public Optional<Product> findProductForUpdate(Long productId) {
+        return productRepository.findByIdForUpdate(productId);
+    }
+
+    @Override
     public List<ProductStock> findStocksForUpdate(List<Long> productOptionIds) {
         return stockJpaRepository.findByProductOptionIdIn(productOptionIds);
+    }
+
+    @Override
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
     }
 
     @Override

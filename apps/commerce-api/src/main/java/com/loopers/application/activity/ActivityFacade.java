@@ -10,6 +10,7 @@ import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +29,13 @@ public class ActivityFacade {
         return ActivityOutput.GetLikedProducts.from(likedProducts);
     }
 
+    @Transactional
     public void like(ActivityInput.Like input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
         Long productId = input.getProductId();
-        productService.getProductDetail(productId)
-                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+        productService.like(productId);
 
         ActivityCommand.Like command = ActivityCommand.Like.builder()
                 .userId(user.getUserId())
@@ -43,13 +44,13 @@ public class ActivityFacade {
         activityService.like(command);
     }
 
+    @Transactional
     public void dislike(ActivityInput.Dislike input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
         Long productId = input.getProductId();
-        productService.getProductDetail(productId)
-                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+        productService.dislike(productId);
 
         ActivityCommand.Dislike command = ActivityCommand.Dislike.builder()
                 .userId(user.getUserId())
