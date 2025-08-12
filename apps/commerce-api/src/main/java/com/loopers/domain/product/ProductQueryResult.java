@@ -14,6 +14,7 @@ public final class ProductQueryResult {
         private final Long productId;
         private final String productName;
         private final Integer basePrice;
+        private final Long likeCount;
         private final Long brandId;
         private final String brandName;
     }

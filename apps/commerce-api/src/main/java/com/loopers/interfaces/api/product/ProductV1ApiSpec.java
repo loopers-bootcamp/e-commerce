@@ -12,8 +12,8 @@ import jakarta.validation.constraints.Positive;
 public interface ProductV1ApiSpec {
 
     @Operation(
-            summary = "상품 상세 조회",
-            description = "상품 상세 정보를 조회합니다."
+            summary = "상품 목록 조회",
+            description = "상품 목록을 조회합니다."
     )
     ApiResponse<ProductResponse.SearchProducts> searchProducts(
             @Valid

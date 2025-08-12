@@ -50,6 +50,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                         , p.basePrice
                         , p.brandId
                         , b.name
+                        , lp.id.count().as("likeCount")
                 )
                 .from(p)
                 .leftJoin(b).on(b.id.eq(p.brandId))
@@ -83,6 +84,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                         .productId(row.get(p.id))
                         .productName(row.get(p.name))
                         .basePrice(row.get(p.basePrice))
+                        .likeCount(row.get(lp.id.count()))
                         .brandId(row.get(p.brandId))
                         .brandName(row.get(b.name))
                         .build()
