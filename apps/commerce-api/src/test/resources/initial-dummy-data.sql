@@ -3,8 +3,8 @@
 -- =========================================
 SET @NUM_BRANDS            = 50;
 SET @NUM_USERS             = 50000;   -- 유저 수
-SET @NUM_PRODUCTS          = 200000;  -- 최소 10만 이상 요구 → 기본 20만
-SET @OPTIONS_PER_PRODUCT   = 3;       -- 제품옵션 수(제품당 3개 → 총 60만개)
+SET @NUM_PRODUCTS          = 1000000; -- 최소 10만 이상 요구 → 기본 100만
+SET @OPTIONS_PER_PRODUCT   = 3;       -- 제품옵션 수(제품당 3개 → 총 300만개)
 SET @NUM_COUPONS           = 200;
 SET @NUM_USER_COUPONS      = 150000;  -- (user, coupon) 유니크 제약 주의
 SET @NUM_ORDERS            = 100000;  -- 주문 수
