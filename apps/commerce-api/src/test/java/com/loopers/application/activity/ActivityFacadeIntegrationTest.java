@@ -8,7 +8,10 @@ import com.loopers.utils.DatabaseCleanUp;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.instancio.Instancio;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,7 +40,6 @@ class ActivityFacadeIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @Disabled("비정규화하면 적용")
     @DisplayName("동일한 상품에 좋아요를 표시/취소할 때:")
     @Nested
     class LikeAndDislike {
