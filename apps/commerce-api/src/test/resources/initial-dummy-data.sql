@@ -168,6 +168,18 @@ SELECT
     NOW(6)
 FROM t;
 
+/*
+-- products.like_count에 count(liked_products)를 동기화한다.
+
+update products p
+    join (select lp.ref_product_id, count(*) as like_count
+          from liked_products lp
+          group by lp.ref_product_id) x
+    on x.ref_product_id = p.product_id
+set p.like_count = x.like_count
+where p.product_id = x.ref_product_id;
+*/
+
 
 -- =========================================
 -- viewed_products ((user, product) 유니크)
