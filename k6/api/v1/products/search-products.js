@@ -11,7 +11,7 @@ const START_PAGE = Number(__ENV.START_PAGE || 0); // 페이지 시작값 (0 또�
 const SIZE = Number(__ENV.SIZE || 20);            // 페이지 크기
 const SORT = __ENV.SORT || 'POPULAR';             // LATEST | POPULAR | CHEAP
 const KEYWORD = __ENV.KEYWORD || '';              // 없으면 전체
-const REPEAT = Number(__ENV.REPEAT || 3);         // 각 페이지를 몇 번 반복 측정할지(평균용)
+const REPEAT = Number(__ENV.REPEAT || 2);         // 각 페이지를 몇 번 반복 측정할지(평균용)
 const SLEEP_SEC = Number(__ENV.SLEEP_SEC || 0.1); // 요청 간 간격(부하 조절)
 
 // ======== 옵션 ========
