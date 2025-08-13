@@ -2,19 +2,19 @@
 -- 파라미터(원하는 규모로 조절)
 -- =========================================
 SET @NUM_BRANDS            = 50;
-SET @NUM_USERS             = 50000;   -- 유저 수
-SET @NUM_PRODUCTS          = 1000000; -- 최소 10만 이상 요구 → 기본 100만
-SET @OPTIONS_PER_PRODUCT   = 3;       -- 제품옵션 수(제품당 3개 → 총 300만개)
+SET @NUM_USERS             = 50000;             -- 유저 수
+SET @NUM_PRODUCTS          = 1000000;           -- 최소 10만 이상 요구 → 기본 100만
+SET @OPTIONS_PER_PRODUCT   = 3;                 -- 제품옵션 수(제품당 3개 → 총 300만개)
 SET @NUM_COUPONS           = 200;
-SET @NUM_USER_COUPONS      = 150000;  -- (user, coupon) 유니크 제약 주의
-SET @NUM_ORDERS            = 100000;  -- 주문 수
-SET @ORDER_ITEMS_PER_ORDER = 2;       -- 주문당 아이템 수
-SET @NUM_LIKES             = 120000;  -- (user, product) 유니크
-SET @NUM_VIEWS             = 120000;  -- (user, product) 유니크
+SET @NUM_USER_COUPONS      = 150000;            -- (user, coupon) 유니크 제약 주의
+SET @NUM_ORDERS            = 100000;            -- 주문 수
+SET @ORDER_ITEMS_PER_ORDER = 2;                 -- 주문당 아이템 수
+SET @NUM_LIKES             = @NUM_PRODUCTS * 2; -- (product, user) 유니크
+SET @NUM_VIEWS             = 120000;            -- (product, user) 유니크
 SET @NUM_POINT_HIST        = 200000;
 
 -- 재귀 CTE 최대 깊이 확장 (대량 생성용)
-SET SESSION cte_max_recursion_depth = 2000000;
+SET SESSION cte_max_recursion_depth = 100000000;
 
 -- 편의용 숫자 시퀀스 CTE (필요할 때 재사용)
 WITH RECURSIVE seq AS (
@@ -154,15 +154,17 @@ FROM t;
 -- =========================================
 -- liked_products ((user, product) 유니크)
 -- =========================================
-INSERT INTO liked_products (created_at, deleted_at, ref_product_id, ref_user_id, updated_at)
+SET @ALPHA = 2.8; -- 값이 클수록 상위 상품에 더 몰림(2.0~3.0 사이 권장)
+
+INSERT IGNORE INTO liked_products (created_at, deleted_at, ref_product_id, ref_user_id, updated_at)
 WITH RECURSIVE t AS (
     SELECT 1 AS k
-    UNION ALL SELECT k+1 FROM t WHERE k < @NUM_LIKES
+    UNION ALL SELECT k +1 FROM t WHERE k <= @NUM_LIKES
 )
 SELECT
     NOW(6), NULL,
-    1 + ((k*19) MOD @NUM_PRODUCTS),
-    1 + ((k*23) MOD @NUM_USERS),
+    1 + FLOOR(POW(RAND(CRC32(CONCAT('rp', k))), @ALPHA) * @NUM_PRODUCTS),
+    1 + MOD(CRC32(CONCAT('u', k*1337)), @NUM_USERS),
     NOW(6)
 FROM t;
 
