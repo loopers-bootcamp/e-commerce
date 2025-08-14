@@ -1,4 +1,4 @@
-package com.loopers.infrastructure.product;
+package com.loopers.infrastructure.product.rdb;
 
 import com.loopers.domain.brand.QBrand;
 import com.loopers.domain.product.*;
@@ -31,15 +31,16 @@ public class ProductRepositoryImpl implements ProductRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts queryCommand) {
-        PageRequest pageRequest = PageRequest.of(queryCommand.getPage(), queryCommand.getSize());
+    public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command) {
+        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize());
 
         QProduct p = QProduct.product;
         QBrand b = QBrand.brand;
 
-        String keyword = queryCommand.getKeyword();
-        Long brandId = queryCommand.getBrandId();
-        ProductSearchSortType sortType = queryCommand.getSort();
+        String keyword = command.getKeyword();
+        Long brandId = command.getBrandId();
+        List<Long> productIds = command.getProductIds();
+        ProductSearchSortType sortType = command.getSort();
 
         JPAQuery<Tuple> query = queryFactory
                 .select(
@@ -54,7 +55,8 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .leftJoin(b).on(b.id.eq(p.brandId))
                 .where(
                         containKeywordByProductName(keyword),
-                        matchByBrandId(brandId)
+                        matchByBrandId(brandId),
+                        matchByProductIds(productIds)
                 )
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -66,7 +68,8 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .leftJoin(b).on(b.id.eq(p.brandId))
                 .where(
                         containKeywordByProductName(keyword),
-                        matchByBrandId(brandId)
+                        matchByBrandId(brandId),
+                        matchByProductIds(productIds)
                 );
 
         List<ProductQueryResult.Products> products = query.stream()
@@ -204,6 +207,11 @@ public class ProductRepositoryImpl implements ProductRepository {
     private static BooleanExpression matchByBrandId(Long brandId) {
         QBrand b = QBrand.brand;
         return brandId == null ? null : b.id.eq(brandId);
+    }
+
+    private static BooleanExpression matchByProductIds(List<Long> productIds) {
+        QProduct p = QProduct.product;
+        return CollectionUtils.isEmpty(productIds) ? null : p.id.in(productIds);
     }
 
     private static OrderSpecifier<? extends Comparable<?>> productsSorter(ProductSearchSortType sortType) {

@@ -5,6 +5,8 @@ import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -21,6 +23,7 @@ import static java.util.stream.Collectors.toMap;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductCacheRepository productCacheRepository;
 
     @ReadOnlyTransactional
     public ProductResult.SearchProducts searchProducts(ProductCommand.SearchProducts command) {
@@ -32,7 +35,32 @@ public class ProductService {
                 .size(command.getSize())
                 .build();
 
+        Page<Long> productIdsPage = productCacheRepository.searchProductIds(queryCommand);
+
+        // Cache Miss
+        if (productIdsPage.isEmpty()) {
+            Page<ProductQueryResult.Products> page = productRepository.searchProducts(queryCommand);
+            // TODO: put cache
+            return ProductResult.SearchProducts.from(page);
+        }
+
+        List<Long> productIds = productIdsPage.getContent();
+        List<ProductQueryResult.Products> products = productCacheRepository.findProducts(productIds);
+
+        // Cache Hit
+        if (products.size() == productIds.size()) {
+            return ProductResult.SearchProducts.from(new PageImpl<>(
+                    products,
+                    PageRequest.of(command.getPage(), command.getSize()),
+                    productIdsPage.getTotalElements()
+            ));
+        }
+
+        // Cache Miss
+        queryCommand = queryCommand.withProductIds(productIds);
         Page<ProductQueryResult.Products> page = productRepository.searchProducts(queryCommand);
+        // TODO: put cache
+        // TODO: TTL Jitter 적용 ... cache stampede 예방
 
         return ProductResult.SearchProducts.from(page);
     }

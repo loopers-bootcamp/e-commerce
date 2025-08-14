@@ -1,4 +1,4 @@
-package com.loopers.infrastructure.product;
+package com.loopers.infrastructure.product.rdb;
 
 import com.loopers.domain.product.Product;
 import jakarta.persistence.LockModeType;
