@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
@@ -37,14 +38,16 @@ class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private ProductCacheRepository productCacheRepository;
 
     @DisplayName("상품 목록을 검색할 때:")
     @Nested
     class SearchProducts {
 
-        @DisplayName("검색 결과를 페이지 정보와 상품 목록과 함께 반환한다.")
+        @DisplayName("캐시가 있으면, 캐시를 반환한다.")
         @Test
-        void returnPageAndItemsAsSearchResult() {
+        void returnCache_whenCacheHit() {
             // given
             ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
                     .keyword("nike")
@@ -68,6 +71,101 @@ class ProductServiceTest {
             long totalItems = Instancio.of(Long.class).generate(root(),
                     gen -> gen.longs().range((long) content.size(), content.size() * 100L)).create();
 
+            given(productCacheRepository.searchProducts(any(ProductQueryCommand.SearchProducts.class)))
+                    .willReturn(new PageImpl<>(content, PageRequest.of(command.getPage(), command.getSize()), totalItems));
+
+            // when
+            ProductResult.SearchProducts result = sut.searchProducts(command);
+
+            // then
+            long totalPages = totalItems == 0 ? 1 : (long) Math.ceil((double) totalItems / command.getSize());
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalPages()).isEqualTo(totalPages);
+            assertThat(result.getTotalItems()).isEqualTo(totalItems);
+            assertThat(result.getPage()).isEqualTo(command.getPage());
+            assertThat(result.getSize()).isEqualTo(command.getSize());
+            assertThat(result.getItems()).hasSize(content.size());
+
+            verify(productCacheRepository, times(1)).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+            verify(productRepository, never()).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+        }
+
+        @DisplayName("캐시가 없으면, DB에서 검색하되 값이 없으면 캐시에 저장하지 않는다.")
+        @Test
+        void searchOnDatabaseAndDoNothing_withoutResult_whenCacheMissed() {
+            // given
+            ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
+                    .keyword("nike")
+                    .brandId(10L)
+                    .sort(ProductSearchSortType.LATEST)
+                    .page(0)
+                    .size(10)
+                    .build();
+
+            List<ProductQueryResult.Products> content = IntStream.range(0, command.getSize())
+                    .mapToObj(i -> ProductQueryResult.Products.builder()
+                            .productId(Instancio.of(Long.class).generate(root(),
+                                    gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1))
+                            .productName(Instancio.of(String.class).generate(root(),
+                                    gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create())
+                            .basePrice(i + 10_000)
+                            .brandId(command.getBrandId())
+                            .build()
+                    )
+                    .toList();
+            long totalItems = Instancio.of(Long.class).generate(root(),
+                    gen -> gen.longs().range((long) content.size(), content.size() * 100L)).create();
+
+            given(productCacheRepository.searchProducts(any(ProductQueryCommand.SearchProducts.class)))
+                    .willReturn(Page.empty(PageRequest.of(command.getPage(), command.getSize())));
+            given(productRepository.searchProducts(any(ProductQueryCommand.SearchProducts.class)))
+                    .willReturn(Page.empty(PageRequest.of(command.getPage(), command.getSize())));
+
+            // when
+            ProductResult.SearchProducts result = sut.searchProducts(command);
+
+            // then
+            long totalPages = totalItems == 0 ? 1 : (long) Math.ceil((double) totalItems / command.getSize());
+            assertThat(result).isNotNull();
+            assertThat(result.getTotalPages()).isZero();
+            assertThat(result.getTotalItems()).isZero();
+            assertThat(result.getPage()).isEqualTo(command.getPage());
+            assertThat(result.getSize()).isEqualTo(command.getSize());
+            assertThat(result.getItems()).isEmpty();
+
+            verify(productCacheRepository, times(1)).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+            verify(productCacheRepository, never()).saveProducts(any(ProductQueryCommand.SearchProducts.class), any(Page.class));
+            verify(productRepository, times(1)).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+        }
+
+        @DisplayName("캐시가 없으면, DB에서 검색하고 값을 캐시에 저장한다.")
+        @Test
+        void searchOnDatabaseAndSaveToCache_withResult_whenCacheMissed() {
+            // given
+            ProductCommand.SearchProducts command = ProductCommand.SearchProducts.builder()
+                    .keyword("nike")
+                    .brandId(10L)
+                    .sort(ProductSearchSortType.LATEST)
+                    .page(0)
+                    .size(10)
+                    .build();
+
+            List<ProductQueryResult.Products> content = IntStream.range(0, command.getSize())
+                    .mapToObj(i -> ProductQueryResult.Products.builder()
+                            .productId(Instancio.of(Long.class).generate(root(),
+                                    gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1))
+                            .productName(Instancio.of(String.class).generate(root(),
+                                    gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create())
+                            .basePrice(i + 10_000)
+                            .brandId(command.getBrandId())
+                            .build()
+                    )
+                    .toList();
+            long totalItems = Instancio.of(Long.class).generate(root(),
+                    gen -> gen.longs().range((long) content.size(), content.size() * 100L)).create();
+
+            given(productCacheRepository.searchProducts(any(ProductQueryCommand.SearchProducts.class)))
+                    .willReturn(Page.empty(PageRequest.of(command.getPage(), command.getSize())));
             given(productRepository.searchProducts(any(ProductQueryCommand.SearchProducts.class)))
                     .willReturn(new PageImpl<>(content, PageRequest.of(command.getPage(), command.getSize()), totalItems));
 
@@ -83,7 +181,9 @@ class ProductServiceTest {
             assertThat(result.getSize()).isEqualTo(command.getSize());
             assertThat(result.getItems()).hasSize(content.size());
 
-            verify(productRepository).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+            verify(productCacheRepository, times(1)).searchProducts(any(ProductQueryCommand.SearchProducts.class));
+            verify(productCacheRepository, times(1)).saveProducts(any(ProductQueryCommand.SearchProducts.class), any(Page.class));
+            verify(productRepository, times(1)).searchProducts(any(ProductQueryCommand.SearchProducts.class));
         }
 
     }
