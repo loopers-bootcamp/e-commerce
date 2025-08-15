@@ -4,9 +4,8 @@ import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -35,36 +34,23 @@ public class ProductService {
                 .size(command.getSize())
                 .build();
 
-        Page<Long> productIdsPage = productCacheRepository.searchProductIds(queryCommand);
+        Page<ProductQueryResult.Products> page = productCacheRepository.searchProducts(queryCommand);
 
-        // Cache Miss
-        if (productIdsPage.isEmpty()) {
-            Page<ProductQueryResult.Products> page = productRepository.searchProducts(queryCommand);
-            // TODO: put cache
+        // Cache Hit
+        if (page.hasContent()) {
             return ProductResult.SearchProducts.from(page);
         }
 
-        List<Long> productIds = productIdsPage.getContent();
-        List<ProductQueryResult.Products> products = productCacheRepository.findProducts(productIds);
-
-        // Cache Hit
-        if (products.size() == productIds.size()) {
-            return ProductResult.SearchProducts.from(new PageImpl<>(
-                    products,
-                    PageRequest.of(command.getPage(), command.getSize()),
-                    productIdsPage.getTotalElements()
-            ));
-        }
-
         // Cache Miss
-        queryCommand = queryCommand.withProductIds(productIds);
-        Page<ProductQueryResult.Products> page = productRepository.searchProducts(queryCommand);
-        // TODO: put cache
-        // TODO: TTL Jitter 적용 ... cache stampede 예방
+        page = productRepository.searchProducts(queryCommand);
+        if (page.hasContent()) {
+            productCacheRepository.saveProducts(queryCommand, page);
+        }
 
         return ProductResult.SearchProducts.from(page);
     }
 
+    @Cacheable(cacheNames = "detail:product", key = "#productId", unless = "#result == null")
     @ReadOnlyTransactional
     public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {
         if (productId == null) {

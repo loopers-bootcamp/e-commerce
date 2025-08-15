@@ -2,14 +2,13 @@ package com.loopers.domain.product;
 
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 public interface ProductCacheRepository {
 
-    Page<Long> searchProductIds(ProductQueryCommand.SearchProducts command);
+    Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command);
 
-    List<ProductQueryResult.Products> findProducts(List<Long> productIds);
-
-    void saveProduct(Product product);
+    void saveProducts(
+            ProductQueryCommand.SearchProducts command,
+            Page<ProductQueryResult.Products> page
+    );
 
 }

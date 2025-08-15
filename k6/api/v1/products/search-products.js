@@ -69,7 +69,7 @@ export default function () {
     });
 
     // 페이지 태그로 레이턴시 기록
-    latencyByPage.add(res.timings.duration, {page: String(page)});
+    // latencyByPage.add(res.timings.duration, {page: String(page)});
 
     sleep(SLEEP_SEC);
 }

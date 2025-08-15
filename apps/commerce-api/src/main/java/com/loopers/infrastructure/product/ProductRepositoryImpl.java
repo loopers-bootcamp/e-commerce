@@ -1,4 +1,4 @@
-package com.loopers.infrastructure.product.rdb;
+package com.loopers.infrastructure.product;
 
 import com.loopers.domain.brand.QBrand;
 import com.loopers.domain.product.*;
@@ -39,7 +39,6 @@ public class ProductRepositoryImpl implements ProductRepository {
 
         String keyword = command.getKeyword();
         Long brandId = command.getBrandId();
-        List<Long> productIds = command.getProductIds();
         ProductSearchSortType sortType = command.getSort();
 
         JPAQuery<Tuple> query = queryFactory
@@ -55,8 +54,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .leftJoin(b).on(b.id.eq(p.brandId))
                 .where(
                         containKeywordByProductName(keyword),
-                        matchByBrandId(brandId),
-                        matchByProductIds(productIds)
+                        matchByBrandId(brandId)
                 )
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -68,8 +66,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .leftJoin(b).on(b.id.eq(p.brandId))
                 .where(
                         containKeywordByProductName(keyword),
-                        matchByBrandId(brandId),
-                        matchByProductIds(productIds)
+                        matchByBrandId(brandId)
                 );
 
         List<ProductQueryResult.Products> products = query.stream()
@@ -207,11 +204,6 @@ public class ProductRepositoryImpl implements ProductRepository {
     private static BooleanExpression matchByBrandId(Long brandId) {
         QBrand b = QBrand.brand;
         return brandId == null ? null : b.id.eq(brandId);
-    }
-
-    private static BooleanExpression matchByProductIds(List<Long> productIds) {
-        QProduct p = QProduct.product;
-        return CollectionUtils.isEmpty(productIds) ? null : p.id.in(productIds);
     }
 
     private static OrderSpecifier<? extends Comparable<?>> productsSorter(ProductSearchSortType sortType) {
