@@ -1,6 +1,5 @@
 package com.loopers.infrastructure.product;
 
-import com.loopers.domain.activity.QLikedProduct;
 import com.loopers.domain.brand.QBrand;
 import com.loopers.domain.product.*;
 import com.loopers.domain.product.attribute.ProductSearchSortType;
@@ -32,38 +31,30 @@ public class ProductRepositoryImpl implements ProductRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts queryCommand) {
-        PageRequest pageRequest = PageRequest.of(queryCommand.getPage(), queryCommand.getSize());
+    public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command) {
+        PageRequest pageRequest = PageRequest.of(command.getPage(), command.getSize());
 
         QProduct p = QProduct.product;
         QBrand b = QBrand.brand;
-        QLikedProduct lp = QLikedProduct.likedProduct;
 
-        String keyword = queryCommand.getKeyword();
-        Long brandId = queryCommand.getBrandId();
-        ProductSearchSortType sortType = queryCommand.getSort();
+        String keyword = command.getKeyword();
+        Long brandId = command.getBrandId();
+        ProductSearchSortType sortType = command.getSort();
 
         JPAQuery<Tuple> query = queryFactory
                 .select(
                         p.id
                         , p.name
                         , p.basePrice
+                        , p.likeCount
                         , p.brandId
                         , b.name
                 )
                 .from(p)
                 .leftJoin(b).on(b.id.eq(p.brandId))
-                .leftJoin(lp).on(lp.productId.eq(p.id))
                 .where(
                         containKeywordByProductName(keyword),
                         matchByBrandId(brandId)
-                )
-                .groupBy(
-                        p.id
-                        , p.name
-                        , p.basePrice
-                        , p.brandId
-                        , b.name
                 )
                 .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize())
@@ -83,6 +74,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                         .productId(row.get(p.id))
                         .productName(row.get(p.name))
                         .basePrice(row.get(p.basePrice))
+                        .likeCount(row.get(p.likeCount))
                         .brandId(row.get(p.brandId))
                         .brandName(row.get(b.name))
                         .build()
@@ -115,6 +107,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .productId(product.getId())
                 .productName(product.getName())
                 .basePrice(product.getBasePrice())
+                .likeCount(product.getLikeCount())
                 .brandId(product.getBrandId())
                 .options(new ArrayList<>())
                 .build();
@@ -182,8 +175,18 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    public Optional<Product> findProductForUpdate(Long productId) {
+        return productRepository.findByIdForUpdate(productId);
+    }
+
+    @Override
     public List<ProductStock> findStocksForUpdate(List<Long> productOptionIds) {
         return stockJpaRepository.findByProductOptionIdIn(productOptionIds);
+    }
+
+    @Override
+    public Product saveProduct(Product product) {
+        return productRepository.save(product);
     }
 
     @Override
@@ -205,11 +208,10 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     private static OrderSpecifier<? extends Comparable<?>> productsSorter(ProductSearchSortType sortType) {
         QProduct p = QProduct.product;
-        QLikedProduct lp = QLikedProduct.likedProduct;
 
         return switch (sortType) {
             case LATEST -> p.createdAt.desc();
-            case POPULAR -> lp.id.count().desc();
+            case POPULAR -> p.likeCount.desc();
             case CHEAP -> p.basePrice.asc();
         };
     }

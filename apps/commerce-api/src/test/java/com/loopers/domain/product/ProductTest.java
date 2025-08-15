@@ -90,6 +90,96 @@ class ProductTest {
 
     // -------------------------------------------------------------------------------------------------
 
+    @DisplayName("상품이 좋아요 당할 때:")
+    @Nested
+    class Like {
+
+        @DisplayName("좋아요 수를 1 증가시킨다.")
+        @CsvSource(textBlock = """
+                0    | 1
+                1    | 2
+                99   | 100
+                9998 | 9999
+                """, delimiter = '|')
+        @ParameterizedTest
+        void increaseLikeCountByOne(long initialLikeCount, long expectedLikeCount) {
+            // given
+            Product product = Instancio.of(Product.class)
+                    .set(field(Product::getLikeCount), initialLikeCount)
+                    .create();
+
+            // when
+            product.like();
+
+            // then
+            assertThat(product.getLikeCount()).isEqualTo(expectedLikeCount);
+        }
+
+        @DisplayName("좋아요 수가 최대값에 도달하면, 더 이상 증가하지 않는다.")
+        @Test
+        void doesNotIncrease_whenLikeCountReachesMaxValue() {
+            // given
+            long maxLikeCount = Long.MAX_VALUE;
+            Product product = Instancio.of(Product.class)
+                    .set(field(Product::getLikeCount), maxLikeCount)
+                    .create();
+
+            // when
+            product.like();
+
+            // then
+            assertThat(product.getLikeCount()).isEqualTo(maxLikeCount);
+        }
+
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @DisplayName("상품이 싫어요 당할 때:")
+    @Nested
+    class Dislike {
+
+        @DisplayName("좋아요 수를 1 감소시킨다.")
+        @CsvSource(textBlock = """
+                1    | 0
+                2    | 1
+                100  | 99
+                9999 | 9998
+                """, delimiter = '|')
+        @ParameterizedTest
+        void increaseLikeCountByOne(long initialLikeCount, long expectedLikeCount) {
+            // given
+            Product product = Instancio.of(Product.class)
+                    .set(field(Product::getLikeCount), initialLikeCount)
+                    .create();
+
+            // when
+            product.dislike();
+
+            // then
+            assertThat(product.getLikeCount()).isEqualTo(expectedLikeCount);
+        }
+
+        @DisplayName("좋아요 수가 0에 도달하면, 더 이상 감소하지 않는다.")
+        @Test
+        void doesNotIncrease_whenLikeCountReachesMaxValue() {
+            // given
+            long minLikeCount = 0L;
+            Product product = Instancio.of(Product.class)
+                    .set(field(Product::getLikeCount), minLikeCount)
+                    .create();
+
+            // when
+            product.dislike();
+
+            // then
+            assertThat(product.getLikeCount()).isEqualTo(minLikeCount);
+        }
+
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
     @DisplayName("옵션을 추가할 때:")
     @Nested
     class AddOptions {

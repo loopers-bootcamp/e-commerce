@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Table;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,19 +13,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class DatabaseCleanUp implements InitializingBean {
 
     @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     private final List<String> tableNames = new ArrayList<>();
 
     @Override
     public void afterPropertiesSet() {
         entityManager.getMetamodel().getEntities().stream()
-            .filter(entity -> entity.getJavaType().getAnnotation(Entity.class) != null)
-            .map(entity -> entity.getJavaType().getAnnotation(Table.class).name())
-            .forEach(tableNames::add);
+                .filter(entity -> entity.getJavaType().getAnnotation(Entity.class) != null)
+                .map(entity -> entity.getJavaType().getAnnotation(Table.class).name())
+                .forEach(tableNames::add);
     }
 
     @Transactional
@@ -38,4 +40,5 @@ public class DatabaseCleanUp implements InitializingBean {
 
         entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1").executeUpdate();
     }
+
 }

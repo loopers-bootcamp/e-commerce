@@ -16,11 +16,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(
         name = "viewed_products",
-        indexes = {
-                @Index(columnList = "ref_user_id"),
-                @Index(columnList = "ref_product_id"),
-        },
-        uniqueConstraints = @UniqueConstraint(columnNames = {"ref_user_id", "ref_product_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"ref_product_id", "ref_user_id"})
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ViewedProduct extends BaseEntity {

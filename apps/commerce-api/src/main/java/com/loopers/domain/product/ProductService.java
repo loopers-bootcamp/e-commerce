@@ -4,6 +4,7 @@ import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import static java.util.stream.Collectors.toMap;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductCacheRepository productCacheRepository;
 
     @ReadOnlyTransactional
     public ProductResult.SearchProducts searchProducts(ProductCommand.SearchProducts command) {
@@ -32,11 +34,23 @@ public class ProductService {
                 .size(command.getSize())
                 .build();
 
-        Page<ProductQueryResult.Products> page = productRepository.searchProducts(queryCommand);
+        Page<ProductQueryResult.Products> page = productCacheRepository.searchProducts(queryCommand);
+
+        // Cache Hit
+        if (page.hasContent()) {
+            return ProductResult.SearchProducts.from(page);
+        }
+
+        // Cache Miss
+        page = productRepository.searchProducts(queryCommand);
+        if (page.hasContent()) {
+            productCacheRepository.saveProducts(queryCommand, page);
+        }
 
         return ProductResult.SearchProducts.from(page);
     }
 
+    @Cacheable(cacheNames = "detail:product", key = "#productId", unless = "#result == null")
     @ReadOnlyTransactional
     public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {
         if (productId == null) {
@@ -55,6 +69,24 @@ public class ProductService {
 
         return productRepository.findProductOptionsByIds(productOptionIds)
                 .map(ProductResult.GetProductOptions::from);
+    }
+
+    @Transactional
+    public void like(Long productId) {
+        Product product = productRepository.findProductForUpdate(productId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        product.like();
+        productRepository.saveProduct(product);
+    }
+
+    @Transactional
+    public void dislike(Long productId) {
+        Product product = productRepository.findProductForUpdate(productId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        product.dislike();
+        productRepository.saveProduct(product);
     }
 
     @Transactional

@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import static com.loopers.test.assertion.ConcurrentAssertion.assertThatConcurrence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
+import static org.instancio.Select.field;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,10 +64,46 @@ class ProductServiceIntegrationTest {
             brand = Brand.builder().name("Foo Company").description("Foo Company is a good company for everyone.").build();
             transactionTemplate.executeWithoutResult(status -> entityManager.persist(brand));
 
-            Product p1 = Product.builder().name("FooBarQux").basePrice(1000).brandId(brand.getId()).build();
-            Product p2 = Product.builder().name("Barricade").basePrice(2000).brandId(brand.getId()).build();
-            Product p3 = Product.builder().name("FC Barcelona").basePrice(3000).brandId(null).build();
-            Product p4 = Product.builder().name("Iron Ballista").basePrice(4000).brandId(brand.getId() + 1).build();
+            Product p1 = Instancio.of(Product.class)
+                    .ignore(field(Product::getId))
+                    .set(field(Product::getName), "FooBarQux")
+                    .set(field(Product::getBasePrice), 1000)
+                    .set(field(Product::getLikeCount), 10L)
+                    .set(field(Product::getBrandId), brand.getId())
+                    .ignore(field(Product::getCreatedAt))
+                    .ignore(field(Product::getUpdatedAt))
+                    .ignore(field(Product::getDeletedAt))
+                    .create();
+            Product p2 = Instancio.of(Product.class)
+                    .ignore(field(Product::getId))
+                    .set(field(Product::getName), "Barricade")
+                    .set(field(Product::getBasePrice), 2000)
+                    .set(field(Product::getLikeCount), 0L)
+                    .set(field(Product::getBrandId), brand.getId())
+                    .ignore(field(Product::getCreatedAt))
+                    .ignore(field(Product::getUpdatedAt))
+                    .ignore(field(Product::getDeletedAt))
+                    .create();
+            Product p3 = Instancio.of(Product.class)
+                    .ignore(field(Product::getId))
+                    .set(field(Product::getName), "FC Barcelona")
+                    .set(field(Product::getBasePrice), 3000)
+                    .set(field(Product::getLikeCount), 30L)
+                    .ignore(field(Product::getBrandId))
+                    .ignore(field(Product::getCreatedAt))
+                    .ignore(field(Product::getUpdatedAt))
+                    .ignore(field(Product::getDeletedAt))
+                    .create();
+            Product p4 = Instancio.of(Product.class)
+                    .ignore(field(Product::getId))
+                    .set(field(Product::getName), "Iron Ballista")
+                    .set(field(Product::getBasePrice), 4000)
+                    .set(field(Product::getLikeCount), 40L)
+                    .set(field(Product::getBrandId), brand.getId() + 1)
+                    .ignore(field(Product::getCreatedAt))
+                    .ignore(field(Product::getUpdatedAt))
+                    .ignore(field(Product::getDeletedAt))
+                    .create();
             transactionTemplate.executeWithoutResult(status ->
                     Stream.of(p1, p2, p3, p4).forEach(entityManager::persist));
 
@@ -242,6 +279,7 @@ class ProductServiceIntegrationTest {
             assertThat(maybeDetail.get().getProductId()).isEqualTo(product.getId());
             assertThat(maybeDetail.get().getProductName()).isEqualTo(product.getName());
             assertThat(maybeDetail.get().getBasePrice()).isEqualTo(product.getBasePrice());
+            assertThat(maybeDetail.get().getLikeCount()).isEqualTo(product.getLikeCount());
             assertThat(maybeDetail.get().getBrandId()).isEqualTo(product.getBrandId());
             assertThat(maybeDetail.get().getOptions()).hasSize(2);
             assertThat(maybeDetail.get().getOptions())

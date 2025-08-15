@@ -12,7 +12,7 @@ public enum ProductSearchSortType {
 
     LATEST("최신순"),
     POPULAR("인기순"),
-    CHEAP("낮은 가격순");
+    CHEAP("낮은가격순");
 
     private final String description;
 

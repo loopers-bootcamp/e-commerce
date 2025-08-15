@@ -32,6 +32,7 @@ public final class ProductResponse {
                                     .productId(content.getProductId())
                                     .productName(content.getProductName())
                                     .basePrice(content.getBasePrice())
+                                    .likeCount(content.getLikeCount())
                                     .brandId(content.getBrandId())
                                     .brandName(content.getBrandName())
                                     .build()
@@ -48,6 +49,7 @@ public final class ProductResponse {
             private final Long productId;
             private final String productName;
             private final Integer basePrice;
+            private final Long likeCount;
             private final Long brandId;
             private final String brandName;
         }

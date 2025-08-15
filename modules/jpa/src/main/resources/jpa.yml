@@ -44,7 +44,7 @@ spring:
   jpa:
     show-sql: false # Replaced with P6Spy
     hibernate:
-      ddl-auto: create
+      ddl-auto: validate
     properties:
       hibernate:
         show_sql: false # Replaced with P6Spy

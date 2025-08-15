@@ -28,8 +28,15 @@ Root
 ├── apps ( spring-applications )
 │   └── 📦 commerce-api
 ├── modules ( reusable-configurations )
-│   └── 📦 jpa
+│   ├── 📦 jpa
+│   └── 📦 redis
 └── supports ( add-ons )
     ├── 📦 monitoring
     └── 📦 logging
 ```
+
+## Misc
+
+> https://github.com/HariSekhon/DevOps-Python-tools
+
+docker images tag 찾을 때.
