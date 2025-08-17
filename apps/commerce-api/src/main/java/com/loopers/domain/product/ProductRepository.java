@@ -7,13 +7,17 @@ import java.util.Optional;
 
 public interface ProductRepository {
 
-    Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts queryCommand);
+    Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command);
 
     Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId);
 
     Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds);
 
+    Optional<Product> findProductForUpdate(Long productId);
+
     List<ProductStock> findStocksForUpdate(List<Long> productOptionIds);
+
+    Product saveProduct(Product product);
 
     List<ProductStock> saveStocks(List<ProductStock> stocks);
 

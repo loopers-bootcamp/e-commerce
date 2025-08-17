@@ -12,6 +12,7 @@ import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -25,8 +26,8 @@ public class ProductFacade {
     private final UserService userService;
     private final ActivityService activityService;
 
-    @Qualifier("taskExecutor")
-    private final SimpleAsyncTaskExecutor simpleAsyncTaskExecutor;
+    @Qualifier(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
+    private final SimpleAsyncTaskExecutor taskExecutor;
 
     public ProductOutput.GetProductDetail getProductDetail(ProductInput.GetProductDetail input) {
         Long productId = input.getProductId();
@@ -36,12 +37,10 @@ public class ProductFacade {
 
         BrandResult.GetBrand brand = brandService.getBrand(detail.getBrandId()).orElse(null);
 
-        long likeCount = activityService.getLikeCount(productId);
-
         // 회원이면 비동기로 조회수를 증가한다.
         String userName = input.getUserName();
         if (StringUtils.hasText(userName)) {
-            simpleAsyncTaskExecutor.execute(() -> {
+            taskExecutor.execute(() -> {
                 UserResult.GetUser userResult = userService.getUser(userName)
                         .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
@@ -54,7 +53,7 @@ public class ProductFacade {
             });
         }
 
-        return ProductOutput.GetProductDetail.from(detail, likeCount, brand);
+        return ProductOutput.GetProductDetail.from(detail, brand);
     }
 
 }

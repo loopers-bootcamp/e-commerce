@@ -28,6 +28,7 @@ public final class ProductResult {
                                             .productId(content.getProductId())
                                             .productName(content.getProductName())
                                             .basePrice(content.getBasePrice())
+                                            .likeCount(content.getLikeCount())
                                             .brandId(content.getBrandId())
                                             .brandName(content.getBrandName())
                                             .build()
@@ -44,6 +45,7 @@ public final class ProductResult {
             private final Long productId;
             private final String productName;
             private final Integer basePrice;
+            private final Long likeCount;
             private final Long brandId;
             private final String brandName;
         }
@@ -58,6 +60,7 @@ public final class ProductResult {
         private final Long productId;
         private final String productName;
         private final Integer basePrice;
+        private final Long likeCount;
         private final Long brandId;
         private final List<Option> options;
 
@@ -66,6 +69,7 @@ public final class ProductResult {
                     .productId(queryResult.getProductId())
                     .productName(queryResult.getProductName())
                     .basePrice(queryResult.getBasePrice())
+                    .likeCount(queryResult.getLikeCount())
                     .brandId(queryResult.getBrandId())
                     .options(queryResult.getOptions().stream().map(Option::from).toList())
                     .build();
