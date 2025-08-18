@@ -5,8 +5,10 @@ import java.util.UUID;
 
 public interface PaymentRepository {
 
-    Optional<Payment> findOneByOrderId(UUID orderId);
+    Optional<Payment> findPayment(UUID orderId);
 
     Payment save(Payment payment);
+
+    PaymentAttempt save(PaymentAttempt attempt);
 
 }

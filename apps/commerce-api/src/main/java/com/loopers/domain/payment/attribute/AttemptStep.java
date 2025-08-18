@@ -7,12 +7,11 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum PaymentStatus {
+public enum AttemptStep {
 
-    READY(1),
-    PAID(2),
-    FAILED(3),
-    CANCELED(4);
+    REQUESTED(1),
+    RESPONDED(2),
+    FAILED(3);
 
     // -------------------------------------------------------------------------------------------------
 
@@ -20,14 +19,14 @@ public enum PaymentStatus {
     private final int code;
 
     @JsonCreator
-    public static PaymentStatus from(Integer value) {
+    public static AttemptStep from(Integer value) {
         if (value == null) {
             return null;
         }
 
-        for (PaymentStatus status : values()) {
-            if (status.code == value) {
-                return status;
+        for (AttemptStep step : values()) {
+            if (step.code == value) {
+                return step;
             }
         }
 
