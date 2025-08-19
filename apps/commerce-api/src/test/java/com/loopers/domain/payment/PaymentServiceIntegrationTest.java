@@ -61,7 +61,7 @@ class PaymentServiceIntegrationTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.getPaymentId()).isNotNull();
-            assertThat(result.getPaymentStatus()).isEqualTo(PaymentStatus.COMPLETE);
+            assertThat(result.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
 
             Payment savedPayment = entityManager.find(Payment.class, result.getPaymentId());
             assertThat(savedPayment).isNotNull();

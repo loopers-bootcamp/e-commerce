@@ -3,6 +3,7 @@ package com.loopers.domain.payment;
 import com.loopers.config.jpa.converter.PaymentMethodConverter;
 import com.loopers.config.jpa.converter.PaymentStatusConverter;
 import com.loopers.domain.BaseEntity;
+import com.loopers.domain.payment.attribute.CardType;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import com.loopers.support.error.BusinessException;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Getter
 @Entity
@@ -54,6 +56,19 @@ public class Payment extends BaseEntity {
     @Column(name = "method", nullable = false)
     private PaymentMethod method;
 
+    /**
+     * 카드 종류
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_type")
+    private CardType cardType;
+
+    /**
+     * 카드 번호
+     */
+    @Column(name = "card_no")
+    private String cardNo;
+
     // -------------------------------------------------------------------------------------------------
 
     /**
@@ -70,11 +85,15 @@ public class Payment extends BaseEntity {
 
     // -------------------------------------------------------------------------------------------------
 
+    private static final Pattern CARD_NO_PATTERN = Pattern.compile("^\\d{4}(-\\d{4}){3}$");
+
     @Builder
     private Payment(
             Long amount,
             PaymentStatus status,
             PaymentMethod method,
+            CardType cardType,
+            String cardNo,
             Long userId,
             UUID orderId
     ) {
@@ -90,6 +109,10 @@ public class Payment extends BaseEntity {
             throw new BusinessException(CommonErrorType.INVALID, "결제 수단이 올바르지 않습니다.");
         }
 
+        if (cardNo != null && !CARD_NO_PATTERN.matcher(cardNo).matches()) {
+            throw new BusinessException(CommonErrorType.INVALID, "카드 번호가 올바르지 않습니다.");
+        }
+
         if (userId == null) {
             throw new BusinessException(CommonErrorType.INVALID, "사용자 아이디가 올바르지 않습니다.");
         }
@@ -101,6 +124,8 @@ public class Payment extends BaseEntity {
         this.amount = amount;
         this.status = status;
         this.method = method;
+        this.cardType = cardType;
+        this.cardNo = cardNo;
         this.userId = userId;
         this.orderId = orderId;
     }

@@ -214,7 +214,7 @@ class PaymentFacadeIntegrationTest {
             // then
             assertThat(output).isNotNull();
             assertThat(output.getPaymentId()).isNotNull();
-            assertThat(output.getPaymentStatus()).isEqualTo(PaymentStatus.COMPLETE);
+            assertThat(output.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
 
             verify(userService, times(1)).getUser(user.getName());
             verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
@@ -300,7 +300,7 @@ class PaymentFacadeIntegrationTest {
             // then
             assertThat(output).isNotNull();
             assertThat(output.getPaymentId()).isNotNull();
-            assertThat(output.getPaymentStatus()).isEqualTo(PaymentStatus.COMPLETE);
+            assertThat(output.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
 
             verify(userService, times(1)).getUser(user.getName());
             verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));

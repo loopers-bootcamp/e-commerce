@@ -11,6 +11,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:${project.properties["springDocOpenApiVersion"]}")
 
+    // Feign Client
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+
     // UUIDv7
     implementation("com.fasterxml.uuid:java-uuid-generator")
 

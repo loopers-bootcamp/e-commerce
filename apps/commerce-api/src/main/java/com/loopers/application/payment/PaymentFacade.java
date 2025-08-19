@@ -1,25 +1,17 @@
 package com.loopers.application.payment;
 
-import com.loopers.domain.coupon.CouponCommand;
-import com.loopers.domain.coupon.CouponService;
+import com.loopers.application.payment.processor.PaymentProcessContext;
+import com.loopers.application.payment.processor.PaymentProcessor;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
-import com.loopers.domain.payment.PaymentCommand;
-import com.loopers.domain.payment.PaymentResult;
-import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.payment.error.PaymentErrorType;
-import com.loopers.domain.point.PointCommand;
-import com.loopers.domain.point.PointService;
-import com.loopers.domain.product.ProductCommand;
-import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserResult;
 import com.loopers.domain.user.UserService;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,14 +20,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentFacade {
 
-    private final PaymentService paymentService;
-    private final OrderService orderService;
     private final UserService userService;
-    private final ProductService productService;
-    private final CouponService couponService;
-    private final PointService pointService;
+    private final OrderService orderService;
+    private final List<PaymentProcessor> processors;
 
-    @Transactional
     public PaymentOutput.Pay pay(PaymentInput.Pay input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
@@ -53,45 +41,13 @@ public class PaymentFacade {
             throw new BusinessException(PaymentErrorType.UNPROCESSABLE);
         }
 
-        List<ProductCommand.DeductStocks.Item> items = order.getProducts()
-                .stream()
-                .map(product -> ProductCommand.DeductStocks.Item.builder()
-                        .productOptionId(product.getProductOptionId())
-                        .amount(product.getQuantity())
-                        .build()
-                )
-                .toList();
+        PaymentProcessor paymentProcessor = processors.stream()
+                .filter(processor -> processor.supports(input.getPaymentMethod()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(CommonErrorType.INTERNAL_ERROR, "결제를 처리할 수 없습니다."));
 
-        ProductCommand.DeductStocks productCommand = ProductCommand.DeductStocks.builder().items(items).build();
-        productService.deductStocks(productCommand);
-
-        CouponCommand.Use couponCommand = CouponCommand.Use.builder()
-                .userId(user.getUserId())
-                .userCouponIds(order.getUserCouponIds())
-                .build();
-        couponService.use(couponCommand);
-
-        // 결제 금액이 0원이면 포인트를 차감할 필요가 없다.
-        Long paymentAmount = order.getTotalPrice() - order.getDiscountAmount();
-        if (paymentAmount > 0) {
-            PointCommand.Spend pointCommand = PointCommand.Spend.builder()
-                    .amount(paymentAmount)
-                    .userId(user.getUserId())
-                    .build();
-            pointService.spend(pointCommand);
-        }
-
-        PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
-                .amount(paymentAmount)
-                .paymentMethod(input.getPaymentMethod())
-                .userId(user.getUserId())
-                .orderId(orderId)
-                .build();
-        PaymentResult.Pay paymentResult = paymentService.pay(paymentCommand);
-
-        orderService.complete(orderId);
-
-        return PaymentOutput.Pay.from(paymentResult);
+        PaymentProcessContext context = PaymentProcessContext.of(user.getUserId(), order, input.getPaymentMethod());
+        return paymentProcessor.process(context);
     }
 
 }
