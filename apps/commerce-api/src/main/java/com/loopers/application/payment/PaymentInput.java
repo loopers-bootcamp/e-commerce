@@ -1,5 +1,7 @@
 package com.loopers.application.payment;
 
+import com.loopers.domain.payment.attribute.CardNumber;
+import com.loopers.domain.payment.attribute.CardType;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import lombok.*;
 
@@ -15,6 +17,8 @@ public final class PaymentInput {
         private final String userName;
         private final UUID orderId;
         private final PaymentMethod paymentMethod;
+        private final CardType cardType;
+        private final CardNumber cardNumber;
     }
 
 }

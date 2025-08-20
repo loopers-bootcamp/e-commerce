@@ -45,9 +45,6 @@ subprojects {
         }
 
         dependencies {
-            // Resilience4j
-            dependency("io.github.resilience4j:resilience4j-spring-boot3:${project.properties["resilience4jVersion"]}")
-
             // P6Spy
             dependency("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0")
 

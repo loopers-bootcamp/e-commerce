@@ -3,8 +3,10 @@ package com.loopers.domain.payment;
 import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.domain.payment.attempt.PaymentAttemptManager;
 import com.loopers.domain.payment.attribute.PaymentStatus;
+import com.loopers.domain.payment.event.PaymentEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class PaymentService {
 
     @Delegate
     private final PaymentAttemptManager paymentAttemptManager;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
     public Optional<PaymentResult.GetPayment> getPayment(PaymentCommand.GetPayment command) {
@@ -33,11 +36,14 @@ public class PaymentService {
                 .amount(command.getAmount())
                 .status(PaymentStatus.READY)
                 .method(command.getPaymentMethod())
+                .cardType(command.getCardType())
+                .cardNumber(command.getCardNumber())
                 .userId(command.getUserId())
                 .orderId(command.getOrderId())
                 .build();
-
         paymentRepository.save(payment);
+
+        eventPublisher.publishEvent(PaymentEvent.Ready.from(payment));
 
         return PaymentResult.Pay.from(payment);
     }

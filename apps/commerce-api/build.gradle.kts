@@ -16,7 +16,7 @@ dependencies {
 
     // Resilience4j
     implementation("org.springframework.boot:spring-boot-starter-aop")
-    implementation("io.github.resilience4j:resilience4j-spring-boot3")
+    implementation("org.springframework.cloud:spring-cloud-circuitbreaker-resilience4j")
 
     // UUIDv7
     implementation("com.fasterxml.uuid:java-uuid-generator")

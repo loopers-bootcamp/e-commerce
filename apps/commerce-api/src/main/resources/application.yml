@@ -32,6 +32,24 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slow-call-rate-threshold: 50
+        failure-rate-threshold: 50
+        slow-call-duration-threshold: 300
+        wait-duration-in-open-state: 1000 # OPEN -> HALF_OPEN 시도 전 대기시간
+        max-wait-duration-in-half-open-state: 500
+        permitted-number-of-calls-in-half-open-state: 1 # HALF_OPEN에서 시험 삼아 통과할 호출 수
+        sliding-window-type: time_based
+        sliding-window-size: 10 # time_based: 초 단위
+        minimum-number-of-calls: 2 # 통계를 평가하기 전 최소 샘플 수 (n < sliding-window-size)
+        event-consumer-buffer-size: 1
+        register-health-indicator: true
+        record-exceptions:
+          - java.lang.Throwable
+
 ---
 
 spring.config.activate.on-profile: local, test

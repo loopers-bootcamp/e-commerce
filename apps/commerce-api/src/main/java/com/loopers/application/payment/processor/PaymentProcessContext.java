@@ -1,7 +1,8 @@
 package com.loopers.application.payment.processor;
 
 import com.loopers.domain.order.OrderResult;
-import com.loopers.domain.payment.attribute.PaymentMethod;
+import com.loopers.domain.payment.attribute.CardNumber;
+import com.loopers.domain.payment.attribute.CardType;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,13 +10,17 @@ import java.util.UUID;
 public record PaymentProcessContext(
         Long userId,
         UUID orderId,
+        CardType cardType,
+        CardNumber cardNumber,
         List<Product> products,
         List<Long> userCouponIds,
         Long paymentAmount
 ) {
     public static PaymentProcessContext of(
             Long userId,
-            OrderResult.GetOrderDetail order
+            OrderResult.GetOrderDetail order,
+            CardType cardType,
+            CardNumber cardNumber
     ) {
         List<Product> products = order.getProducts()
                 .stream()
@@ -25,6 +30,8 @@ public record PaymentProcessContext(
         return new PaymentProcessContext(
                 userId,
                 order.getOrderId(),
+                cardType,
+                cardNumber,
                 products,
                 List.copyOf(order.getUserCouponIds()),
                 order.getTotalPrice() - order.getDiscountAmount()

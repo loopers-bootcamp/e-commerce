@@ -22,7 +22,7 @@ public class PaymentAttemptManager {
     }
 
     @Transactional
-    public PaymentResult.RecordRequest recordRequest(PaymentCommand.RecordResponse command) {
+    public PaymentResult.RecordRequest recordRespond(PaymentCommand.RecordResponse command) {
         PaymentAttempt requestedAttempt = PaymentAttempt.respond(
                 command.getMerchantUid(),
                 command.getTransactionKey(),
