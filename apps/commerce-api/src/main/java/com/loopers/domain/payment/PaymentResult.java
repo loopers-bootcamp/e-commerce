@@ -1,5 +1,6 @@
 package com.loopers.domain.payment;
 
+import com.loopers.domain.payment.attempt.PaymentAttempt;
 import com.loopers.domain.payment.attribute.AttemptStep;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
@@ -38,13 +39,13 @@ public final class PaymentResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Attempt {
+    public static class RecordRequest {
         private final Long paymentAttemptId;
         private final UUID merchantUid;
         private final Long paymentId;
         private final AttemptStep step;
 
-        public static Attempt from(PaymentAttempt attempt) {
+        public static RecordRequest from(PaymentAttempt attempt) {
             return builder()
                     .paymentAttemptId(attempt.getId())
                     .merchantUid(attempt.getMerchantUid())

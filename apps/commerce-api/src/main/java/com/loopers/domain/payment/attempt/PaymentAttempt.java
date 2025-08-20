@@ -1,4 +1,4 @@
-package com.loopers.domain.payment;
+package com.loopers.domain.payment.attempt;
 
 import com.loopers.config.jpa.converter.AttemptStepConverter;
 import com.loopers.domain.BaseEntity;

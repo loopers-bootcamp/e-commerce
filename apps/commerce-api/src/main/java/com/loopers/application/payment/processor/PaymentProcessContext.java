@@ -11,14 +11,11 @@ public record PaymentProcessContext(
         UUID orderId,
         List<Product> products,
         List<Long> userCouponIds,
-        Long totalPrice,
-        Integer discountAmount,
-        PaymentMethod paymentMethod
+        Long paymentAmount
 ) {
     public static PaymentProcessContext of(
             Long userId,
-            OrderResult.GetOrderDetail order,
-            PaymentMethod paymentMethod
+            OrderResult.GetOrderDetail order
     ) {
         List<Product> products = order.getProducts()
                 .stream()
@@ -30,9 +27,7 @@ public record PaymentProcessContext(
                 order.getOrderId(),
                 products,
                 List.copyOf(order.getUserCouponIds()),
-                order.getTotalPrice(),
-                order.getDiscountAmount(),
-                paymentMethod
+                order.getTotalPrice() - order.getDiscountAmount()
         );
     }
 

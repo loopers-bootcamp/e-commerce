@@ -18,7 +18,7 @@ public class PgSimulatorRequest {
             return new RequestTransaction(
                     payment.getOrderId(),
                     payment.getCardType(),
-                    payment.getCardNo(),
+                    payment.getCardNumber().toFormattedString(),
                     payment.getAmount(),
                     callbackUrl
             );

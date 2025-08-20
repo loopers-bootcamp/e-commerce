@@ -1,20 +1,24 @@
 package com.loopers.domain.payment;
 
 import com.loopers.annotation.ReadOnlyTransactional;
+import com.loopers.domain.payment.attempt.PaymentAttemptManager;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+
+    @Delegate
+    private final PaymentAttemptManager paymentAttemptManager;
 
     @ReadOnlyTransactional
     public Optional<PaymentResult.GetPayment> getPayment(PaymentCommand.GetPayment command) {
@@ -36,14 +40,6 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         return PaymentResult.Pay.from(payment);
-    }
-
-    @Transactional
-    public PaymentResult.Attempt attempt(Long paymentId) {
-        PaymentAttempt requestedAttempt = PaymentAttempt.request(paymentId);
-        paymentRepository.save(requestedAttempt);
-
-        return PaymentResult.Attempt.from(requestedAttempt);
     }
 
     @Transactional

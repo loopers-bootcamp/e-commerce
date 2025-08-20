@@ -33,20 +33,22 @@ public final class PaymentCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Attempt {
-        private final Long paymentId;
-    }
-
-    // -------------------------------------------------------------------------------------------------
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Pay {
         private final Long amount;
         private final PaymentMethod paymentMethod;
         private final Long userId;
         private final UUID orderId;
+    }
+
+    // PaymentAttempt ----------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class RecordResponse {
+        private final UUID merchantUid;
+        private final String transactionKey;
+        private final Long paymentId;
     }
 
 }

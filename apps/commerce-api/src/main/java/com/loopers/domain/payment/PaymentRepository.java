@@ -1,5 +1,7 @@
 package com.loopers.domain.payment;
 
+import com.loopers.domain.payment.attempt.PaymentAttempt;
+
 import java.util.Optional;
 import java.util.UUID;
 

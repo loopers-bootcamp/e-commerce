@@ -10,8 +10,7 @@ import lombok.RequiredArgsConstructor;
 public enum PaymentMethod {
 
     POINT(1),
-    CARD(2),
-    ACCOUNT(3);
+    CARD(2);
 
     // -------------------------------------------------------------------------------------------------
 

@@ -14,14 +14,12 @@ import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-class PointPaymentProcessor implements PaymentProcessor {
+class CardPaymentProcessor implements PaymentProcessor {
 
     private final PaymentService paymentService;
     private final OrderService orderService;
@@ -31,12 +29,21 @@ class PointPaymentProcessor implements PaymentProcessor {
 
     @Override
     public boolean supports(PaymentMethod paymentMethod) {
-        return paymentMethod == PaymentMethod.POINT;
+        return paymentMethod == PaymentMethod.CARD;
     }
 
-    @Transactional
     @Override
     public PaymentOutput.Pay process(PaymentProcessContext context) {
+        PaymentCommand.Ready readyCommand = PaymentCommand.Ready.builder()
+                .amount(context.paymentAmount())
+                .paymentMethod(PaymentMethod.CARD)
+                .userId(context.userId())
+                .orderId(context.orderId())
+                .build();
+        PaymentResult.Pay payment = paymentService.ready(readyCommand);
+
+        PaymentResult.RecordRequest attempt = paymentService.recordRequest(payment.getPaymentId());
+
         List<ProductCommand.DeductStocks.Item> items = context.products()
                 .stream()
                 .map(product -> ProductCommand.DeductStocks.Item.builder()
@@ -49,9 +56,8 @@ class PointPaymentProcessor implements PaymentProcessor {
         ProductCommand.DeductStocks productCommand = ProductCommand.DeductStocks.builder().items(items).build();
         productService.deductStocks(productCommand);
 
-        Long userId = context.userId();
         CouponCommand.Use couponCommand = CouponCommand.Use.builder()
-                .userId(userId)
+                .userId(context.userId())
                 .userCouponIds(context.userCouponIds())
                 .build();
         couponService.use(couponCommand);
@@ -61,21 +67,20 @@ class PointPaymentProcessor implements PaymentProcessor {
         if (paymentAmount > 0) {
             PointCommand.Spend pointCommand = PointCommand.Spend.builder()
                     .amount(paymentAmount)
-                    .userId(userId)
+                    .userId(context.userId())
                     .build();
             pointService.spend(pointCommand);
         }
 
-        UUID orderId = context.orderId();
         PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
                 .amount(paymentAmount)
-                .paymentMethod(PaymentMethod.POINT)
-                .userId(userId)
-                .orderId(orderId)
+                .paymentMethod(PaymentMethod.CARD)
+                .userId(context.userId())
+                .orderId(context.orderId())
                 .build();
         PaymentResult.Pay paymentResult = paymentService.pay(paymentCommand);
 
-        orderService.complete(orderId);
+        orderService.complete(context.orderId());
 
         return PaymentOutput.Pay.from(paymentResult);
     }

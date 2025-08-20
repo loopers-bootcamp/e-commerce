@@ -46,7 +46,7 @@ public class PaymentFacade {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(CommonErrorType.INTERNAL_ERROR, "결제를 처리할 수 없습니다."));
 
-        PaymentProcessContext context = PaymentProcessContext.of(user.getUserId(), order, input.getPaymentMethod());
+        PaymentProcessContext context = PaymentProcessContext.of(user.getUserId(), order);
         return paymentProcessor.process(context);
     }
 
