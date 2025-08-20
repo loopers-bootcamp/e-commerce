@@ -26,8 +26,8 @@ public final class PaymentCommand {
     public static class Ready {
         private final Long amount;
         private final PaymentMethod paymentMethod;
-        private CardType cardType;
-        private CardNumber cardNumber;
+        private final CardType cardType;
+        private final CardNumber cardNumber;
         private final Long userId;
         private final UUID orderId;
     }
