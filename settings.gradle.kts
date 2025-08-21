@@ -5,6 +5,8 @@ include(
     ":apps:pg-simulator",
     ":modules:jpa",
     ":modules:redis",
+    ":modules:feign",
+    ":modules:resilience4j",
     ":supports:jackson",
     ":supports:logging",
     ":supports:monitoring",

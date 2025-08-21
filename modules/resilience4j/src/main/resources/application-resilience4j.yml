@@ -1,0 +1,58 @@
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slow-call-rate-threshold: 50
+      failure-rate-threshold: 50
+      slow-call-duration-threshold: 300ms
+      wait-duration-in-open-state: 1s # OPEN -> HALF_OPEN 시도 전 대기시간
+      max-wait-duration-in-half-open-state: 500ms
+      permitted-number-of-calls-in-half-open-state: 1 # HALF_OPEN에서 시험 삼아 통과할 호출 수
+      sliding-window-type: time_based
+      sliding-window-size: 10 # time_based: 초 단위
+      minimum-number-of-calls: 2 # 통계를 평가하기 전 최소 샘플 수 (n < sliding-window-size)
+      event-consumer-buffer-size: 1
+      register-health-indicator: true
+      record-exceptions:
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.HttpServerErrorException
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+
+resilience4j.timelimiter:
+  configs:
+    default:
+      timeout-duration: 300ms # retry/fallback을 포함한 전체 작업 시간 (read-timeout보다 길게 설정하는 걸 권장)
+      cancel-running-future: true
+    shared:
+      timeout-duration: 1s
+      cancel-running-future: true
+
+resilience4j.retry:
+  configs:
+    default:
+      max-attempts: 3
+      wait-duration: 100ms
+      fail-after-max-attempts: true
+      retry-exceptions:
+        - java.io.IOException
+        - java.util.concurrent.TimeoutException
+        - org.springframework.web.client.HttpServerErrorException
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+
+---
+
+spring.config.activate.on-profile: local, test
+
+---
+
+spring.config.activate.on-profile: dev
+
+---
+
+spring.config.activate.on-profile: qa
+
+---
+
+spring.config.activate.on-profile: prd

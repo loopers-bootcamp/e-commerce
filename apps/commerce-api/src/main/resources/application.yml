@@ -22,10 +22,12 @@ spring:
     active: local
   config:
     import:
-      - jpa.yml
-      - redis.yml
-      - logging.yml
-      - monitoring.yml
+      - application-jpa.yml
+      - application-redis.yml
+      - application-feign.yml
+      - application-resilience4j.yml
+      - application-logging.yml
+      - application-monitoring.yml
 
   task:
     execution:
@@ -39,23 +41,27 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-resilience4j:
-  circuitbreaker:
-    configs:
-      default:
-        slow-call-rate-threshold: 50
-        failure-rate-threshold: 50
-        slow-call-duration-threshold: 300
-        wait-duration-in-open-state: 1000 # OPEN -> HALF_OPEN 시도 전 대기시간
-        max-wait-duration-in-half-open-state: 500
-        permitted-number-of-calls-in-half-open-state: 1 # HALF_OPEN에서 시험 삼아 통과할 호출 수
-        sliding-window-type: time_based
-        sliding-window-size: 10 # time_based: 초 단위
-        minimum-number-of-calls: 2 # 통계를 평가하기 전 최소 샘플 수 (n < sliding-window-size)
-        event-consumer-buffer-size: 1
-        register-health-indicator: true
-        record-exceptions:
-          - java.lang.Throwable
+resilience4j.circuitbreaker:
+  configs:
+    shared:
+      base-config: default
+      sliding-window-size: 10
+      permitted-number-of-calls-in-half-open-state: 30
+      wait-duration-in-open-state: 1s
+      failure-rate-threshold: 50
+      event-consumer-buffer-size: 10
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
+
+resilience4j.retry:
+  configs:
+    shared:
+      base-config: default
+      max-attempts: 1
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
 
 ---
 
@@ -68,6 +74,30 @@ pg-simulator:
   store-id: ${spring.application.name}
   api-client:
     base-url: http://localhost:8082
+
+resilience4j.circuitbreaker:
+  instances:
+    cb:payment-gateway:request-transaction:
+      base-config: shared
+    cb:payment-gateway:get-transactions:
+      base-config: shared
+
+resilience4j.timelimiter:
+  instances:
+    tl:payment-gateway:request-transaction:
+      base-config: default
+      timeout-duration: 1500ms # pg-simulator-client.read-timeout보다 크게
+    tl:payment-gateway:get-transactions:
+      base-config: default
+      timeout-duration: 500ms
+
+resilience4j.retry:
+  instances:
+    rt:payment-gateway:request-transaction:
+      base-config: shared
+      max-attempts: 2 # 3연속 실패 확률: 40% ^ 3 = 6.4%
+    rt:payment-gateway:get-transactions:
+      base-config: shared
 
 ---
 

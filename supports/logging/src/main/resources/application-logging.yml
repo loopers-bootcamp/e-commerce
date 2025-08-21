@@ -1,0 +1,1 @@
+application-logging.config: classpath:logback/logback.xml
