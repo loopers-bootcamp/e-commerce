@@ -7,6 +7,7 @@ import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -36,12 +37,6 @@ public class PaymentAttempt extends BaseEntity {
     private Long id;
 
     /**
-     * 결제 요청 번호
-     */
-    @Column(name = "merchant_uid", nullable = false, updatable = false)
-    private UUID merchantUid;
-
-    /**
      * 거래 키
      */
     @Column(name = "transaction_key")
@@ -54,7 +49,19 @@ public class PaymentAttempt extends BaseEntity {
     @Column(name = "step", nullable = false, updatable = false)
     private AttemptStep step;
 
+    /**
+     * 실패 사유
+     */
+    @Column(name = "fail_reason")
+    private String failReason;
+
     // -------------------------------------------------------------------------------------------------
+
+    /**
+     * 주문 아이디
+     */
+    @Column(name = "ref_order_id", nullable = false, updatable = false)
+    private UUID orderId;
 
     /**
      * 결제 아이디
@@ -64,40 +71,39 @@ public class PaymentAttempt extends BaseEntity {
 
     // -------------------------------------------------------------------------------------------------
 
+    @Builder
     private PaymentAttempt(
-            UUID merchantUid,
-            String transactionKey,
             AttemptStep step,
+            String transactionKey,
+            String failReason,
+            UUID orderId,
             Long paymentId
     ) {
-        if (merchantUid == null) {
-            throw new BusinessException(CommonErrorType.INVALID, "결제 요청 번호가 올바르지 않습니다.");
+        if (step == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "결제 요청 단계가 올바르지 않습니다.");
         }
 
         if (transactionKey != null && !StringUtils.hasText(transactionKey)) {
             throw new BusinessException(CommonErrorType.INVALID, "거래 키가 올바르지 않습니다.");
         }
 
+        if (failReason != null && !StringUtils.hasText(failReason)) {
+            throw new BusinessException(CommonErrorType.INVALID, "실패 사유가 올바르지 않습니다.");
+        }
+
+        if (orderId == null) {
+            throw new BusinessException(CommonErrorType.INVALID, "주문 아이디가 올바르지 않습니다.");
+        }
+
         if (paymentId == null) {
             throw new BusinessException(CommonErrorType.INVALID, "결제 아이디가 올바르지 않습니다.");
         }
 
-        this.merchantUid = merchantUid;
-        this.transactionKey = transactionKey;
         this.step = step;
+        this.transactionKey = transactionKey;
+        this.failReason = failReason;
+        this.orderId = orderId;
         this.paymentId = paymentId;
-    }
-
-    public static PaymentAttempt request(Long paymentId) {
-        return new PaymentAttempt(UUID.randomUUID(), null, AttemptStep.REQUESTED, paymentId);
-    }
-
-    public static PaymentAttempt respond(UUID merchantUid, String transactionKey, Long paymentId) {
-        return new PaymentAttempt(merchantUid, transactionKey, AttemptStep.RESPONDED, paymentId);
-    }
-
-    public static PaymentAttempt fail(UUID merchantUid, Long paymentId) {
-        return new PaymentAttempt(merchantUid, null, AttemptStep.FAILED, paymentId);
     }
 
 }

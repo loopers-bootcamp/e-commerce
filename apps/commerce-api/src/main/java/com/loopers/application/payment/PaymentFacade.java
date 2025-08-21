@@ -2,16 +2,23 @@ package com.loopers.application.payment;
 
 import com.loopers.application.payment.processor.PaymentProcessContext;
 import com.loopers.application.payment.processor.PaymentProcessor;
+import com.loopers.domain.coupon.CouponCommand;
+import com.loopers.domain.coupon.CouponService;
 import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
+import com.loopers.domain.payment.PaymentCommand;
+import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.payment.error.PaymentErrorType;
+import com.loopers.domain.product.ProductCommand;
+import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserResult;
 import com.loopers.domain.user.UserService;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,8 +27,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentFacade {
 
+    private final PaymentService paymentService;
     private final UserService userService;
     private final OrderService orderService;
+    private final ProductService productService;
+    private final CouponService couponService;
+
     private final List<PaymentProcessor> processors;
 
     public PaymentOutput.Pay pay(PaymentInput.Pay input) {
@@ -53,6 +64,51 @@ public class PaymentFacade {
                 input.getCardNumber()
         );
         return paymentProcessor.process(context);
+    }
+
+    @Transactional
+    public void conclude(PaymentInput.Conclude input) {
+        UUID orderId = input.getOrderId();
+
+        // Inbox 저장을 위해 가장 먼저 호출한다.
+        PaymentCommand.Conclude concludeCommand = PaymentCommand.Conclude.builder()
+                .transactionKey(input.getTransactionKey())
+                .orderId(orderId)
+                .amount(input.getAmount())
+                .status(input.getStatus())
+                .reason(input.getReason())
+                .build();
+        paymentService.conclude(concludeCommand);
+
+        OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
+                .orderId(orderId)
+                .build();
+        OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        if (!order.getStatus().isPayable()) {
+            throw new BusinessException(PaymentErrorType.UNPROCESSABLE);
+        }
+
+        List<ProductCommand.DeductStocks.Item> items = order.getProducts()
+                .stream()
+                .map(product -> ProductCommand.DeductStocks.Item.builder()
+                        .productOptionId(product.getProductOptionId())
+                        .amount(product.getQuantity())
+                        .build()
+                )
+                .toList();
+
+        ProductCommand.DeductStocks productCommand = ProductCommand.DeductStocks.builder().items(items).build();
+        productService.deductStocks(productCommand);
+
+        CouponCommand.Use couponCommand = CouponCommand.Use.builder()
+                .userId(order.getUserId())
+                .userCouponIds(order.getUserCouponIds())
+                .build();
+        couponService.use(couponCommand);
+
+        orderService.complete(orderId);
     }
 
 }

@@ -26,4 +26,23 @@ public class PaymentEvent {
         }
     }
 
+    // -------------------------------------------------------------------------------------------------
+
+    public record Success(
+            String transactionKey,
+            UUID orderId,
+            Long paymentId
+    ) {
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    public record Failed(
+            String transactionKey,
+            String reason,
+            UUID orderId,
+            Long paymentId
+    ) {
+    }
+
 }

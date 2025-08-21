@@ -43,6 +43,11 @@ spring:
     hibernate:
       ddl-auto: create
 
+datasource:
+  mysql-jpa:
+    main:
+      jdbc-url: jdbc:mysql://localhost:3306/payment-gateway
+
 server:
   port: 8082
 

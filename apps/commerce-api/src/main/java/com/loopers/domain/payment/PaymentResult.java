@@ -1,7 +1,5 @@
 package com.loopers.domain.payment;
 
-import com.loopers.domain.payment.attempt.PaymentAttempt;
-import com.loopers.domain.payment.attribute.AttemptStep;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import lombok.*;
@@ -39,18 +37,14 @@ public final class PaymentResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class RecordRequest {
-        private final Long paymentAttemptId;
-        private final UUID merchantUid;
+    public static class Pay {
         private final Long paymentId;
-        private final AttemptStep step;
+        private final PaymentStatus paymentStatus;
 
-        public static RecordRequest from(PaymentAttempt attempt) {
+        public static Pay from(Payment payment) {
             return builder()
-                    .paymentAttemptId(attempt.getId())
-                    .merchantUid(attempt.getMerchantUid())
-                    .paymentId(attempt.getPaymentId())
-                    .step(attempt.getStep())
+                    .paymentId(payment.getId())
+                    .paymentStatus(payment.getStatus())
                     .build();
         }
     }
@@ -60,11 +54,11 @@ public final class PaymentResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Pay {
+    public static class Conclude {
         private final Long paymentId;
         private final PaymentStatus paymentStatus;
 
-        public static Pay from(Payment payment) {
+        public static Conclude from(Payment payment) {
             return builder()
                     .paymentId(payment.getId())
                     .paymentStatus(payment.getStatus())

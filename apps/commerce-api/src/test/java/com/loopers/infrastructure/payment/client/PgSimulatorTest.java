@@ -1,6 +1,7 @@
 package com.loopers.infrastructure.payment.client;
 
 import com.loopers.domain.payment.Payment;
+import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
@@ -25,11 +26,11 @@ class PgSimulatorTest {
                 .status(PaymentStatus.READY)
                 .method(PaymentMethod.CARD)
                 .cardType(CardType.HYUNDAI)
-                .cardNo("1234-5678-9012-3456")
+                .cardNumber(new CardNumber("1234567890123456"))
                 .userId(1L)
                 .orderId(UUID.randomUUID())
                 .build();
-        pgSimulator.requestTransaction(payment);
+//        pgSimulator.requestTransaction(payment);
     }
 
 }

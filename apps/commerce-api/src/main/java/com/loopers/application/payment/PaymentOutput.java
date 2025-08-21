@@ -15,7 +15,7 @@ public final class PaymentOutput {
         private final PaymentStatus paymentStatus;
 
         public static Pay from(PaymentResult.Pay result) {
-            return Pay.builder()
+            return builder()
                     .paymentId(result.getPaymentId())
                     .paymentStatus(result.getPaymentStatus())
                     .build();

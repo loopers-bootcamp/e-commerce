@@ -4,6 +4,8 @@ import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.domain.payment.attempt.PaymentAttemptManager;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import com.loopers.domain.payment.event.PaymentEvent;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,9 +20,10 @@ import java.util.Optional;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-
     @Delegate
     private final PaymentAttemptManager paymentAttemptManager;
+    private final PaymentGateway paymentGateway;
+
     private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
@@ -50,17 +53,69 @@ public class PaymentService {
 
     @Transactional
     public PaymentResult.Pay pay(PaymentCommand.Pay command) {
-        Payment payment = Payment.builder()
-                .amount(command.getAmount())
-                .status(PaymentStatus.PAID)
-                .method(command.getPaymentMethod())
-                .userId(command.getUserId())
-                .orderId(command.getOrderId())
-                .build();
+        Payment payment = paymentRepository.findPaymentForUpdate(command.getOrderId())
+                .orElseGet(() -> Payment.builder()
+                        .amount(command.getAmount())
+                        .status(PaymentStatus.READY)
+                        .method(command.getPaymentMethod())
+                        .userId(command.getUserId())
+                        .orderId(command.getOrderId())
+                        .build());
 
+        payment.pay();
         paymentRepository.save(payment);
 
         return PaymentResult.Pay.from(payment);
+    }
+
+    @Transactional
+    public PaymentResult.Conclude conclude(PaymentCommand.Conclude command) {
+        PaymentGateway.GetTransactions data = paymentGateway.getTransactions(command.getOrderId());
+        PaymentGateway.GetTransactions.Transaction transaction = data.transactions()
+                .stream()
+                .filter(tx -> tx.transactionKey().equals(command.getTransactionKey()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND, "거래 건을 찾을 수 없습니다."));
+
+        PaymentGateway.Status status = PaymentGateway.Status.valueOf(command.getStatus());
+        if (status != transaction.status()) {
+            throw new BusinessException(CommonErrorType.CONFLICT, "거래 상태가 일치하지 않습니다.");
+        }
+
+        Payment payment = paymentRepository.findPaymentForUpdate(command.getOrderId())
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND, "결제 건을 찾을 수 없습니다."));
+
+        if (!Objects.equals(payment.getAmount(), command.getAmount())) {
+            throw new BusinessException(CommonErrorType.CONFLICT, "결제 금액이 일치하지 않습니다.");
+        }
+
+        switch (status) {
+            case SUCCESS -> {
+                PaymentEvent.Success successEvent = new PaymentEvent.Success(
+                        command.getTransactionKey(),
+                        command.getOrderId(),
+                        payment.getId()
+                );
+                eventPublisher.publishEvent(successEvent);
+
+                payment.pay();
+            }
+            case FAILED -> {
+                PaymentEvent.Failed failedEvent = new PaymentEvent.Failed(
+                        command.getTransactionKey(),
+                        command.getReason(),
+                        command.getOrderId(),
+                        payment.getId()
+                );
+                eventPublisher.publishEvent(failedEvent);
+
+                payment.fail();
+            }
+        }
+
+        paymentRepository.save(payment);
+
+        return PaymentResult.Conclude.from(payment);
     }
 
 }

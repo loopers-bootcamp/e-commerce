@@ -9,10 +9,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PaymentStatus {
 
-    READY(1),
-    PAID(2),
-    FAILED(3),
-    CANCELED(4);
+    READY(1) {
+        @Override
+        public boolean isConcluding() {
+            return false;
+        }
+    },
+
+    PAID(2) {
+        @Override
+        public boolean isConcluding() {
+            return true;
+        }
+    },
+
+    FAILED(3) {
+        @Override
+        public boolean isConcluding() {
+            return true;
+        }
+    },
+
+    CANCELED(4) {
+        @Override
+        public boolean isConcluding() {
+            return true;
+        }
+    };
 
     // -------------------------------------------------------------------------------------------------
 
@@ -33,5 +56,7 @@ public enum PaymentStatus {
 
         return null;
     }
+
+    public abstract boolean isConcluding();
 
 }

@@ -9,6 +9,8 @@ public interface PaymentRepository {
 
     Optional<Payment> findPayment(UUID orderId);
 
+    Optional<Payment> findPaymentForUpdate(UUID orderId);
+
     Payment save(Payment payment);
 
     PaymentAttempt save(PaymentAttempt attempt);

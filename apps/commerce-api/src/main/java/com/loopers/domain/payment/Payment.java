@@ -8,6 +8,7 @@ import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
+import com.loopers.domain.payment.error.PaymentErrorType;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;
@@ -82,7 +83,7 @@ public class Payment extends BaseEntity {
     /**
      * 주문 아이디
      */
-    @Column(name = "ref_order_id", nullable = false, updatable = false)
+    @Column(name = "ref_order_id", nullable = false, updatable = false, unique = true)
     private UUID orderId;
 
     // -------------------------------------------------------------------------------------------------
@@ -138,6 +139,30 @@ public class Payment extends BaseEntity {
         this.cardNumber = cardNumber;
         this.userId = userId;
         this.orderId = orderId;
+    }
+
+    public void pay() {
+        if (this.status == PaymentStatus.PAID) {
+            return;
+        }
+
+        if (this.status.isConcluding()) {
+            throw new BusinessException(PaymentErrorType.ALREADY_CONCLUDED);
+        }
+
+        this.status = PaymentStatus.PAID;
+    }
+
+    public void fail() {
+        if (this.status == PaymentStatus.FAILED) {
+            return;
+        }
+
+        if (this.status.isConcluding()) {
+            throw new BusinessException(PaymentErrorType.ALREADY_CONCLUDED);
+        }
+
+        this.status = PaymentStatus.FAILED;
     }
 
 }
