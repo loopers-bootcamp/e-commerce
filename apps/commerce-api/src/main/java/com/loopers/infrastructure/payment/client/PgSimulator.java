@@ -3,6 +3,9 @@ package com.loopers.infrastructure.payment.client;
 import com.loopers.domain.payment.PaymentGateway;
 import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
@@ -21,6 +24,9 @@ public class PgSimulator implements PaymentGateway {
     @Value("${pg-simulator.store-id}")
     private final String storeId;
 
+    @Retry(name = "rt:payment-gateway:request-transaction")
+    @TimeLimiter(name = "tl:payment-gateway:request-transaction")
+    @CircuitBreaker(name = "cb:payment-gateway:request-transaction")
     @Override
     public PaymentGateway.RequestTransaction requestTransaction(
             UUID orderId,
@@ -28,7 +34,6 @@ public class PgSimulator implements PaymentGateway {
             CardNumber cardNumber,
             Long amount
     ) {
-        // TODO: set circuit breaker + retry(on GET)
         String callbackUrl = UriComponentsBuilder.newInstance()
                 .host(serverProperties.getAddress().getHostName())
                 .port(serverProperties.getPort())
@@ -47,9 +52,11 @@ public class PgSimulator implements PaymentGateway {
         );
     }
 
+    @Retry(name = "rt:payment-gateway:get-transactions")
+    @TimeLimiter(name = "tl:payment-gateway:get-transactions")
+    @CircuitBreaker(name = "cb:payment-gateway:get-transactions")
     @Override
     public PaymentGateway.GetTransactions getTransactions(UUID orderId) {
-        // TODO: set circuit breaker + retry(on GET)
         PgApiResponse<PgSimulatorResponse.GetTransactions> response = client.getTransactions(storeId, orderId);
 
         return new PaymentGateway.GetTransactions(
