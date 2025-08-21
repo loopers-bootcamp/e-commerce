@@ -48,7 +48,7 @@ public class PaymentAttemptManager {
     @Transactional
     public void recordAsFailed(PaymentCommand.RecordAsFailed command) {
         PaymentAttempt failedAttempt = PaymentAttempt.builder()
-                .step(AttemptStep.SUCCESS)
+                .step(AttemptStep.FAILED)
                 .transactionKey(command.getTransactionKey())
                 .failReason(command.getReason())
                 .orderId(command.getOrderId())
