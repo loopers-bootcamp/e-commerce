@@ -25,8 +25,7 @@ public class PgSimulator implements PaymentGateway {
     private final String storeId;
 
     @Retry(name = "rt:payment-gateway:request-transaction")
-    @TimeLimiter(name = "tl:payment-gateway:request-transaction")
-    @CircuitBreaker(name = "cb:payment-gateway:request-transaction")
+    @CircuitBreaker(name = "cb--payment-gateway--request-transaction")
     @Override
     public PaymentGateway.RequestTransaction requestTransaction(
             UUID orderId,
@@ -53,8 +52,7 @@ public class PgSimulator implements PaymentGateway {
     }
 
     @Retry(name = "rt:payment-gateway:get-transactions")
-    @TimeLimiter(name = "tl:payment-gateway:get-transactions")
-    @CircuitBreaker(name = "cb:payment-gateway:get-transactions")
+    @CircuitBreaker(name = "cb--payment-gateway--get-transactions")
     @Override
     public PaymentGateway.GetTransactions getTransactions(UUID orderId) {
         PgApiResponse<PgSimulatorResponse.GetTransactions> response = client.getTransactions(storeId, orderId);

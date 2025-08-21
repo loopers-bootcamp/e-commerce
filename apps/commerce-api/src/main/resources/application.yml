@@ -41,28 +41,6 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-resilience4j.circuitbreaker:
-  configs:
-    shared:
-      base-config: default
-      sliding-window-size: 10
-      permitted-number-of-calls-in-half-open-state: 30
-      wait-duration-in-open-state: 1s
-      failure-rate-threshold: 50
-      event-consumer-buffer-size: 10
-      ignore-exceptions:
-        - org.springframework.web.client.HttpClientErrorException
-        - com.loopers.support.error.BusinessException
-
-resilience4j.retry:
-  configs:
-    shared:
-      base-config: default
-      max-attempts: 1
-      ignore-exceptions:
-        - org.springframework.web.client.HttpClientErrorException
-        - com.loopers.support.error.BusinessException
-
 ---
 
 spring.config.activate.on-profile: local, test
@@ -76,10 +54,20 @@ pg-simulator:
     base-url: http://localhost:8082
 
 resilience4j.circuitbreaker:
+  configs:
+    shared:
+      base-config: default
+      sliding-window-type: count_based
+      sliding-window-size: 10
+      minimum-number-of-calls: 5
+      permitted-number-of-calls-in-half-open-state: 1
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
   instances:
-    cb:payment-gateway:request-transaction:
+    cb--payment-gateway--request-transaction:
       base-config: shared
-    cb:payment-gateway:get-transactions:
+    cb--payment-gateway--get-transactions:
       base-config: shared
 
 resilience4j.timelimiter:
@@ -92,10 +80,17 @@ resilience4j.timelimiter:
       timeout-duration: 500ms
 
 resilience4j.retry:
+  configs:
+    shared:
+      base-config: default
+      max-attempts: 1
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
   instances:
     rt:payment-gateway:request-transaction:
       base-config: shared
-      max-attempts: 2 # 3연속 실패 확률: 40% ^ 3 = 6.4%
+      max-attempts: 3 # 3연속 실패 확률(최초 호출 포함): 40% ^ 3 = 6.4%
     rt:payment-gateway:get-transactions:
       base-config: shared
 
