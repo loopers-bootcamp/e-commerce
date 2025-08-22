@@ -8,7 +8,9 @@ import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.PaymentCommand;
+import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
+import com.loopers.domain.payment.attribute.PaymentStatus;
 import com.loopers.domain.payment.error.PaymentErrorType;
 import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductService;
@@ -78,7 +80,19 @@ public class PaymentFacade {
                 .status(input.getStatus())
                 .reason(input.getReason())
                 .build();
-        paymentService.conclude(concludeCommand);
+        PaymentResult.Conclude payment = paymentService.conclude(concludeCommand);
+        PaymentStatus paymentStatus = payment.getPaymentStatus();
+
+        // 결제 상태가 확정되지 않았으면, 후속 작업을 진행하지 않는다.
+        if (paymentStatus == PaymentStatus.READY) {
+            return;
+        }
+
+        // 결제가 실패됐다면, 주문을 취소한다.
+        if (paymentStatus == PaymentStatus.FAILED) {
+            orderService.cancel(orderId);
+            return;
+        }
 
         OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
                 .orderId(orderId)
