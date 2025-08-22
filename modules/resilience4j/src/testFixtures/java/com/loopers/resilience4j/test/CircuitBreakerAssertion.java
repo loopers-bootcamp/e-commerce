@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +53,7 @@ public class CircuitBreakerAssertion {
         return this;
     }
 
-    private CircuitBreakerAssertion execute(Runnable runnable) {
+    private CircuitBreakerAssertion execute(Consumer<Integer> consumer) {
         this.circuitBreaker.reset();
 
         switch (this.initialState) {
@@ -71,7 +72,7 @@ public class CircuitBreakerAssertion {
                 .onStateTransition(this.transitions::add);
 
         IntStream.range(0, this.callCount)
-                .forEach(i -> assertThatException().isThrownBy(runnable::run));
+                .forEach(i -> assertThatException().isThrownBy(() -> consumer.accept(i)));
         return this;
     }
 
@@ -104,7 +105,16 @@ public class CircuitBreakerAssertion {
                     this.initialState,
                     this.callCount
             );
-            return assertion.execute(Objects.requireNonNull(runnable));
+            return assertion.execute(i -> Objects.requireNonNull(runnable).run());
+        }
+
+        public CircuitBreakerAssertion isExecutedBy(Consumer<Integer> consumer) {
+            CircuitBreakerAssertion assertion = new CircuitBreakerAssertion(
+                    this.circuitBreaker,
+                    this.initialState,
+                    this.callCount
+            );
+            return assertion.execute(Objects.requireNonNull(consumer));
         }
 
     }

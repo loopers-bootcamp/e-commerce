@@ -73,15 +73,16 @@ pg-simulator:
 
 resilience4j.circuitbreaker:
   instances:
-    payment-gateway--request-transaction:
+    payment-gateway--transact:
       base-config: shared
       minimum-number-of-calls: 3 # retry.max-attempts와 같은 값 (한번의 트리거로 서킷브레이커가 판단)
     payment-gateway--get-transactions:
       base-config: shared
+      minimum-number-of-calls: 2 # retry.max-attempts와 같은 값
 
 resilience4j.timelimiter:
   instances:
-    payment-gateway--request-transaction:
+    payment-gateway--transact:
       base-config: default
       timeout-duration: 1500ms # pg-simulator-client.read-timeout보다 크게
     payment-gateway--get-transactions:
@@ -90,11 +91,12 @@ resilience4j.timelimiter:
 
 resilience4j.retry:
   instances:
-    payment-gateway--request-transaction:
+    payment-gateway--transact:
       base-config: shared
       max-attempts: 3 # 3연속 실패 확률(최초 호출 포함): 40% ^ 3 = 6.4%
     payment-gateway--get-transactions:
       base-config: shared
+      max-attempts: 2
 
 ---
 

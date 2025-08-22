@@ -27,8 +27,8 @@ public class PgSimulator implements PaymentGateway {
     /**
      * retry.max-attempts에 도달하면 fallback할 게 없으니 예외를 그대로 던진다.
      */
-    @Retry(name = "payment-gateway--request-transaction")
-    @CircuitBreaker(name = "payment-gateway--request-transaction")
+    @Retry(name = "payment-gateway--transact")
+    @CircuitBreaker(name = "payment-gateway--transact")
     @Override
     public Response.Transact transact(Request.Transact request) {
         String callbackUrl = UriComponentsBuilder.newInstance()

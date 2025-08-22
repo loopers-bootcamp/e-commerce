@@ -5,8 +5,9 @@ resilience4j.circuitbreaker:
       failure-rate-threshold: 50.0
       slow-call-duration-threshold: 300ms
       wait-duration-in-open-state: 1s # OPEN -> HALF_OPEN 시도 전 대기시간
+      automatic-transition-from-open-to-half-open-enabled: false
       max-wait-duration-in-half-open-state: 500ms
-      permitted-number-of-calls-in-half-open-state: 1 # HALF_OPEN에서 시험 삼아 통과할 호출 수
+      permitted-number-of-calls-in-half-open-state: 1 # HALF_OPEN에서 시험 삼아 통과할 호출 수 (정찰병)
       sliding-window-type: time_based
       sliding-window-size: 10 # time_based: 초 단위
       minimum-number-of-calls: 2 # 통계를 평가하기 전 최소 샘플 수 (n < sliding-window-size)
