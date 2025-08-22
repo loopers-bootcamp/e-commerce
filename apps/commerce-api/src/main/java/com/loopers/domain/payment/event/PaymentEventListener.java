@@ -27,8 +27,13 @@ public class PaymentEventListener {
                 .build();
         paymentService.recordAsRequested(requestCommand);
 
-        PaymentGateway.RequestTransaction transaction = paymentGateway.requestTransaction(
-                event.orderId(), event.cardType(), event.cardNumber(), event.amount());
+        PaymentGateway.Request.Transact request = new PaymentGateway.Request.Transact(
+                event.orderId(),
+                event.cardType(),
+                event.cardNumber(),
+                event.amount()
+        );
+        PaymentGateway.Response.Transact transaction = paymentGateway.transact(request);
 
         // Inbox
         PaymentCommand.RecordAsResponded respondCommand = PaymentCommand.RecordAsResponded.builder()

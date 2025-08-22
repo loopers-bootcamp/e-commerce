@@ -1,11 +1,8 @@
 package com.loopers.infrastructure.payment.client;
 
 import com.loopers.domain.payment.PaymentGateway;
-import com.loopers.domain.payment.attribute.CardNumber;
-import com.loopers.domain.payment.attribute.CardType;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
@@ -24,45 +21,45 @@ public class PgSimulator implements PaymentGateway {
     @Value("${pg-simulator.store-id}")
     private final String storeId;
 
-    @Retry(name = "rt:payment-gateway:request-transaction")
-    @CircuitBreaker(name = "cb--payment-gateway--request-transaction")
+    @Retry(name = "payment-gateway--request-transaction")
+    @CircuitBreaker(name = "payment-gateway--request-transaction")
     @Override
-    public PaymentGateway.RequestTransaction requestTransaction(
-            UUID orderId,
-            CardType cardType,
-            CardNumber cardNumber,
-            Long amount
-    ) {
+    public Response.Transact transact(Request.Transact request) {
         String callbackUrl = UriComponentsBuilder.newInstance()
                 .host(serverProperties.getAddress().getHostName())
                 .port(serverProperties.getPort())
                 .path("/callback/payments/{orderId}")
-                .buildAndExpand(orderId)
+                .buildAndExpand(request.orderId())
                 .toUriString();
 
         PgSimulatorRequest.RequestTransaction body = new PgSimulatorRequest.RequestTransaction(
-                orderId, cardType, cardNumber.toFormattedString(), amount, callbackUrl);
-        PgApiResponse<PgSimulatorResponse.RequestTransaction> response = client.requestTransaction(storeId, body);
+                request.orderId(),
+                request.cardType(),
+                request.cardNumber().toFormattedString(),
+                request.amount(),
+                callbackUrl
+        );
+        PgApiResponse<PgSimulatorResponse.Transact> response = client.transact(storeId, body);
 
-        return new PaymentGateway.RequestTransaction(
+        return new Response.Transact(
                 response.data().transactionKey(),
-                PaymentGateway.Status.valueOf(response.data().status()),
+                Status.valueOf(response.data().status()),
                 response.data().reason()
         );
     }
 
-    @Retry(name = "rt:payment-gateway:get-transactions")
-    @CircuitBreaker(name = "cb--payment-gateway--get-transactions")
+    @Retry(name = "payment-gateway--get-transactions")
+    @CircuitBreaker(name = "payment-gateway--get-transactions")
     @Override
-    public PaymentGateway.GetTransactions getTransactions(UUID orderId) {
+    public Response.GetTransactions getTransactions(UUID orderId) {
         PgApiResponse<PgSimulatorResponse.GetTransactions> response = client.getTransactions(storeId, orderId);
 
-        return new PaymentGateway.GetTransactions(
+        return new Response.GetTransactions(
                 UUID.fromString(response.data().orderId()),
                 response.data().transactions().stream()
-                        .map(tx -> new PaymentGateway.GetTransactions.Transaction(
+                        .map(tx -> new Response.GetTransactions.Transaction(
                                 tx.transactionKey(),
-                                PaymentGateway.Status.valueOf(tx.status()),
+                                Status.valueOf(tx.status()),
                                 tx.reason()
                         ))
                         .toList()

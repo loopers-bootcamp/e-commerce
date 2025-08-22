@@ -41,6 +41,24 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+resilience4j.circuitbreaker:
+  configs:
+    shared:
+      base-config: default
+      sliding-window-type: count_based
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
+
+resilience4j.retry:
+  configs:
+    shared:
+      base-config: default
+      max-attempts: 1
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
+
 ---
 
 spring.config.activate.on-profile: local, test
@@ -54,44 +72,28 @@ pg-simulator:
     base-url: http://localhost:8082
 
 resilience4j.circuitbreaker:
-  configs:
-    shared:
-      base-config: default
-      sliding-window-type: count_based
-      sliding-window-size: 10
-      minimum-number-of-calls: 5
-      permitted-number-of-calls-in-half-open-state: 1
-      ignore-exceptions:
-        - org.springframework.web.client.HttpClientErrorException
-        - com.loopers.support.error.BusinessException
   instances:
-    cb--payment-gateway--request-transaction:
+    payment-gateway--request-transaction:
       base-config: shared
-    cb--payment-gateway--get-transactions:
+      minimum-number-of-calls: 3 # retry.max-attempts와 같은 값 (한번의 트리거로 서킷브레이커가 판단)
+    payment-gateway--get-transactions:
       base-config: shared
 
 resilience4j.timelimiter:
   instances:
-    tl:payment-gateway:request-transaction:
+    payment-gateway--request-transaction:
       base-config: default
       timeout-duration: 1500ms # pg-simulator-client.read-timeout보다 크게
-    tl:payment-gateway:get-transactions:
+    payment-gateway--get-transactions:
       base-config: default
       timeout-duration: 500ms
 
 resilience4j.retry:
-  configs:
-    shared:
-      base-config: default
-      max-attempts: 1
-      ignore-exceptions:
-        - org.springframework.web.client.HttpClientErrorException
-        - com.loopers.support.error.BusinessException
   instances:
-    rt:payment-gateway:request-transaction:
+    payment-gateway--request-transaction:
       base-config: shared
       max-attempts: 3 # 3연속 실패 확률(최초 호출 포함): 40% ^ 3 = 6.4%
-    rt:payment-gateway:get-transactions:
+    payment-gateway--get-transactions:
       base-config: shared
 
 ---

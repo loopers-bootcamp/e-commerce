@@ -8,33 +8,40 @@ import java.util.UUID;
 
 public interface PaymentGateway {
 
-    RequestTransaction requestTransaction(
-            UUID orderId,
-            CardType cardType,
-            CardNumber cardNumber,
-            Long amount
-    );
+    Response.Transact transact(Request.Transact request);
 
-    GetTransactions getTransactions(UUID orderId);
+    Response.GetTransactions getTransactions(UUID orderId);
 
     // -------------------------------------------------------------------------------------------------
 
-    record RequestTransaction(
-            String transactionKey,
-            Status status,
-            String reason
-    ) {
+    record Request() {
+        public record Transact(
+                UUID orderId,
+                CardType cardType,
+                CardNumber cardNumber,
+                Long amount
+        ) {
+        }
     }
 
-    record GetTransactions(
-            UUID orderId,
-            List<Transaction> transactions
-    ) {
-        public record Transaction(
+    record Response() {
+        public record Transact(
                 String transactionKey,
                 Status status,
                 String reason
         ) {
+        }
+
+        public record GetTransactions(
+                UUID orderId,
+                List<Transaction> transactions
+        ) {
+            public record Transaction(
+                    String transactionKey,
+                    Status status,
+                    String reason
+            ) {
+            }
         }
     }
 

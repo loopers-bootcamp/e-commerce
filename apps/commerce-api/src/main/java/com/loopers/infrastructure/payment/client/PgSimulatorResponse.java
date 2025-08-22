@@ -4,7 +4,7 @@ import java.util.List;
 
 public class PgSimulatorResponse {
 
-    public record RequestTransaction(
+    public record Transact(
             String transactionKey,
             String status,
             String reason

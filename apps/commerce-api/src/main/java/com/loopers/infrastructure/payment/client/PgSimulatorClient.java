@@ -11,7 +11,7 @@ public interface PgSimulatorClient {
     String HEADER_STORE_ID = "X-USER-ID";
 
     @PostMapping
-    PgApiResponse<PgSimulatorResponse.RequestTransaction> requestTransaction(
+    PgApiResponse<PgSimulatorResponse.Transact> transact(
             @RequestHeader(HEADER_STORE_ID) String storeId,
             @RequestBody PgSimulatorRequest.RequestTransaction body
     );
