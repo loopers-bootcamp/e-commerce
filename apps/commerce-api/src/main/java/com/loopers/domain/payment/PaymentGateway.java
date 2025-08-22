@@ -4,13 +4,14 @@ import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentGateway {
 
     Response.Transact transact(Request.Transact request);
 
-    Response.GetTransactions getTransactions(UUID orderId);
+    Optional<Response.GetTransactions> findTransactions(UUID orderId);
 
     // -------------------------------------------------------------------------------------------------
 

@@ -12,10 +12,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,9 +39,9 @@ public class PaymentService {
     }
 
     @ReadOnlyTransactional
-    public PaymentResult.GetTransactions getTransactions(UUID orderId) {
-        PaymentGateway.Response.GetTransactions response = paymentGateway.getTransactions(orderId);
-        return PaymentResult.GetTransactions.from(response.transactions());
+    public Optional<PaymentResult.GetTransactions> getTransactions(UUID orderId) {
+        return paymentGateway.findTransactions(orderId)
+                .map(response -> PaymentResult.GetTransactions.from(response.transactions()));
     }
 
     @Transactional
@@ -84,9 +81,10 @@ public class PaymentService {
 
     @Transactional
     public PaymentResult.Conclude conclude(PaymentCommand.Conclude command) {
-        PaymentGateway.Response.GetTransactions response = paymentGateway.getTransactions(command.getOrderId());
-        PaymentGateway.Response.GetTransactions.Transaction transaction = response.transactions()
+        PaymentGateway.Response.GetTransactions.Transaction transaction = paymentGateway.findTransactions(command.getOrderId())
+                .map(PaymentGateway.Response.GetTransactions::transactions)
                 .stream()
+                .flatMap(Collection::stream)
                 .filter(tx -> tx.transactionKey().equals(command.getTransactionKey()))
                 .findFirst()
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND, "거래 건을 찾을 수 없습니다."));

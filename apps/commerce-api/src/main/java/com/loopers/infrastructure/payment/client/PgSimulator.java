@@ -4,13 +4,16 @@ import com.loopers.domain.payment.PaymentGateway;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PgSimulator implements PaymentGateway {
@@ -21,6 +24,9 @@ public class PgSimulator implements PaymentGateway {
     @Value("${pg-simulator.store-id}")
     private final String storeId;
 
+    /**
+     * retry.max-attempts에 도달하면 fallback할 게 없으니 예외를 그대로 던진다.
+     */
     @Retry(name = "payment-gateway--request-transaction")
     @CircuitBreaker(name = "payment-gateway--request-transaction")
     @Override
@@ -48,13 +54,17 @@ public class PgSimulator implements PaymentGateway {
         );
     }
 
-    @Retry(name = "payment-gateway--get-transactions")
+    @Retry(name = "payment-gateway--get-transactions", fallbackMethod = "fallbackForGettingTransactions")
     @CircuitBreaker(name = "payment-gateway--get-transactions")
     @Override
-    public Response.GetTransactions getTransactions(UUID orderId) {
+    public Optional<Response.GetTransactions> findTransactions(UUID orderId) {
         PgApiResponse<PgSimulatorResponse.GetTransactions> response = client.getTransactions(storeId, orderId);
 
-        return new Response.GetTransactions(
+        if (response == null || response.data() == null) {
+            return Optional.empty();
+        }
+
+        Response.GetTransactions transactions = new Response.GetTransactions(
                 UUID.fromString(response.data().orderId()),
                 response.data().transactions().stream()
                         .map(tx -> new Response.GetTransactions.Transaction(
@@ -64,6 +74,15 @@ public class PgSimulator implements PaymentGateway {
                         ))
                         .toList()
         );
+
+        return Optional.of(transactions);
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    private Optional<Response.GetTransactions> fallbackForGettingTransactions(UUID orderId, Throwable t) {
+        log.warn("Fallback for getting transactions for order: {}", orderId, t);
+        return Optional.empty();
     }
 
 }

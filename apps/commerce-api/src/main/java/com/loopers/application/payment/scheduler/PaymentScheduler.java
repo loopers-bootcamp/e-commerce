@@ -5,6 +5,7 @@ import com.loopers.application.payment.PaymentInput;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 import static java.util.stream.Collectors.groupingBy;
 
+@Slf4j
 @Component
 @Profile("!test")
 @RequiredArgsConstructor
@@ -33,13 +35,15 @@ public class PaymentScheduler {
 
         for (PaymentResult.GetReadyPayments.Item paymentItem : payments.getItems()) {
             UUID orderId = paymentItem.getOrderId();
-            PaymentResult.GetTransactions transactions = paymentService.getTransactions(orderId);
+            List<PaymentResult.GetTransactions.Item> transactions = paymentService.getTransactions(orderId)
+                    .map(PaymentResult.GetTransactions::getItems)
+                    .orElseGet(List::of);
 
-            if (CollectionUtils.isEmpty(transactions.getItems())) {
+            if (CollectionUtils.isEmpty(transactions)) {
                 continue;
             }
 
-            Map<String, List<PaymentInput.Conclude>> statusMap = transactions.getItems()
+            Map<String, List<PaymentInput.Conclude>> statusMap = transactions
                     .stream()
                     .map(item -> PaymentInput.Conclude.builder()
                             .transactionKey(item.getTransactionKey())
@@ -51,11 +55,16 @@ public class PaymentScheduler {
                     )
                     .collect(groupingBy(PaymentInput.Conclude::getStatus));
 
-            if (statusMap.containsKey("SUCCESS")) {
-                paymentFacade.conclude(statusMap.get("SUCCESS").getFirst());
-            } else if (statusMap.containsKey("FAILED") && !statusMap.containsKey("PENDING")) {
-                // 진행중인 결제 건이 하나라도 있으면, 실패한 결제라고 단언할 수 없다.
-                paymentFacade.conclude(statusMap.get("FAILED").getFirst());
+            try {
+                if (statusMap.containsKey("SUCCESS")) {
+                    paymentFacade.conclude(statusMap.get("SUCCESS").getFirst());
+                } else if (statusMap.containsKey("FAILED") && !statusMap.containsKey("PENDING")) {
+                    // 진행중인 결제 건이 하나라도 있으면, 실패한 결제라고 단언할 수 없다.
+                    paymentFacade.conclude(statusMap.get("FAILED").getFirst());
+                }
+            } catch (Exception e) {
+                // 보정에 실패해도, 다른 결제 건을 속행한다.
+                log.error("Failed to reconcile payment: (orderId={}, message={})", orderId, e.getMessage());
             }
         }
     }

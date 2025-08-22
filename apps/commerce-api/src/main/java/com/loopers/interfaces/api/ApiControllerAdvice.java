@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.support.error.ErrorType;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -143,10 +144,18 @@ public class ApiControllerAdvice {
     }
 
     @ExceptionHandler
+    public ResponseEntity<ApiResponse<?>> handle(CallNotPermittedException e) {
+        log.error("CallNotPermittedException(breaker={}): {}", e.getCausingCircuitBreakerName(), e.getMessage(), e);
+        return failureResponse(CommonErrorType.INTERNAL_ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler
     public ResponseEntity<ApiResponse<?>> handle(Throwable e) {
         log.error("Exception : {}", e.getMessage(), e);
         return failureResponse(CommonErrorType.INTERNAL_ERROR, null);
     }
+
+    // -------------------------------------------------------------------------------------------------
 
     private String extractMissingParameter(String message) {
         Pattern pattern = Pattern.compile("'(.+?)'");
