@@ -3,9 +3,11 @@ package com.loopers.infrastructure.payment.repository;
 import com.loopers.domain.payment.Payment;
 import com.loopers.domain.payment.PaymentRepository;
 import com.loopers.domain.payment.attempt.PaymentAttempt;
+import com.loopers.domain.payment.attribute.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +26,11 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     @Override
     public Optional<Payment> findPaymentForUpdate(UUID orderId) {
         return paymentJpaRepository.findByOrderIdForUpdate(orderId);
+    }
+
+    @Override
+    public List<Payment> findReadyPayments() {
+        return paymentJpaRepository.findByStatusAndCardTypeIsNotNull(PaymentStatus.READY);
     }
 
     @Override

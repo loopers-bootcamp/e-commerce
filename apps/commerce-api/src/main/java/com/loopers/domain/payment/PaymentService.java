@@ -12,8 +12,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,18 @@ public class PaymentService {
         return paymentRepository.findPayment(command.getOrderId())
                 .filter(payment -> Objects.equals(payment.getUserId(), command.getUserId()))
                 .map(PaymentResult.GetPayment::from);
+    }
+
+    @ReadOnlyTransactional
+    public PaymentResult.GetReadyPayments getReadyPayments() {
+        List<Payment> payments = paymentRepository.findReadyPayments();
+        return PaymentResult.GetReadyPayments.from(payments);
+    }
+
+    @ReadOnlyTransactional
+    public PaymentResult.GetTransactions getTransactions(UUID orderId) {
+        PaymentGateway.Response.GetTransactions response = paymentGateway.getTransactions(orderId);
+        return PaymentResult.GetTransactions.from(response.transactions());
     }
 
     @Transactional
@@ -70,8 +84,8 @@ public class PaymentService {
 
     @Transactional
     public PaymentResult.Conclude conclude(PaymentCommand.Conclude command) {
-        PaymentGateway.GetTransactions data = paymentGateway.getTransactions(command.getOrderId());
-        PaymentGateway.GetTransactions.Transaction transaction = data.transactions()
+        PaymentGateway.Response.GetTransactions response = paymentGateway.getTransactions(command.getOrderId());
+        PaymentGateway.Response.GetTransactions.Transaction transaction = response.transactions()
                 .stream()
                 .filter(tx -> tx.transactionKey().equals(command.getTransactionKey()))
                 .findFirst()
