@@ -46,6 +46,7 @@ resilience4j.circuitbreaker:
     shared:
       base-config: default
       sliding-window-type: count_based
+      permitted-number-of-calls-in-half-open-state: 3
       ignore-exceptions:
         - org.springframework.web.client.HttpClientErrorException
         - com.loopers.support.error.BusinessException
