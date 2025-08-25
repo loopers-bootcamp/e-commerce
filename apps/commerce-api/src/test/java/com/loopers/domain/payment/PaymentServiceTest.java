@@ -38,7 +38,7 @@ class PaymentServiceTest {
             Long amount = Instancio.of(Long.class)
                     .generate(root(), gen -> gen.longs().range(0L, 1_000_000L))
                     .create();
-            PaymentMethod method = Instancio.create(PaymentMethod.class);
+            PaymentMethod method = PaymentMethod.POINT;
             Long userId = Instancio.create(Long.class);
             UUID orderId = Instancio.create(UUID.class);
 

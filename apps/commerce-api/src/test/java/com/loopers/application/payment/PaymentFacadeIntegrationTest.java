@@ -205,7 +205,7 @@ class PaymentFacadeIntegrationTest {
             PaymentInput.Pay input = PaymentInput.Pay.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
-                    .paymentMethod(Instancio.create(PaymentMethod.class))
+                    .paymentMethod(PaymentMethod.POINT)
                     .build();
 
             // when
@@ -291,7 +291,7 @@ class PaymentFacadeIntegrationTest {
             PaymentInput.Pay input = PaymentInput.Pay.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
-                    .paymentMethod(Instancio.create(PaymentMethod.class))
+                    .paymentMethod(PaymentMethod.POINT)
                     .build();
 
             // when

@@ -19,6 +19,7 @@ import com.loopers.domain.user.UserService;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class PaymentFacade {
     private final CouponService couponService;
 
     private final List<PaymentProcessor> processors;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PaymentOutput.Pay pay(PaymentInput.Pay input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())

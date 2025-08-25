@@ -11,9 +11,7 @@ public class RedisTestContainersConfig {
     static {
         redisContainer = new RedisContainer(RedisContainer.DEFAULT_IMAGE_NAME.withTag("8"));
         redisContainer.start();
-    }
 
-    public RedisTestContainersConfig() {
         System.setProperty("datasource.redis.database", "0");
         System.setProperty("datasource.redis.master.host", redisContainer.getHost());
         System.setProperty("datasource.redis.master.port", String.valueOf(redisContainer.getFirstMappedPort()));

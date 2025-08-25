@@ -6,7 +6,7 @@ import com.loopers.domain.payment.attribute.CardType;
 
 import java.util.UUID;
 
-public class PaymentEvent {
+public record PaymentEvent() {
 
     public record Ready(
             Long paymentId,
