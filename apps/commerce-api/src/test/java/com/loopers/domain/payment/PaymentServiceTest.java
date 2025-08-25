@@ -54,7 +54,7 @@ class PaymentServiceTest {
 
             // then
             assertThat(result).isNotNull();
-            assertThat(result.getPaymentStatus()).isEqualTo(PaymentStatus.COMPLETE);
+            assertThat(result.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
 
             verify(paymentRepository, times(1)).save(any(Payment.class));
         }

@@ -23,7 +23,7 @@ public class OrderService {
     @ReadOnlyTransactional
     public Optional<OrderResult.GetOrderDetail> getOrderDetail(OrderCommand.GetOrderDetail command) {
         return orderRepository.findOrderDetailById(command.getOrderId())
-                .filter(order -> Objects.equals(order.getUserId(), command.getUserId()))
+                .filter(order -> command.getUserId() == null || Objects.equals(order.getUserId(), command.getUserId()))
                 .map(OrderResult.GetOrderDetail::from);
     }
 

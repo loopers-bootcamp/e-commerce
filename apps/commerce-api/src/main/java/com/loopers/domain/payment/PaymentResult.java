@@ -4,6 +4,7 @@ import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,7 +22,7 @@ public final class PaymentResult {
         private final UUID orderId;
 
         public static GetPayment from(Payment payment) {
-            return GetPayment.builder()
+            return builder()
                     .paymentId(payment.getId())
                     .amount(payment.getAmount())
                     .paymentStatus(payment.getStatus())
@@ -37,12 +38,93 @@ public final class PaymentResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetReadyPayments {
+        private final List<Item> items;
+
+        public static GetReadyPayments from(List<Payment> payments) {
+            return builder()
+                    .items(payments.stream()
+                            .map(payment -> new Item(
+                                    payment.getId(),
+                                    payment.getAmount(),
+                                    payment.getUserId(),
+                                    payment.getOrderId()
+                            ))
+                            .toList()
+                    )
+                    .build();
+        }
+
+        @Getter
+        @Builder
+        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+        public static class Item {
+            private final Long paymentId;
+            private final Long amount;
+            private final Long userId;
+            private final UUID orderId;
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class GetTransactions {
+        private final List<Item> items;
+
+        public static GetTransactions from(List<PaymentGateway.Response.GetTransactions.Transaction> transactions) {
+            return builder()
+                    .items(transactions.stream()
+                            .map(payment -> new Item(
+                                    payment.transactionKey(),
+                                    payment.status().name(),
+                                    payment.reason()
+                            ))
+                            .toList()
+                    )
+                    .build();
+        }
+
+        @Getter
+        @Builder
+        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+        public static class Item {
+            private final String transactionKey;
+            private final String status;
+            private final String reason;
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Pay {
         private final Long paymentId;
         private final PaymentStatus paymentStatus;
 
         public static Pay from(Payment payment) {
-            return Pay.builder()
+            return builder()
+                    .paymentId(payment.getId())
+                    .paymentStatus(payment.getStatus())
+                    .build();
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Conclude {
+        private final Long paymentId;
+        private final PaymentStatus paymentStatus;
+
+        public static Conclude from(Payment payment) {
+            return builder()
                     .paymentId(payment.getId())
                     .paymentStatus(payment.getStatus())
                     .build();

@@ -1,0 +1,20 @@
+### 결제 요청
+POST {{pg-simulator}}/api/v1/payments
+X-USER-ID: commerce-api
+Content-Type: application/json
+
+{
+  "orderId": "0198cc51-917c-7c8e-a86a-66be55a85589",
+  "cardType": "HYUNDAI",
+  "cardNo": "1234-5678-9012-3456",
+  "amount" : 75684,
+  "callbackUrl": "{{commerce-api}}/callback/payments/0198cc51-917c-7c8e-a86a-66be55a85589"
+}
+
+### 결제 정보 확인
+GET {{pg-simulator}}/api/v1/payments/20250821:TR:68f8cc
+X-USER-ID: commerce-api
+
+### 주문에 엮인 결제 정보 조회
+GET {{pg-simulator}}/api/v1/payments?orderId=0198cc51-917c-7c8e-a86a-66be55a85589
+X-USER-ID: commerce-api

@@ -7,16 +7,19 @@ import com.loopers.domain.product.ProductCacheRepository;
 import com.loopers.domain.product.ProductQueryCommand;
 import com.loopers.domain.product.ProductQueryResult;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.Objects;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ProductCacheRepositoryImpl implements ProductCacheRepository {
@@ -34,7 +37,13 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
         }
 
         String key = "page:products:" + Objects.hash(command);
-        String json = redisTemplate.opsForValue().getAndExpire(key, Duration.ofSeconds(1));
+
+        String json = null;
+        try {
+            json = redisTemplate.opsForValue().getAndExpire(key, Duration.ofSeconds(1));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
 
         if (!StringUtils.hasText(json)) {
             return Page.empty(pageRequest);
@@ -75,8 +84,12 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
                 command.getSize()
         );
 
-        // 모든 검색 조건을 캐싱하는 대신, TTL를 짧게 줘서 과도한 메모리 점유를 방지한다.
-        redisTemplate.opsForValue().set(key, json, Duration.ofSeconds(5));
+        try {
+            // 모든 검색 조건을 캐싱하는 대신, TTL를 짧게 줘서 과도한 메모리 점유를 방지한다.
+            redisTemplate.opsForValue().set(key, json, Duration.ofSeconds(5));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 
 }

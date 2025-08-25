@@ -1,6 +1,7 @@
 package com.loopers.domain.order;
 
 import lombok.*;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +14,7 @@ public final class OrderCommand {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class GetOrderDetail {
         private final UUID orderId;
+        @Nullable
         private final Long userId;
     }
 

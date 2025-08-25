@@ -1,0 +1,32 @@
+spring:
+  cloud:
+    openfeign:
+      httpclient.hc5.enabled: true
+      client:
+        config:
+          default:
+            connect-timeout: 2000
+            read-timeout: 3000
+          pg-simulator-client:
+            connect-timeout: 500
+            read-timeout: 1000
+      compression:
+        request.enabled: true
+        response.enabled: true
+      circuitbreaker.enabled: false # FeignClient가 서킷브레이커를 직접 사용하지 않게 한다
+
+---
+
+spring.config.activate.on-profile: local, test
+
+---
+
+spring.config.activate.on-profile: dev
+
+---
+
+spring.config.activate.on-profile: qa
+
+---
+
+spring.config.activate.on-profile: prd

@@ -28,6 +28,8 @@ public class PaymentV1Controller implements PaymentV1ApiSpec {
                 .userName(userName)
                 .orderId(request.getOrderId())
                 .paymentMethod(request.getPaymentMethod())
+                .cardType(request.getCardType())
+                .cardNumber(request.getCardNumber())
                 .build();
         PaymentOutput.Pay output = paymentFacade.pay(input);
         PaymentResponse.Pay response = PaymentResponse.Pay.from(output);

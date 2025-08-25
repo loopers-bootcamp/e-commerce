@@ -9,6 +9,7 @@ server:
     accept-count: 100 # 대기 큐 크기 (default : 100)
     keep-alive-timeout: 60s # 60s
   max-http-request-header-size: 8KB
+  port: 8080
 
 spring:
   mvc.format.date: iso
@@ -21,19 +22,82 @@ spring:
     active: local
   config:
     import:
-      - jpa.yml
-      - redis.yml
-      - logging.yml
-      - monitoring.yml
+      - application-jpa.yml
+      - application-redis.yml
+      - application-feign.yml
+      - application-resilience4j.yml
+      - application-logging.yml
+      - application-monitoring.yml
+
+  task:
+    execution:
+      pool:
+        core-size: 8
+        max-size: 16
+        queue-capacity: 8
 
 springdoc:
   use-fqn: true
   swagger-ui:
     path: /swagger-ui.html
 
+resilience4j.circuitbreaker:
+  configs:
+    shared:
+      base-config: default
+      sliding-window-type: count_based
+      permitted-number-of-calls-in-half-open-state: 3
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
+
+resilience4j.retry:
+  configs:
+    shared:
+      base-config: default
+      max-attempts: 1
+      ignore-exceptions:
+        - org.springframework.web.client.HttpClientErrorException
+        - com.loopers.support.error.BusinessException
+
 ---
 
 spring.config.activate.on-profile: local, test
+
+server:
+  address: localhost
+
+pg-simulator:
+  store-id: ${spring.application.name}
+  api-client:
+    base-url: http://localhost:8082
+
+resilience4j.circuitbreaker:
+  instances:
+    payment-gateway--transact:
+      base-config: shared
+      minimum-number-of-calls: 3 # retry.max-attempts와 같은 값 (한번의 트리거로 서킷브레이커가 판단)
+    payment-gateway--get-transactions:
+      base-config: shared
+      minimum-number-of-calls: 2 # retry.max-attempts와 같은 값
+
+resilience4j.timelimiter:
+  instances:
+    payment-gateway--transact:
+      base-config: default
+      timeout-duration: 1500ms # pg-simulator-client.read-timeout보다 크게
+    payment-gateway--get-transactions:
+      base-config: default
+      timeout-duration: 500ms
+
+resilience4j.retry:
+  instances:
+    payment-gateway--transact:
+      base-config: shared
+      max-attempts: 3 # 3연속 실패 확률(최초 호출 포함): 40% ^ 3 = 6.4%
+    payment-gateway--get-transactions:
+      base-config: shared
+      max-attempts: 2
 
 ---
 

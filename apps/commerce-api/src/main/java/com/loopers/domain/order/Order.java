@@ -21,9 +21,12 @@ import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "orders", indexes = {
-        @Index(columnList = "ref_user_id"),
-})
+@Table(
+        name = "orders",
+        indexes = {
+                @Index(columnList = "ref_user_id"),
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseEntity implements Comparable<Order> {
 
