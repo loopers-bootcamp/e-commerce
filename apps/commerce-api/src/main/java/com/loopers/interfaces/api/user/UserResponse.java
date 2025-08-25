@@ -1,7 +1,7 @@
 package com.loopers.interfaces.api.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.loopers.application.user.UserOutput;
+import com.loopers.domain.user.UserResult;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import lombok.*;
@@ -24,13 +24,13 @@ public final class UserResponse {
         private final LocalDate birthDate;
         private final Email email;
 
-        public static GetUser from(UserOutput.GetUser output) {
+        public static GetUser from(UserResult.GetUser result) {
             return GetUser.builder()
-                    .userId(output.getUserId())
-                    .userName(output.getUserName())
-                    .gender(output.getGender())
-                    .birthDate(output.getBirthDate())
-                    .email(output.getEmail())
+                    .userId(result.getUserId())
+                    .userName(result.getUserName())
+                    .gender(result.getGender())
+                    .birthDate(result.getBirthDate())
+                    .email(result.getEmail())
                     .build();
         }
     }
@@ -49,13 +49,13 @@ public final class UserResponse {
         private final LocalDate birthDate;
         private final Email email;
 
-        public static Join from(UserOutput.Join output) {
+        public static Join from(UserResult.Join result) {
             return Join.builder()
-                    .userId(output.getUserId())
-                    .userName(output.getUserName())
-                    .gender(output.getGender())
-                    .birthDate(output.getBirthDate())
-                    .email(output.getEmail())
+                    .userId(result.getUserId())
+                    .userName(result.getUserName())
+                    .gender(result.getGender())
+                    .birthDate(result.getBirthDate())
+                    .email(result.getEmail())
                     .build();
         }
     }
