@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public interface InboxJpaRepository extends JpaRepository<Inbox, UUID> {
+public interface InboxJpaRepository extends JpaRepository<Inbox, Long> {
 
     @Modifying
     @Query("""

@@ -3,12 +3,17 @@ package com.loopers.domain.saga;
 import com.loopers.domain.BaseEntity;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
+import io.hypersistence.utils.hibernate.type.json.JsonStringType;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -43,13 +48,14 @@ public class Outbox extends BaseEntity {
     /**
      * 데이터
      */
+    @Type(JsonStringType.class)
     @Column(name = "payload", updatable = false)
-    private String payload;
+    private Map<String, Object> payload;
 
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private Outbox(UUID eventKey, String eventName, String payload) {
+    private Outbox(UUID eventKey, String eventName, Map<String, Object> payload) {
         if (eventKey == null) {
             throw new BusinessException(CommonErrorType.INVALID, "올바르지 않은 이벤트 키입니다.");
         }
@@ -60,7 +66,7 @@ public class Outbox extends BaseEntity {
 
         this.eventKey = eventKey;
         this.eventName = eventName;
-        this.payload = payload;
+        this.payload = payload == null ? null : Collections.unmodifiableMap(payload);
     }
 
 }

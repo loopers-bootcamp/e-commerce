@@ -1,12 +1,12 @@
 package com.loopers.domain.saga;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.loopers.support.error.BusinessException;
-import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +16,7 @@ public class SagaService {
     private final ObjectMapper objectMapper;
 
     @Transactional
-    public void inbound(SagaCommand.Inbound inbound) {
+    public SagaResult.Inbound inbound(SagaCommand.Inbound inbound) {
         Inbox inbox = Inbox.builder()
                 .eventKey(inbound.eventKey())
                 .eventName(inbound.eventName())
@@ -24,10 +24,12 @@ public class SagaService {
                 .build();
 
         sagaRepository.save(inbox);
+
+        return SagaResult.Inbound.from(inbox);
     }
 
     @Transactional
-    public void outbound(SagaCommand.Outbound outbound) {
+    public SagaResult.Outbound outbound(SagaCommand.Outbound outbound) {
         Outbox outbox = Outbox.builder()
                 .eventKey(outbound.eventKey())
                 .eventName(outbound.eventName())
@@ -35,20 +37,29 @@ public class SagaService {
                 .build();
 
         sagaRepository.save(outbox);
+
+        return SagaResult.Outbound.from(outbox);
     }
 
     // -------------------------------------------------------------------------------------------------
 
-    private String serialize(Object payload) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private Map<String, Object> serialize(Object payload) {
         if (payload == null) {
             return null;
         }
 
-        try {
-            return objectMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException e) {
-            throw new BusinessException(CommonErrorType.INTERNAL_ERROR, e.getMessage());
+        if (payload instanceof Map map) {
+            return map;
         }
+
+        Class<?> type = payload.getClass();
+        if (type.isArray() || type.getPackageName().startsWith("java.")) {
+            return Map.of("payload", payload);
+        }
+
+        return objectMapper.convertValue(payload, new TypeReference<>() {
+        });
     }
 
 }
