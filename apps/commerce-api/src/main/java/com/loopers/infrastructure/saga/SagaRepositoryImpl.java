@@ -22,27 +22,27 @@ public class SagaRepositoryImpl implements SagaRepository {
     private final ObjectMapper objectMapper;
 
     @Override
-    public void save(Inbox inbox) {
+    public boolean save(Inbox inbox) {
         inbox.prePersist();
-        inboxJpaRepository.insertIfNotExists(
+        return inboxJpaRepository.insertIfNotExists(
                 inbox.getEventKey(),
                 inbox.getEventName(),
                 serialize(inbox.getPayload()),
                 inbox.getCreatedAt(),
                 inbox.getUpdatedAt()
-        );
+        ) == 1;
     }
 
     @Override
-    public void save(Outbox outbox) {
+    public boolean save(Outbox outbox) {
         outbox.prePersist();
-        outboxJpaRepository.insertIfNotExists(
+        return outboxJpaRepository.insertIfNotExists(
                 outbox.getEventKey(),
                 outbox.getEventName(),
                 serialize(outbox.getPayload()),
                 outbox.getCreatedAt(),
                 outbox.getUpdatedAt()
-        );
+        ) == 1;
     }
 
     // -------------------------------------------------------------------------------------------------

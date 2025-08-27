@@ -23,9 +23,9 @@ public class SagaService {
                 .payload(serialize(inbound.payload()))
                 .build();
 
-        sagaRepository.save(inbox);
+        boolean saved = sagaRepository.save(inbox);
 
-        return SagaResult.Inbound.from(inbox);
+        return SagaResult.Inbound.from(inbox, saved);
     }
 
     @Transactional
@@ -36,9 +36,9 @@ public class SagaService {
                 .payload(serialize(outbound.payload()))
                 .build();
 
-        sagaRepository.save(outbox);
+        boolean saved = sagaRepository.save(outbox);
 
-        return SagaResult.Outbound.from(outbox);
+        return SagaResult.Outbound.from(outbox, saved);
     }
 
     // -------------------------------------------------------------------------------------------------

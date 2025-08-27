@@ -8,13 +8,13 @@ import java.util.UUID;
 public record UserEvent() {
 
     public record Join(
-            UUID eventKey,
+            String eventKey,
             String eventName,
             Long userId
     ) implements SagaEvent {
         public static UserEvent.Join from(User user) {
             return new UserEvent.Join(
-                    UUID.randomUUID(),
+                    String.valueOf(user.getId().hashCode()),
                     "user.join",
                     user.getId()
             );

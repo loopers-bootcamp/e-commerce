@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 public interface OutboxJpaRepository extends JpaRepository<Outbox, Long> {
 
@@ -18,7 +17,7 @@ public interface OutboxJpaRepository extends JpaRepository<Outbox, Long> {
                 on conflict (eventKey, eventName) do nothing
             """)
     int insertIfNotExists(
-            @Param("eventKey") UUID eventKey,
+            @Param("eventKey") String eventKey,
             @Param("eventName") String eventName,
             @Param("payload") String payload,
             @Param("createdAt") ZonedDateTime createdAt,

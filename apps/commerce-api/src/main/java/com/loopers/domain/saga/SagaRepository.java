@@ -2,8 +2,8 @@ package com.loopers.domain.saga;
 
 public interface SagaRepository {
 
-    void save(Inbox inbox);
+    boolean save(Inbox inbox);
 
-    void save(Outbox outbox);
+    boolean save(Outbox outbox);
 
 }

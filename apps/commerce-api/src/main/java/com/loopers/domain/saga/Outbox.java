@@ -4,17 +4,16 @@ import com.loopers.domain.BaseEntity;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import io.hypersistence.utils.hibernate.type.json.JsonStringType;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Entity
@@ -37,7 +36,7 @@ public class Outbox extends BaseEntity {
      * 이벤트 키
      */
     @Column(name = "event_key", nullable = false, updatable = false)
-    private UUID eventKey;
+    private String eventKey;
 
     /**
      * 이벤트 이름
@@ -55,8 +54,8 @@ public class Outbox extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private Outbox(UUID eventKey, String eventName, Map<String, Object> payload) {
-        if (eventKey == null) {
+    private Outbox(String eventKey, String eventName, Map<String, Object> payload) {
+        if (!StringUtils.hasText(eventKey)) {
             throw new BusinessException(CommonErrorType.INVALID, "올바르지 않은 이벤트 키입니다.");
         }
 

@@ -3,20 +3,21 @@ package com.loopers.domain.saga;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
-import java.util.UUID;
 
 public record SagaResult() {
 
     public record Inbound(
-            UUID eventKey,
+            String eventKey,
             String eventName,
-            @Nullable Map<String, Object> payload
+            @Nullable Map<String, Object> payload,
+            Boolean saved
     ) {
-        public static Inbound from(Inbox inbox) {
+        public static Inbound from(Inbox inbox, boolean saved) {
             return new Inbound(
                     inbox.getEventKey(),
                     inbox.getEventName(),
-                    inbox.getPayload()
+                    inbox.getPayload(),
+                    saved
             );
         }
     }
@@ -24,15 +25,17 @@ public record SagaResult() {
     // -------------------------------------------------------------------------------------------------
 
     public record Outbound(
-            UUID eventKey,
+            String eventKey,
             String eventName,
-            @Nullable Map<String, Object> payload
+            @Nullable Map<String, Object> payload,
+            Boolean saved
     ) {
-        public static Outbound from(Outbox outbox) {
+        public static Outbound from(Outbox outbox, boolean saved) {
             return new Outbound(
                     outbox.getEventKey(),
                     outbox.getEventName(),
-                    outbox.getPayload()
+                    outbox.getPayload(),
+                    saved
             );
         }
     }

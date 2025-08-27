@@ -40,7 +40,7 @@ class SagaServiceIntegrationTest {
         void saveNullToInbox_withPayloadAsNull() {
             // given
             SagaCommand.Inbound command = new SagaCommand.Inbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     null
             );
@@ -66,7 +66,7 @@ class SagaServiceIntegrationTest {
             // given
             Map<String, Object> payload = Map.of("foo", 100, "bar", "002");
             SagaCommand.Inbound command = new SagaCommand.Inbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     payload
             );
@@ -92,7 +92,7 @@ class SagaServiceIntegrationTest {
             // given
             Double payload = 3.141592;
             SagaCommand.Inbound command = new SagaCommand.Inbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     payload
             );
@@ -119,7 +119,7 @@ class SagaServiceIntegrationTest {
             // given
             DummyEvent payload = Instancio.create(DummyEvent.class);
             SagaCommand.Inbound command = new SagaCommand.Inbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     payload
             );
@@ -153,7 +153,7 @@ class SagaServiceIntegrationTest {
         void saveNullToOutbox_withPayloadAsNull() {
             // given
             SagaCommand.Outbound command = new SagaCommand.Outbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     null
             );
@@ -179,7 +179,7 @@ class SagaServiceIntegrationTest {
             // given
             Map<String, Object> payload = Map.of("foo", 100, "bar", "002");
             SagaCommand.Outbound command = new SagaCommand.Outbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     payload
             );
@@ -205,7 +205,7 @@ class SagaServiceIntegrationTest {
             // given
             Double payload = 3.141592;
             SagaCommand.Outbound command = new SagaCommand.Outbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     payload
             );
@@ -232,7 +232,7 @@ class SagaServiceIntegrationTest {
             // given
             DummyEvent payload = Instancio.create(DummyEvent.class);
             SagaCommand.Outbound command = new SagaCommand.Outbound(
-                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
                     "domain.eventName",
                     payload
             );
