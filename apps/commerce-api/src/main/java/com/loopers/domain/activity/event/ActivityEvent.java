@@ -52,7 +52,7 @@ public record ActivityEvent() {
             Long productId
     ) implements SagaEvent {
         public static View from(String userName, Long productId) {
-            // 분당 하나의 조회만 허용한다.
+            // 분당 하나의 조회만 인정한다.
             long epochSecond = Instant.now().truncatedTo(ChronoUnit.MINUTES).getEpochSecond();
 
             return new View(
