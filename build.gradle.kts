@@ -82,6 +82,8 @@ subprojects {
         testImplementation("com.ninja-squad:springmockk:${project.properties["springMockkVersion"]}")
         testImplementation("org.mockito:mockito-core:${project.properties["mockitoVersion"]}")
         testImplementation("org.instancio:instancio-junit:${project.properties["instancioJUnitVersion"]}")
+        // Java DSL for synchronizing asynchronous operations
+        testImplementation("org.awaitility:awaitility")
         // Testcontainers
         testImplementation("org.springframework.boot:spring-boot-testcontainers")
         testImplementation("org.testcontainers:testcontainers")
