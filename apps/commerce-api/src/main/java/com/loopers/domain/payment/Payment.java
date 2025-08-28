@@ -141,6 +141,18 @@ public class Payment extends BaseEntity {
         this.orderId = orderId;
     }
 
+    public void pending() {
+        if (this.status == PaymentStatus.PENDING) {
+            return;
+        }
+
+        if (this.status != PaymentStatus.READY) {
+            throw new BusinessException(PaymentErrorType.NOT_READY);
+        }
+
+        this.status = PaymentStatus.PENDING;
+    }
+
     public void pay() {
         if (this.status == PaymentStatus.PAID) {
             return;

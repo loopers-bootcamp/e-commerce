@@ -3,8 +3,6 @@ package com.loopers.application.payment.processor;
 import com.loopers.application.payment.PaymentOutput;
 import com.loopers.domain.coupon.CouponCommand;
 import com.loopers.domain.coupon.CouponService;
-import com.loopers.domain.order.OrderService;
-import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.payment.attribute.PaymentMethod;
@@ -24,7 +22,6 @@ import java.util.UUID;
 class PointPaymentProcessor implements PaymentProcessor {
 
     private final PaymentService paymentService;
-    private final OrderService orderService;
     private final ProductService productService;
     private final CouponService couponService;
     private final PointService pointService;
@@ -36,17 +33,7 @@ class PointPaymentProcessor implements PaymentProcessor {
 
     @Transactional
     @Override
-    public PaymentOutput.Ready process(PaymentProcessContext context) {
-        PaymentCommand.Ready readyCommand = PaymentCommand.Ready.builder()
-                .amount(context.paymentAmount())
-                .paymentMethod(PaymentMethod.POINT)
-                .cardType(null)
-                .cardNumber(null)
-                .userId(context.userId())
-                .orderId(context.orderId())
-                .build();
-        PaymentResult.Ready paymentResult = paymentService.ready(readyCommand);
-
+    public PaymentOutput.Pay process(PaymentProcessContext context) {
         List<ProductCommand.DeductStocks.Item> items = context.products()
                 .stream()
                 .map(product -> ProductCommand.DeductStocks.Item.builder()
@@ -77,17 +64,9 @@ class PointPaymentProcessor implements PaymentProcessor {
         }
 
         UUID orderId = context.orderId();
-//        PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
-//                .amount(paymentAmount)
-//                .paymentMethod(PaymentMethod.POINT)
-//                .userId(userId)
-//                .orderId(orderId)
-//                .build();
-//        PaymentResult.Pay paymentResult = paymentService.pay(paymentCommand);
+        PaymentResult.Pay payment = paymentService.pay(orderId);
 
-        orderService.complete(orderId);
-
-        return PaymentOutput.Ready.from(paymentResult);
+        return PaymentOutput.Pay.from(payment);
     }
 
 }

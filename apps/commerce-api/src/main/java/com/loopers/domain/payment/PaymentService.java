@@ -5,6 +5,7 @@ import com.loopers.domain.payment.attempt.PaymentAttemptManager;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import com.loopers.domain.payment.event.PaymentEvent;
+import com.loopers.domain.payment.event.PaymentGatewayEvent;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+
+import static java.util.function.Predicate.not;
 
 @Service
 @RequiredArgsConstructor
@@ -27,16 +30,26 @@ public class PaymentService {
     private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
-    public Optional<PaymentResult.GetPayment> getPayment(PaymentCommand.GetPayment command) {
-        return paymentRepository.findPayment(command.getOrderId())
-                .filter(payment -> Objects.equals(payment.getUserId(), command.getUserId()))
+    public Optional<PaymentResult.GetPayment> getPayment(Long paymentId) {
+        return paymentRepository.findPayment(paymentId)
                 .map(PaymentResult.GetPayment::from);
     }
 
     @ReadOnlyTransactional
-    public PaymentResult.GetReadyPayments getReadyPayments(PaymentMethod method) {
-        List<Payment> payments = paymentRepository.findReadyPayments(method);
-        return PaymentResult.GetReadyPayments.from(payments);
+    public Optional<PaymentResult.GetPayment> getPayment(PaymentCommand.GetPayment command) {
+        return paymentRepository.findPayment(command.getOrderId())
+                .filter(payment -> command.getUserId() == null || Objects.equals(payment.getUserId(), command.getUserId()))
+                .map(PaymentResult.GetPayment::from);
+    }
+
+    @ReadOnlyTransactional
+    public PaymentResult.GetInconclusivePayments getInconclusivePayments(PaymentMethod method) {
+        List<PaymentStatus> statuses = Arrays.stream(PaymentStatus.values())
+                .filter(not(PaymentStatus::isConcluding))
+                .toList();
+        List<Payment> payments = paymentRepository.findInconclusivePayments(method, statuses);
+
+        return PaymentResult.GetInconclusivePayments.from(payments);
     }
 
     @ReadOnlyTransactional
@@ -64,18 +77,25 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResult.Pay pay(PaymentCommand.Pay command) {
-        Payment payment = paymentRepository.findPaymentForUpdate(command.getOrderId())
-                .orElseGet(() -> Payment.builder()
-                        .amount(command.getAmount())
-                        .status(PaymentStatus.READY)
-                        .method(command.getPaymentMethod())
-                        .userId(command.getUserId())
-                        .orderId(command.getOrderId())
-                        .build());
+    public PaymentResult.Pending pending(UUID orderId) {
+        Payment payment = paymentRepository.findPaymentForUpdate(orderId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        payment.pending();
+        paymentRepository.save(payment);
+
+        return PaymentResult.Pending.from(payment);
+    }
+
+    @Transactional
+    public PaymentResult.Pay pay(UUID orderId) {
+        Payment payment = paymentRepository.findPaymentForUpdate(orderId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         payment.pay();
         paymentRepository.save(payment);
+
+        eventPublisher.publishEvent(PaymentEvent.Paid.from(payment));
 
         return PaymentResult.Pay.from(payment);
     }
@@ -104,25 +124,29 @@ public class PaymentService {
 
         switch (status) {
             case SUCCESS -> {
-                PaymentEvent.Success successEvent = new PaymentEvent.Success(
-                        command.getTransactionKey(),
-                        command.getOrderId(),
-                        payment.getId()
+                eventPublisher.publishEvent(
+                        new PaymentGatewayEvent.Success(
+                                command.getTransactionKey(),
+                                command.getOrderId(),
+                                payment.getId()
+                        )
                 );
-                eventPublisher.publishEvent(successEvent);
 
                 payment.pay();
+                eventPublisher.publishEvent(PaymentEvent.Paid.from(payment));
             }
             case FAILED -> {
-                PaymentEvent.Failed failedEvent = new PaymentEvent.Failed(
-                        command.getTransactionKey(),
-                        command.getReason(),
-                        command.getOrderId(),
-                        payment.getId()
+                eventPublisher.publishEvent(
+                        new PaymentGatewayEvent.Failed(
+                                command.getTransactionKey(),
+                                command.getReason(),
+                                command.getOrderId(),
+                                payment.getId()
+                        )
                 );
-                eventPublisher.publishEvent(failedEvent);
 
                 payment.fail();
+                eventPublisher.publishEvent(PaymentEvent.Failed.from(payment));
             }
         }
 

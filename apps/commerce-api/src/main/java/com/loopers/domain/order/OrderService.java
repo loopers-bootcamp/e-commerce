@@ -1,9 +1,11 @@
 package com.loopers.domain.order;
 
 import com.loopers.annotation.ReadOnlyTransactional;
+import com.loopers.domain.order.event.OrderEvent;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -18,7 +20,8 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderEventPublisher orderEventPublisher;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ExternalOrderSender orderEventPublisher;
 
     @ReadOnlyTransactional
     public Optional<OrderResult.GetOrderDetail> getOrderDetail(OrderCommand.GetOrderDetail command) {
@@ -75,7 +78,8 @@ public class OrderService {
         order.complete();
 
         orderRepository.save(order);
-        orderEventPublisher.complete(orderId);
+
+        eventPublisher.publishEvent(OrderEvent.Complete.from(order));
     }
 
     @Transactional

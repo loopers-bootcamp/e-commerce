@@ -12,6 +12,7 @@ import java.util.Locale;
 public enum PaymentErrorType implements ErrorType {
 
     UNPROCESSABLE(HttpStatus.UNPROCESSABLE_ENTITY, "결제할 수 없는 주문 건입니다."),
+    NOT_READY(HttpStatus.UNPROCESSABLE_ENTITY, "준비중인 결제 건이 아닙니다."),
     ALREADY_CONCLUDED(HttpStatus.UNPROCESSABLE_ENTITY, "이미 종결된 결제입니다.");
 
     private final HttpStatus status;

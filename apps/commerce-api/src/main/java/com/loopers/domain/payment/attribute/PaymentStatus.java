@@ -9,28 +9,35 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PaymentStatus {
 
-    READY(1) {
+    READY("ready") {
         @Override
         public boolean isConcluding() {
             return false;
         }
     },
 
-    PAID(2) {
+    PENDING("pending") {
+        @Override
+        public boolean isConcluding() {
+            return false;
+        }
+    },
+
+    PAID("paid") {
         @Override
         public boolean isConcluding() {
             return true;
         }
     },
 
-    FAILED(3) {
+    FAILED("failed") {
         @Override
         public boolean isConcluding() {
             return true;
         }
     },
 
-    CANCELED(4) {
+    CANCELED("canceled") {
         @Override
         public boolean isConcluding() {
             return true;
@@ -40,16 +47,16 @@ public enum PaymentStatus {
     // -------------------------------------------------------------------------------------------------
 
     @JsonValue
-    private final int code;
+    private final String code;
 
     @JsonCreator
-    public static PaymentStatus from(Integer value) {
+    public static PaymentStatus from(String value) {
         if (value == null) {
             return null;
         }
 
         for (PaymentStatus status : values()) {
-            if (status.code == value) {
+            if (status.code.equals(value)) {
                 return status;
             }
         }

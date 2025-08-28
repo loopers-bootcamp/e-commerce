@@ -48,15 +48,8 @@ class PaymentServiceIntegrationTest {
             Long userId = Instancio.create(Long.class);
             UUID orderId = Instancio.create(UUID.class);
 
-            PaymentCommand.Pay command = PaymentCommand.Pay.builder()
-                    .amount(amount)
-                    .paymentMethod(method)
-                    .userId(userId)
-                    .orderId(orderId)
-                    .build();
-
             // when
-            PaymentResult.Pay result = paymentService.pay(command);
+            PaymentResult.Pay result = paymentService.pay(orderId);
 
             // then
             assertThat(result).isNotNull();

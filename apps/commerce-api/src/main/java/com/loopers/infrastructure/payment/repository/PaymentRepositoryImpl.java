@@ -20,6 +20,11 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     private final PaymentAttemptJpaRepository paymentAttemptJpaRepository;
 
     @Override
+    public Optional<Payment> findPayment(Long paymentId) {
+        return paymentJpaRepository.findById(paymentId);
+    }
+
+    @Override
     public Optional<Payment> findPayment(UUID orderId) {
         return paymentJpaRepository.findByOrderId(orderId);
     }
@@ -30,8 +35,8 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public List<Payment> findReadyPayments(PaymentMethod method) {
-        return paymentJpaRepository.findByStatusAndMethod(PaymentStatus.READY, method);
+    public List<Payment> findInconclusivePayments(PaymentMethod method, List<PaymentStatus> statuses) {
+        return paymentJpaRepository.findByMethodAndStatusIn(method, statuses);
     }
 
     @Override

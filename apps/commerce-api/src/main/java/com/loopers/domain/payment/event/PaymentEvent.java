@@ -37,21 +37,38 @@ public record PaymentEvent() {
 
     // -------------------------------------------------------------------------------------------------
 
-    public record Success(
-            String transactionKey,
-            UUID orderId,
-            Long paymentId
-    ) {
+    public record Paid(
+            String eventKey,
+            String eventName,
+            Long paymentId,
+            UUID orderId
+    ) implements SagaEvent {
+        public static Paid from(Payment payment) {
+            return new Paid(
+                    "order:%s".formatted(payment.getOrderId()),
+                    "payment.paid",
+                    payment.getId(),
+                    payment.getOrderId()
+            );
+        }
     }
 
     // -------------------------------------------------------------------------------------------------
 
     public record Failed(
-            String transactionKey,
-            String reason,
-            UUID orderId,
-            Long paymentId
-    ) {
+            String eventKey,
+            String eventName,
+            Long paymentId,
+            UUID orderId
+    ) implements SagaEvent {
+        public static Failed from(Payment payment) {
+            return new Failed(
+                    "order:%s".formatted(payment.getOrderId()),
+                    "payment.failed",
+                    payment.getId(),
+                    payment.getOrderId()
+            );
+        }
     }
 
 }

@@ -29,6 +29,15 @@ public final class PaymentInput {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Pay {
+        private final Long paymentId;
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Conclude {
         private final String transactionKey;
         private final UUID orderId;

@@ -20,6 +20,6 @@ public interface PaymentJpaRepository extends JpaRepository<Payment, Long> {
     @Query("select p from Payment p where p.orderId = :orderId")
     Optional<Payment> findByOrderIdForUpdate(UUID orderId);
 
-    List<Payment> findByStatusAndMethod(PaymentStatus status, PaymentMethod method);
+    List<Payment> findByMethodAndStatusIn(PaymentMethod method, List<PaymentStatus> statuses);
 
 }

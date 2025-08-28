@@ -7,6 +7,6 @@ public interface PaymentProcessor {
 
     boolean supports(PaymentMethod paymentMethod);
 
-    PaymentOutput.Ready process(PaymentProcessContext context);
+    PaymentOutput.Pay process(PaymentProcessContext context);
 
 }

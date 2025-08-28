@@ -1,6 +1,7 @@
 package com.loopers.application.payment.processor;
 
 import com.loopers.domain.order.OrderResult;
+import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
 import org.jspecify.annotations.Nullable;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 public record PaymentProcessContext(
         Long userId,
+        Long paymentId,
         UUID orderId,
         @Nullable CardType cardType,
         @Nullable CardNumber cardNumber,
@@ -18,10 +20,8 @@ public record PaymentProcessContext(
         Long paymentAmount
 ) {
     public static PaymentProcessContext of(
-            Long userId,
             OrderResult.GetOrderDetail order,
-            CardType cardType,
-            CardNumber cardNumber
+            PaymentResult.GetPayment payment
     ) {
         List<Product> products = order.getProducts()
                 .stream()
@@ -29,13 +29,14 @@ public record PaymentProcessContext(
                 .toList();
 
         return new PaymentProcessContext(
-                userId,
+                payment.getUserId(),
+                payment.getPaymentId(),
                 order.getOrderId(),
-                cardType,
-                cardNumber,
+                payment.getCardType(),
+                payment.getCardNumber(),
                 products,
                 List.copyOf(order.getUserCouponIds()),
-                order.getTotalPrice() - order.getDiscountAmount()
+                payment.getAmount()
         );
     }
 

@@ -32,9 +32,9 @@ public class PaymentScheduler {
      */
     @Scheduled(fixedDelayString = "PT30M", initialDelayString = "PT10M")
     public void reconcilePaymentsByCard() {
-        PaymentResult.GetReadyPayments payments = paymentService.getReadyPayments(PaymentMethod.CARD);
+        PaymentResult.GetInconclusivePayments payments = paymentService.getInconclusivePayments(PaymentMethod.CARD);
 
-        for (PaymentResult.GetReadyPayments.Item paymentItem : payments.getItems()) {
+        for (PaymentResult.GetInconclusivePayments.Item paymentItem : payments.getItems()) {
             UUID orderId = paymentItem.getOrderId();
             List<PaymentResult.GetTransactions.Item> transactions = paymentService.getTransactions(orderId)
                     .map(PaymentResult.GetTransactions::getItems)
