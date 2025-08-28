@@ -1,6 +1,7 @@
 package com.loopers.infrastructure.payment.repository;
 
 import com.loopers.domain.payment.Payment;
+import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,6 @@ public interface PaymentJpaRepository extends JpaRepository<Payment, Long> {
     @Query("select p from Payment p where p.orderId = :orderId")
     Optional<Payment> findByOrderIdForUpdate(UUID orderId);
 
-    List<Payment> findByStatusAndCardTypeIsNotNull(PaymentStatus status);
+    List<Payment> findByStatusAndMethod(PaymentStatus status, PaymentMethod method);
 
 }

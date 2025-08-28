@@ -4,6 +4,7 @@ import com.loopers.application.payment.PaymentFacade;
 import com.loopers.application.payment.PaymentInput;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
+import com.loopers.domain.payment.attribute.PaymentMethod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -30,8 +31,8 @@ public class PaymentScheduler {
      * 애플리케이션 시작하고 10분 후부터, 30분 간격으로 실행한다.
      */
     @Scheduled(fixedDelayString = "PT30M", initialDelayString = "PT10M")
-    public void reconcilePayments() {
-        PaymentResult.GetReadyPayments payments = paymentService.getReadyPayments();
+    public void reconcilePaymentsByCard() {
+        PaymentResult.GetReadyPayments payments = paymentService.getReadyPayments(PaymentMethod.CARD);
 
         for (PaymentResult.GetReadyPayments.Item paymentItem : payments.getItems()) {
             UUID orderId = paymentItem.getOrderId();

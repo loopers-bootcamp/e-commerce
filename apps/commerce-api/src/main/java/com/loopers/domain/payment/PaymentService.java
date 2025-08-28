@@ -2,6 +2,7 @@ package com.loopers.domain.payment;
 
 import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.domain.payment.attempt.PaymentAttemptManager;
+import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import com.loopers.domain.payment.event.PaymentEvent;
 import com.loopers.support.error.BusinessException;
@@ -33,8 +34,8 @@ public class PaymentService {
     }
 
     @ReadOnlyTransactional
-    public PaymentResult.GetReadyPayments getReadyPayments() {
-        List<Payment> payments = paymentRepository.findReadyPayments();
+    public PaymentResult.GetReadyPayments getReadyPayments(PaymentMethod method) {
+        List<Payment> payments = paymentRepository.findReadyPayments(method);
         return PaymentResult.GetReadyPayments.from(payments);
     }
 
@@ -45,7 +46,7 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResult.Pay ready(PaymentCommand.Ready command) {
+    public PaymentResult.Ready ready(PaymentCommand.Ready command) {
         Payment payment = Payment.builder()
                 .amount(command.getAmount())
                 .status(PaymentStatus.READY)
@@ -59,7 +60,7 @@ public class PaymentService {
 
         eventPublisher.publishEvent(PaymentEvent.Ready.from(payment));
 
-        return PaymentResult.Pay.from(payment);
+        return PaymentResult.Ready.from(payment);
     }
 
     @Transactional

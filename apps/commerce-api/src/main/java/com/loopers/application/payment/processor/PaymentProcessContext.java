@@ -3,6 +3,7 @@ package com.loopers.application.payment.processor;
 import com.loopers.domain.order.OrderResult;
 import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,8 +11,8 @@ import java.util.UUID;
 public record PaymentProcessContext(
         Long userId,
         UUID orderId,
-        CardType cardType,
-        CardNumber cardNumber,
+        @Nullable CardType cardType,
+        @Nullable CardNumber cardNumber,
         List<Product> products,
         List<Long> userCouponIds,
         Long paymentAmount

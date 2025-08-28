@@ -20,7 +20,7 @@ class CardPaymentProcessor implements PaymentProcessor {
     }
 
     @Override
-    public PaymentOutput.Pay process(PaymentProcessContext context) {
+    public PaymentOutput.Ready process(PaymentProcessContext context) {
         PaymentCommand.Ready readyCommand = PaymentCommand.Ready.builder()
                 .amount(context.paymentAmount())
                 .paymentMethod(PaymentMethod.CARD)
@@ -29,9 +29,9 @@ class CardPaymentProcessor implements PaymentProcessor {
                 .userId(context.userId())
                 .orderId(context.orderId())
                 .build();
-        PaymentResult.Pay payment = paymentService.ready(readyCommand);
+        PaymentResult.Ready payment = paymentService.ready(readyCommand);
 
-        return PaymentOutput.Pay.from(payment);
+        return PaymentOutput.Ready.from(payment);
     }
 
 }

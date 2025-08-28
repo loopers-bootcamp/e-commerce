@@ -17,22 +17,22 @@ public class PaymentV1Controller implements PaymentV1ApiSpec {
 
     @PostMapping
     @Override
-    public ApiResponse<PaymentResponse.Pay> pay(
+    public ApiResponse<PaymentResponse.Ready> ready(
             @RequestHeader(ApiHeader.USER_ID)
             String userName,
 
             @RequestBody
-            PaymentRequest.Pay request
+            PaymentRequest.Ready request
     ) {
-        PaymentInput.Pay input = PaymentInput.Pay.builder()
+        PaymentInput.Ready input = PaymentInput.Ready.builder()
                 .userName(userName)
                 .orderId(request.getOrderId())
                 .paymentMethod(request.getPaymentMethod())
                 .cardType(request.getCardType())
                 .cardNumber(request.getCardNumber())
                 .build();
-        PaymentOutput.Pay output = paymentFacade.pay(input);
-        PaymentResponse.Pay response = PaymentResponse.Pay.from(output);
+        PaymentOutput.Ready output = paymentFacade.ready(input);
+        PaymentResponse.Ready response = PaymentResponse.Ready.from(output);
 
         return ApiResponse.success(response);
     }

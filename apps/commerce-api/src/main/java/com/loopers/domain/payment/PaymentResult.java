@@ -102,6 +102,23 @@ public final class PaymentResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Ready {
+        private final Long paymentId;
+        private final PaymentStatus paymentStatus;
+        private final PaymentMethod paymentMethod;
+
+        public static Ready from(Payment payment) {
+            return builder()
+                    .paymentId(payment.getId())
+                    .paymentStatus(payment.getStatus())
+                    .paymentMethod(payment.getMethod())
+                    .build();
+        }
+    }
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Pay {
         private final Long paymentId;
         private final PaymentStatus paymentStatus;

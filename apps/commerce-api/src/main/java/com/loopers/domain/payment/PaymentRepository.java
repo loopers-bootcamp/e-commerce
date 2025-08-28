@@ -1,6 +1,7 @@
 package com.loopers.domain.payment;
 
 import com.loopers.domain.payment.attempt.PaymentAttempt;
+import com.loopers.domain.payment.attribute.PaymentMethod;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +13,7 @@ public interface PaymentRepository {
 
     Optional<Payment> findPaymentForUpdate(UUID orderId);
 
-    List<Payment> findReadyPayments();
+    List<Payment> findReadyPayments(PaymentMethod method);
 
     Payment save(Payment payment);
 

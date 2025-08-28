@@ -72,9 +72,9 @@ class PaymentFacadeIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("주문 건을 결제할 때:")
+    @DisplayName("주문 건을 결제 요청할 때:")
     @Nested
-    class Pay {
+    class Ready {
 
         @DisplayName("본인의 주문 건이 아니면, BusinessException이 발생한다.")
         @Test
@@ -105,7 +105,7 @@ class PaymentFacadeIntegrationTest {
             transactionTemplate.executeWithoutResult(status ->
                     Stream.of(order, orderProduct).forEach(entityManager::persist));
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
                     .paymentMethod(Instancio.create(PaymentMethod.class))
@@ -113,7 +113,7 @@ class PaymentFacadeIntegrationTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.pay(input))
+                    .isThrownBy(() -> sut.ready(input))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
@@ -147,7 +147,7 @@ class PaymentFacadeIntegrationTest {
             transactionTemplate.executeWithoutResult(status ->
                     Stream.of(order, orderProduct).forEach(entityManager::persist));
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
                     .paymentMethod(Instancio.create(PaymentMethod.class))
@@ -155,7 +155,7 @@ class PaymentFacadeIntegrationTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.pay(input))
+                    .isThrownBy(() -> sut.ready(input))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PaymentErrorType.UNPROCESSABLE);
@@ -202,14 +202,14 @@ class PaymentFacadeIntegrationTest {
                 entityManager.persist(orderProduct);
             });
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
                     .paymentMethod(PaymentMethod.POINT)
                     .build();
 
             // when
-            PaymentOutput.Pay output = sut.pay(input);
+            PaymentOutput.Ready output = sut.ready(input);
 
             // then
             assertThat(output).isNotNull();
@@ -288,14 +288,14 @@ class PaymentFacadeIntegrationTest {
                 entityManager.persist(orderProduct2);
             });
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
                     .paymentMethod(PaymentMethod.POINT)
                     .build();
 
             // when
-            PaymentOutput.Pay output = sut.pay(input);
+            PaymentOutput.Ready output = sut.ready(input);
 
             // then
             assertThat(output).isNotNull();

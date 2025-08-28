@@ -39,14 +39,12 @@ public class PaymentFacade {
     private final List<PaymentProcessor> processors;
     private final ApplicationEventPublisher eventPublisher;
 
-    public PaymentOutput.Pay pay(PaymentInput.Pay input) {
+    public PaymentOutput.Ready ready(PaymentInput.Ready input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
-        UUID orderId = input.getOrderId();
-
         OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
-                .orderId(orderId)
+                .orderId(input.getOrderId())
                 .userId(user.getUserId())
                 .build();
         OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)

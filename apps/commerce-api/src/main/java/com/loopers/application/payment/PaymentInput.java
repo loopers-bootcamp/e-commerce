@@ -14,7 +14,7 @@ public final class PaymentInput {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Pay {
+    public static class Ready {
         private final String userName;
         private final UUID orderId;
         private final PaymentMethod paymentMethod;

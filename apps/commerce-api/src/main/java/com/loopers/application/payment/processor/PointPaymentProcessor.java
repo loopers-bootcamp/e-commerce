@@ -36,7 +36,17 @@ class PointPaymentProcessor implements PaymentProcessor {
 
     @Transactional
     @Override
-    public PaymentOutput.Pay process(PaymentProcessContext context) {
+    public PaymentOutput.Ready process(PaymentProcessContext context) {
+        PaymentCommand.Ready readyCommand = PaymentCommand.Ready.builder()
+                .amount(context.paymentAmount())
+                .paymentMethod(PaymentMethod.POINT)
+                .cardType(null)
+                .cardNumber(null)
+                .userId(context.userId())
+                .orderId(context.orderId())
+                .build();
+        PaymentResult.Ready paymentResult = paymentService.ready(readyCommand);
+
         List<ProductCommand.DeductStocks.Item> items = context.products()
                 .stream()
                 .map(product -> ProductCommand.DeductStocks.Item.builder()
@@ -67,17 +77,17 @@ class PointPaymentProcessor implements PaymentProcessor {
         }
 
         UUID orderId = context.orderId();
-        PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
-                .amount(paymentAmount)
-                .paymentMethod(PaymentMethod.POINT)
-                .userId(userId)
-                .orderId(orderId)
-                .build();
-        PaymentResult.Pay paymentResult = paymentService.pay(paymentCommand);
+//        PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
+//                .amount(paymentAmount)
+//                .paymentMethod(PaymentMethod.POINT)
+//                .userId(userId)
+//                .orderId(orderId)
+//                .build();
+//        PaymentResult.Pay paymentResult = paymentService.pay(paymentCommand);
 
         orderService.complete(orderId);
 
-        return PaymentOutput.Pay.from(paymentResult);
+        return PaymentOutput.Ready.from(paymentResult);
     }
 
 }
