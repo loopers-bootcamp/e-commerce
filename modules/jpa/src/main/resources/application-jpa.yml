@@ -90,6 +90,8 @@ decorator:
   datasource:
     p6spy:
       enable-logging: true
+      log-filter:
+        pattern: ^(.*\b(select|insert|update|delete|merge)\b.*)$ # DML only
 
 datasource:
   mysql-jpa:
