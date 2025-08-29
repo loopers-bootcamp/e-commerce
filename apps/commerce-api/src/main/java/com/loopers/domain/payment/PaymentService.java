@@ -77,8 +77,8 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResult.Pending pending(UUID orderId) {
-        Payment payment = paymentRepository.findPaymentForUpdate(orderId)
+    public PaymentResult.Pending pending(Long paymentId) {
+        Payment payment = paymentRepository.findPaymentForUpdate(paymentId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         payment.pending();
@@ -88,8 +88,8 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResult.Pay pay(UUID orderId) {
-        Payment payment = paymentRepository.findPaymentForUpdate(orderId)
+    public PaymentResult.Pay pay(Long paymentId) {
+        Payment payment = paymentRepository.findPaymentForUpdate(paymentId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
         payment.pay();
@@ -98,6 +98,19 @@ public class PaymentService {
         eventPublisher.publishEvent(PaymentEvent.Paid.from(payment));
 
         return PaymentResult.Pay.from(payment);
+    }
+
+    @Transactional
+    public PaymentResult.Fail fail(Long paymentId) {
+        Payment payment = paymentRepository.findPaymentForUpdate(paymentId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        payment.fail();
+        paymentRepository.save(payment);
+
+        eventPublisher.publishEvent(PaymentEvent.Failed.from(payment));
+
+        return PaymentResult.Fail.from(payment);
     }
 
     @Transactional

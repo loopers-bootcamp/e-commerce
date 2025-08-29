@@ -16,10 +16,14 @@ public interface PaymentJpaRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByOrderId(UUID orderId);
 
+    List<Payment> findByMethodAndStatusIn(PaymentMethod method, List<PaymentStatus> statuses);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Payment p where p.id = :paymentId")
+    Optional<Payment> findByIdForUpdate(Long paymentId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Payment p where p.orderId = :orderId")
     Optional<Payment> findByOrderIdForUpdate(UUID orderId);
-
-    List<Payment> findByMethodAndStatusIn(PaymentMethod method, List<PaymentStatus> statuses);
 
 }

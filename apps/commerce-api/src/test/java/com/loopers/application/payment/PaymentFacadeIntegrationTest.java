@@ -219,7 +219,7 @@ class PaymentFacadeIntegrationTest {
             verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
             verify(productService, times(1)).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, never()).spend(any(PointCommand.Spend.class));
-            verify(paymentService, times(1)).pay(order.getId());
+            verify(paymentService, times(1)).pay(output.getPaymentId());
             verify(orderService, times(1)).complete(order.getId());
 
             Payment savedPayment = entityManager.find(Payment.class, output.getPaymentId());
@@ -305,7 +305,7 @@ class PaymentFacadeIntegrationTest {
             verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
             verify(productService, times(1)).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, times(1)).spend(any(PointCommand.Spend.class));
-            verify(paymentService, times(1)).pay(order.getId());
+            verify(paymentService, times(1)).pay(output.getPaymentId());
             verify(orderService, times(1)).complete(order.getId());
 
             Payment savedPayment = entityManager.find(Payment.class, output.getPaymentId());

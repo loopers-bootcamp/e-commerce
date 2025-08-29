@@ -23,7 +23,7 @@ public record PaymentEvent() {
     ) implements SagaEvent {
         public static Ready from(Payment payment) {
             return new Ready(
-                    "order:%s".formatted(payment.getOrderId()),
+                    "payment:%d".formatted(payment.getId()),
                     "payment.ready",
                     payment.getId(),
                     payment.getOrderId(),
@@ -45,7 +45,7 @@ public record PaymentEvent() {
     ) implements SagaEvent {
         public static Paid from(Payment payment) {
             return new Paid(
-                    "order:%s".formatted(payment.getOrderId()),
+                    "payment:%d".formatted(payment.getId()),
                     "payment.paid",
                     payment.getId(),
                     payment.getOrderId()
@@ -63,7 +63,7 @@ public record PaymentEvent() {
     ) implements SagaEvent {
         public static Failed from(Payment payment) {
             return new Failed(
-                    "order:%s".formatted(payment.getOrderId()),
+                    "payment:%d".formatted(payment.getId()),
                     "payment.failed",
                     payment.getId(),
                     payment.getOrderId()

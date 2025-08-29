@@ -59,7 +59,7 @@ class CardPaymentProcessor implements PaymentProcessor {
             );
         });
 
-        PaymentResult.Pending payment = paymentService.pending(context.orderId());
+        PaymentResult.Pending payment = paymentService.pending(context.paymentId());
 
         return PaymentOutput.Pay.from(payment);
     }

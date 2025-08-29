@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -63,8 +62,7 @@ class PointPaymentProcessor implements PaymentProcessor {
             pointService.spend(pointCommand);
         }
 
-        UUID orderId = context.orderId();
-        PaymentResult.Pay payment = paymentService.pay(orderId);
+        PaymentResult.Pay payment = paymentService.pay(context.paymentId());
 
         return PaymentOutput.Pay.from(payment);
     }

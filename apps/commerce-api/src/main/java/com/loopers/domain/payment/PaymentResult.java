@@ -164,6 +164,23 @@ public final class PaymentResult {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Fail {
+        private final Long paymentId;
+        private final PaymentStatus paymentStatus;
+
+        public static Fail from(Payment payment) {
+            return builder()
+                    .paymentId(payment.getId())
+                    .paymentStatus(payment.getStatus())
+                    .build();
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Conclude {
         private final Long paymentId;
         private final PaymentStatus paymentStatus;

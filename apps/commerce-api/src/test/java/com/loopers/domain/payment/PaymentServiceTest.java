@@ -9,8 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -33,10 +31,10 @@ class PaymentServiceTest {
         @Test
         void completePayment_withValidValues() {
             // given
-            UUID orderId = Instancio.create(UUID.class);
+            Long paymentId = Instancio.create(Long.class);
 
             // when
-            PaymentResult.Pay result = sut.pay(orderId);
+            PaymentResult.Pay result = sut.pay(paymentId);
 
             // then
             assertThat(result).isNotNull();

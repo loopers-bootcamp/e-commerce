@@ -14,6 +14,8 @@ public interface PaymentRepository {
 
     Optional<Payment> findPayment(UUID orderId);
 
+    Optional<Payment> findPaymentForUpdate(Long paymentId);
+
     Optional<Payment> findPaymentForUpdate(UUID orderId);
 
     List<Payment> findInconclusivePayments(PaymentMethod method, List<PaymentStatus> statuses);
