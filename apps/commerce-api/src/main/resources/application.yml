@@ -24,6 +24,7 @@ spring:
     import:
       - application-jpa.yml
       - application-redis.yml
+      - application-kafka.yml
       - application-feign.yml
       - application-resilience4j.yml
       - application-logging.yml
