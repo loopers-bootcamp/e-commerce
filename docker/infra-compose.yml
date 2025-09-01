@@ -113,7 +113,7 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
     healthcheck:
-      test: [ "CMD", "bash", "-c", "kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1" ]
+      test: [ "CMD", "bash", "-c", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 10
