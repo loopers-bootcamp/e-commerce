@@ -45,6 +45,9 @@ subprojects {
         }
 
         dependencies {
+            // Hypersistence Utilities 63 (Hibernate 6.6, 6.5, 6.4, and 6.3)
+            dependency("io.hypersistence:hypersistence-utils-hibernate-63:3.10.3")
+
             // P6Spy
             dependency("com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.12.0")
 
@@ -79,6 +82,8 @@ subprojects {
         testImplementation("com.ninja-squad:springmockk:${project.properties["springMockkVersion"]}")
         testImplementation("org.mockito:mockito-core:${project.properties["mockitoVersion"]}")
         testImplementation("org.instancio:instancio-junit:${project.properties["instancioJUnitVersion"]}")
+        // Java DSL for synchronizing asynchronous operations
+        testImplementation("org.awaitility:awaitility")
         // Testcontainers
         testImplementation("org.springframework.boot:spring-boot-testcontainers")
         testImplementation("org.testcontainers:testcontainers")

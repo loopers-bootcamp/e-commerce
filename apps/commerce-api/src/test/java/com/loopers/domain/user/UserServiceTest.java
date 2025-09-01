@@ -2,6 +2,7 @@ package com.loopers.domain.user;
 
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.domain.user.event.UserEvent;
 import com.loopers.support.error.BusinessException;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.DisplayName;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoSettings;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -19,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatException;
 import static org.instancio.Select.field;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @MockitoSettings
 class UserServiceTest {
@@ -29,6 +31,8 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @DisplayName("사용자를 조회할 때:")
     @Nested
@@ -98,6 +102,8 @@ class UserServiceTest {
             assertThatException()
                     .isThrownBy(() -> sut.join(command))
                     .isInstanceOf(BusinessException.class);
+
+            verify(eventPublisher, never()).publishEvent(any(UserEvent.Join.class));
         }
 
         @DisplayName("이미 가입된 회원의 이름이 아니고 모든 속성이 올바르면, 사용자 정보를 반환한다.")
@@ -125,6 +131,7 @@ class UserServiceTest {
 
             verify(userRepository).existsUserByName(command.getUserName());
             verify(userRepository).saveUser(any(User.class));
+            verify(eventPublisher, times(1)).publishEvent(any(UserEvent.Join.class));
         }
 
     }

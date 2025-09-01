@@ -5,7 +5,6 @@ import com.loopers.domain.order.OrderCommand;
 import com.loopers.domain.order.OrderProduct;
 import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.Payment;
-import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
@@ -72,9 +71,9 @@ class PaymentFacadeIntegrationTest {
         databaseCleanUp.truncateAllTables();
     }
 
-    @DisplayName("주문 건을 결제할 때:")
+    @DisplayName("주문 건을 결제 요청할 때:")
     @Nested
-    class Pay {
+    class Ready {
 
         @DisplayName("본인의 주문 건이 아니면, BusinessException이 발생한다.")
         @Test
@@ -105,7 +104,7 @@ class PaymentFacadeIntegrationTest {
             transactionTemplate.executeWithoutResult(status ->
                     Stream.of(order, orderProduct).forEach(entityManager::persist));
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
                     .paymentMethod(Instancio.create(PaymentMethod.class))
@@ -113,7 +112,7 @@ class PaymentFacadeIntegrationTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.pay(input))
+                    .isThrownBy(() -> sut.ready(input))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.NOT_FOUND);
@@ -147,7 +146,7 @@ class PaymentFacadeIntegrationTest {
             transactionTemplate.executeWithoutResult(status ->
                     Stream.of(order, orderProduct).forEach(entityManager::persist));
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
                     .paymentMethod(Instancio.create(PaymentMethod.class))
@@ -155,7 +154,7 @@ class PaymentFacadeIntegrationTest {
 
             // when & then
             assertThatException()
-                    .isThrownBy(() -> sut.pay(input))
+                    .isThrownBy(() -> sut.ready(input))
                     .isInstanceOf(BusinessException.class)
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(PaymentErrorType.UNPROCESSABLE);
@@ -202,14 +201,14 @@ class PaymentFacadeIntegrationTest {
                 entityManager.persist(orderProduct);
             });
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
-                    .paymentMethod(Instancio.create(PaymentMethod.class))
+                    .paymentMethod(PaymentMethod.POINT)
                     .build();
 
             // when
-            PaymentOutput.Pay output = sut.pay(input);
+            PaymentOutput.Ready output = sut.ready(input);
 
             // then
             assertThat(output).isNotNull();
@@ -220,7 +219,7 @@ class PaymentFacadeIntegrationTest {
             verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
             verify(productService, times(1)).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, never()).spend(any(PointCommand.Spend.class));
-            verify(paymentService, times(1)).pay(any(PaymentCommand.Pay.class));
+            verify(paymentService, times(1)).pay(output.getPaymentId());
             verify(orderService, times(1)).complete(order.getId());
 
             Payment savedPayment = entityManager.find(Payment.class, output.getPaymentId());
@@ -288,14 +287,14 @@ class PaymentFacadeIntegrationTest {
                 entityManager.persist(orderProduct2);
             });
 
-            PaymentInput.Pay input = PaymentInput.Pay.builder()
+            PaymentInput.Ready input = PaymentInput.Ready.builder()
                     .userName(user.getName())
                     .orderId(order.getId())
-                    .paymentMethod(Instancio.create(PaymentMethod.class))
+                    .paymentMethod(PaymentMethod.POINT)
                     .build();
 
             // when
-            PaymentOutput.Pay output = sut.pay(input);
+            PaymentOutput.Ready output = sut.ready(input);
 
             // then
             assertThat(output).isNotNull();
@@ -306,7 +305,7 @@ class PaymentFacadeIntegrationTest {
             verify(orderService, times(1)).getOrderDetail(any(OrderCommand.GetOrderDetail.class));
             verify(productService, times(1)).deductStocks(any(ProductCommand.DeductStocks.class));
             verify(pointService, times(1)).spend(any(PointCommand.Spend.class));
-            verify(paymentService, times(1)).pay(any(PaymentCommand.Pay.class));
+            verify(paymentService, times(1)).pay(output.getPaymentId());
             verify(orderService, times(1)).complete(order.getId());
 
             Payment savedPayment = entityManager.find(Payment.class, output.getPaymentId());

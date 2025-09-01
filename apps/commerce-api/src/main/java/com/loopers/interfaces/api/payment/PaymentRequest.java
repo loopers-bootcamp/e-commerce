@@ -15,7 +15,7 @@ public final class PaymentRequest {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Pay {
+    public static class Ready {
         @NotNull
         private final UUID orderId;
         @NotNull

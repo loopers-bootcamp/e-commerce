@@ -1,9 +1,11 @@
 package com.loopers.domain.user;
 
 import com.loopers.annotation.ReadOnlyTransactional;
+import com.loopers.domain.user.event.UserEvent;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -15,6 +17,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
     public Optional<UserResult.GetUser> getUser(String userName) {
@@ -34,6 +37,8 @@ public class UserService {
 
         User user = command.toEntity();
         userRepository.saveUser(user);
+
+        eventPublisher.publishEvent(UserEvent.Join.from(user));
 
         return UserResult.Join.from(user);
     }

@@ -3,7 +3,6 @@ package com.loopers.application.activity;
 import com.loopers.domain.activity.ActivityCommand;
 import com.loopers.domain.activity.ActivityResult;
 import com.loopers.domain.activity.ActivityService;
-import com.loopers.domain.product.ProductService;
 import com.loopers.domain.user.UserResult;
 import com.loopers.domain.user.UserService;
 import com.loopers.support.error.BusinessException;
@@ -19,7 +18,6 @@ public class ActivityFacade {
 
     private final ActivityService activityService;
     private final UserService userService;
-    private final ProductService productService;
 
     public ActivityOutput.GetLikedProducts getLikedProducts(String userName) {
         UserResult.GetUser user = userService.getUser(userName)
@@ -36,12 +34,9 @@ public class ActivityFacade {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
-        Long productId = input.getProductId();
-        productService.like(productId);
-
         ActivityCommand.Like command = ActivityCommand.Like.builder()
                 .userId(user.getUserId())
-                .productId(productId)
+                .productId(input.getProductId())
                 .build();
         activityService.like(command);
     }
@@ -52,12 +47,9 @@ public class ActivityFacade {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
-        Long productId = input.getProductId();
-        productService.dislike(productId);
-
         ActivityCommand.Dislike command = ActivityCommand.Dislike.builder()
                 .userId(user.getUserId())
-                .productId(productId)
+                .productId(input.getProductId())
                 .build();
         activityService.dislike(command);
     }

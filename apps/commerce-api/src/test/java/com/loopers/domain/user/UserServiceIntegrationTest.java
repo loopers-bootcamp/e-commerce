@@ -2,6 +2,7 @@ package com.loopers.domain.user;
 
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
+import com.loopers.domain.user.event.UserEvent;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import com.loopers.support.error.ErrorType;
@@ -14,8 +15,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
@@ -28,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+@RecordApplicationEvents
 @SpringBootTest
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
@@ -38,6 +43,9 @@ class UserServiceIntegrationTest {
 
     @MockitoSpyBean
     private final UserRepository userRepository;
+
+    @Lazy
+    private final ApplicationEvents applicationEvents;
 
     private final TransactionTemplate transactionTemplate;
     private final TestEntityManager testEntityManager;
@@ -130,6 +138,8 @@ class UserServiceIntegrationTest {
                     .extracting("errorType", type(ErrorType.class))
                     .isEqualTo(CommonErrorType.CONFLICT);
 
+            assertThat(applicationEvents.stream(UserEvent.Join.class).toList()).isEmpty();
+
             verify(userRepository).existsUserByName(any(String.class));
             verify(userRepository, never()).saveUser(any(User.class));
         }
@@ -153,6 +163,7 @@ class UserServiceIntegrationTest {
             assertThat(result.getGender()).isEqualTo(command.getGender());
             assertThat(result.getBirthDate()).isEqualTo(command.getBirthDate());
             assertThat(result.getEmail()).isEqualTo(command.getEmail());
+            assertThat(applicationEvents.stream(UserEvent.Join.class).toList()).hasSize(1);
 
             verify(userRepository).existsUserByName(any(String.class));
             verify(userRepository).saveUser(any(User.class));

@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.TestConstructor;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
@@ -23,6 +25,9 @@ import static org.instancio.Select.root;
 class ActivityServiceIntegrationTest {
 
     private final ActivityService sut;
+
+    @MockitoBean
+    private final ApplicationEventPublisher eventPublisher;
 
     private final TransactionTemplate transactionTemplate;
     private final EntityManager entityManager;

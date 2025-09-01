@@ -3,8 +3,6 @@ package com.loopers.application.payment.processor;
 import com.loopers.application.payment.PaymentOutput;
 import com.loopers.domain.coupon.CouponCommand;
 import com.loopers.domain.coupon.CouponService;
-import com.loopers.domain.order.OrderService;
-import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
 import com.loopers.domain.payment.attribute.PaymentMethod;
@@ -17,14 +15,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 class PointPaymentProcessor implements PaymentProcessor {
 
     private final PaymentService paymentService;
-    private final OrderService orderService;
     private final ProductService productService;
     private final CouponService couponService;
     private final PointService pointService;
@@ -66,18 +62,9 @@ class PointPaymentProcessor implements PaymentProcessor {
             pointService.spend(pointCommand);
         }
 
-        UUID orderId = context.orderId();
-        PaymentCommand.Pay paymentCommand = PaymentCommand.Pay.builder()
-                .amount(paymentAmount)
-                .paymentMethod(PaymentMethod.POINT)
-                .userId(userId)
-                .orderId(orderId)
-                .build();
-        PaymentResult.Pay paymentResult = paymentService.pay(paymentCommand);
+        PaymentResult.Pay payment = paymentService.pay(context.paymentId());
 
-        orderService.complete(orderId);
-
-        return PaymentOutput.Pay.from(paymentResult);
+        return PaymentOutput.Pay.from(payment);
     }
 
 }

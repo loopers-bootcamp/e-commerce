@@ -1,10 +1,12 @@
 package com.loopers.interfaces.api.user;
 
-import com.loopers.application.user.UserFacade;
-import com.loopers.application.user.UserInput;
-import com.loopers.application.user.UserOutput;
+import com.loopers.domain.user.UserCommand;
+import com.loopers.domain.user.UserResult;
+import com.loopers.domain.user.UserService;
 import com.loopers.interfaces.api.ApiHeader;
 import com.loopers.interfaces.api.ApiResponse;
+import com.loopers.support.error.BusinessException;
+import com.loopers.support.error.CommonErrorType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserV1Controller implements UserV1ApiSpec {
 
-    private final UserFacade userFacade;
+    private final UserService userService;
 
     @GetMapping("/me")
     @Override
@@ -22,8 +24,9 @@ public class UserV1Controller implements UserV1ApiSpec {
             @RequestHeader(ApiHeader.USER_ID)
             String userName
     ) {
-        UserOutput.GetUser output = userFacade.getUser(userName);
-        UserResponse.GetUser response = UserResponse.GetUser.from(output);
+        UserResult.GetUser result = userService.getUser(userName)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+        UserResponse.GetUser response = UserResponse.GetUser.from(result);
 
         return ApiResponse.success(response);
     }
@@ -35,9 +38,14 @@ public class UserV1Controller implements UserV1ApiSpec {
             @RequestBody
             UserRequest.Join request
     ) {
-        UserInput.Join input = request.toInput();
-        UserOutput.Join output = userFacade.join(input);
-        UserResponse.Join response = UserResponse.Join.from(output);
+        UserCommand.Join command = UserCommand.Join.builder()
+                .userName(request.getUserName())
+                .gender(request.getGender())
+                .birthDate(request.getBirthDate())
+                .email(request.getEmail())
+                .build();
+        UserResult.Join result = userService.join(command);
+        UserResponse.Join response = UserResponse.Join.from(result);
 
         return ApiResponse.success(response);
     }

@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestConstructor;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.root;
 
@@ -46,17 +44,10 @@ class PaymentServiceIntegrationTest {
                     .create();
             PaymentMethod method = Instancio.create(PaymentMethod.class);
             Long userId = Instancio.create(Long.class);
-            UUID orderId = Instancio.create(UUID.class);
-
-            PaymentCommand.Pay command = PaymentCommand.Pay.builder()
-                    .amount(amount)
-                    .paymentMethod(method)
-                    .userId(userId)
-                    .orderId(orderId)
-                    .build();
+            Long paymentId = Instancio.create(Long.class);
 
             // when
-            PaymentResult.Pay result = paymentService.pay(command);
+            PaymentResult.Pay result = paymentService.pay(paymentId);
 
             // then
             assertThat(result).isNotNull();
@@ -70,7 +61,6 @@ class PaymentServiceIntegrationTest {
             assertThat(savedPayment.getStatus()).isEqualTo(result.getPaymentStatus());
             assertThat(savedPayment.getMethod()).isEqualTo(method);
             assertThat(savedPayment.getUserId()).isEqualTo(userId);
-            assertThat(savedPayment.getOrderId()).isEqualTo(orderId);
         }
 
     }

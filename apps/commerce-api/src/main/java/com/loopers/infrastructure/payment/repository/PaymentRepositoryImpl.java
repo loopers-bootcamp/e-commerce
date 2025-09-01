@@ -3,6 +3,7 @@ package com.loopers.infrastructure.payment.repository;
 import com.loopers.domain.payment.Payment;
 import com.loopers.domain.payment.PaymentRepository;
 import com.loopers.domain.payment.attempt.PaymentAttempt;
+import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,8 +20,18 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     private final PaymentAttemptJpaRepository paymentAttemptJpaRepository;
 
     @Override
+    public Optional<Payment> findPayment(Long paymentId) {
+        return paymentJpaRepository.findById(paymentId);
+    }
+
+    @Override
     public Optional<Payment> findPayment(UUID orderId) {
         return paymentJpaRepository.findByOrderId(orderId);
+    }
+
+    @Override
+    public Optional<Payment> findPaymentForUpdate(Long paymentId) {
+        return paymentJpaRepository.findByIdForUpdate(paymentId);
     }
 
     @Override
@@ -29,8 +40,8 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     }
 
     @Override
-    public List<Payment> findReadyPayments() {
-        return paymentJpaRepository.findByStatusAndCardTypeIsNotNull(PaymentStatus.READY);
+    public List<Payment> findInconclusivePayments(PaymentMethod method, List<PaymentStatus> statuses) {
+        return paymentJpaRepository.findByMethodAndStatusIn(method, statuses);
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.loopers.interfaces.api.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.loopers.application.user.UserInput;
 import com.loopers.domain.user.attribute.Email;
 import com.loopers.domain.user.attribute.Gender;
 import jakarta.validation.constraints.NotBlank;
@@ -30,15 +29,6 @@ public final class UserRequest {
         private final LocalDate birthDate;
         @NotNull
         private final Email email;
-
-        public UserInput.Join toInput() {
-            return UserInput.Join.builder()
-                    .userName(this.userName)
-                    .gender(this.gender)
-                    .birthDate(this.birthDate)
-                    .email(this.email)
-                    .build();
-        }
     }
 
 }

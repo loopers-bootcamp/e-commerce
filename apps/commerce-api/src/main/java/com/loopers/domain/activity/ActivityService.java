@@ -1,7 +1,9 @@
 package com.loopers.domain.activity;
 
 import com.loopers.annotation.ReadOnlyTransactional;
+import com.loopers.domain.activity.event.ActivityEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +15,7 @@ public class ActivityService {
 
     private final LikedProductRepository likedProductRepository;
     private final ViewedProductRepository viewedProductRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
     public ActivityResult.GetLikedProducts getLikedProducts(Long userId) {
@@ -32,7 +35,11 @@ public class ActivityService {
                 .productId(command.getProductId())
                 .build();
 
-        likedProductRepository.saveIfAbsent(likedProduct);
+        boolean saved = likedProductRepository.saveIfAbsent(likedProduct);
+
+        if (saved) {
+            eventPublisher.publishEvent(ActivityEvent.Like.from(likedProduct));
+        }
     }
 
     @Transactional
@@ -42,7 +49,11 @@ public class ActivityService {
                 .productId(command.getProductId())
                 .build();
 
-        likedProductRepository.deleteIfPresent(likedProduct);
+        boolean deleted = likedProductRepository.deleteIfPresent(likedProduct);
+
+        if (deleted) {
+            eventPublisher.publishEvent(ActivityEvent.Dislike.from(likedProduct));
+        }
     }
 
     @Transactional

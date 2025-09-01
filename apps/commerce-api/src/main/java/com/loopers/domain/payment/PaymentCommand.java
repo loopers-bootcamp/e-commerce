@@ -16,6 +16,7 @@ public final class PaymentCommand {
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class GetPayment {
         private final UUID orderId;
+        @Nullable
         private final Long userId;
     }
 
@@ -38,18 +39,6 @@ public final class PaymentCommand {
     @Getter
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Pay {
-        private final Long amount;
-        private final PaymentMethod paymentMethod;
-        private final Long userId;
-        private final UUID orderId;
-    }
-
-    // -------------------------------------------------------------------------------------------------
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Conclude {
         private final String transactionKey;
         private final UUID orderId;
@@ -57,18 +46,6 @@ public final class PaymentCommand {
         private final String status;
         @Nullable
         private final String reason;
-    }
-
-    // -------------------------------------------------------------------------------------------------
-
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Fail {
-        private final Long amount;
-        private final PaymentMethod paymentMethod;
-        private final Long userId;
-        private final UUID orderId;
     }
 
     // PaymentAttempt ----------------------------------------------------------------------------------

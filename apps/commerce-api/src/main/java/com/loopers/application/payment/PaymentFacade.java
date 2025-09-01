@@ -10,6 +10,7 @@ import com.loopers.domain.order.OrderService;
 import com.loopers.domain.payment.PaymentCommand;
 import com.loopers.domain.payment.PaymentResult;
 import com.loopers.domain.payment.PaymentService;
+import com.loopers.domain.payment.attribute.PaymentMethod;
 import com.loopers.domain.payment.attribute.PaymentStatus;
 import com.loopers.domain.payment.error.PaymentErrorType;
 import com.loopers.domain.product.ProductCommand;
@@ -37,14 +38,12 @@ public class PaymentFacade {
 
     private final List<PaymentProcessor> processors;
 
-    public PaymentOutput.Pay pay(PaymentInput.Pay input) {
+    public PaymentOutput.Ready ready(PaymentInput.Ready input) {
         UserResult.GetUser user = userService.getUser(input.getUserName())
                 .orElseThrow(() -> new BusinessException(CommonErrorType.UNAUTHENTICATED));
 
-        UUID orderId = input.getOrderId();
-
         OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
-                .orderId(orderId)
+                .orderId(input.getOrderId())
                 .userId(user.getUserId())
                 .build();
         OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)
@@ -54,17 +53,37 @@ public class PaymentFacade {
             throw new BusinessException(PaymentErrorType.UNPROCESSABLE);
         }
 
-        PaymentProcessor paymentProcessor = processors.stream()
-                .filter(processor -> processor.supports(input.getPaymentMethod()))
-                .findFirst()
-                .orElseThrow(() -> new BusinessException(CommonErrorType.INTERNAL_ERROR, "결제를 처리할 수 없습니다."));
+        PaymentCommand.Ready readyCommand = PaymentCommand.Ready.builder()
+                .amount(order.getTotalPrice() - order.getDiscountAmount())
+                .paymentMethod(PaymentMethod.POINT)
+                .cardType(input.getCardType())
+                .cardNumber(input.getCardNumber())
+                .userId(user.getUserId())
+                .orderId(input.getOrderId())
+                .build();
+        PaymentResult.Ready payment = paymentService.ready(readyCommand);
 
-        PaymentProcessContext context = PaymentProcessContext.of(
-                user.getUserId(),
-                order,
-                input.getCardType(),
-                input.getCardNumber()
-        );
+        return PaymentOutput.Ready.from(payment);
+    }
+
+    public PaymentOutput.Pay pay(Long paymentId) {
+        PaymentResult.GetPayment payment = paymentService.getPayment(paymentId)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND, "결제 건을 찾을 수 없습니다."));
+
+        OrderCommand.GetOrderDetail orderCommand = OrderCommand.GetOrderDetail.builder()
+                .orderId(payment.getOrderId())
+                .userId(payment.getUserId())
+                .build();
+        OrderResult.GetOrderDetail order = orderService.getOrderDetail(orderCommand)
+                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+
+        PaymentProcessor paymentProcessor = processors.stream()
+                .filter(processor -> processor.supports(payment.getPaymentMethod()))
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(CommonErrorType.INVALID,
+                        "지원하지 않는 결제 수단입니다: " + payment.getPaymentMethod()));
+
+        PaymentProcessContext context = PaymentProcessContext.of(order, payment);
         return paymentProcessor.process(context);
     }
 
@@ -84,13 +103,12 @@ public class PaymentFacade {
         PaymentStatus paymentStatus = payment.getPaymentStatus();
 
         // 결제 상태가 확정되지 않았으면, 후속 작업을 진행하지 않는다.
-        if (paymentStatus == PaymentStatus.READY) {
+        if (!paymentStatus.isConcluding()) {
             return;
         }
 
-        // 결제가 실패됐다면, 주문을 취소한다.
+        // 결제가 실패됐다면, 재화를 차감하지 않는다.
         if (paymentStatus == PaymentStatus.FAILED) {
-            orderService.cancel(orderId);
             return;
         }
 
@@ -121,8 +139,6 @@ public class PaymentFacade {
                 .userCouponIds(order.getUserCouponIds())
                 .build();
         couponService.use(couponCommand);
-
-        orderService.complete(orderId);
     }
 
 }
