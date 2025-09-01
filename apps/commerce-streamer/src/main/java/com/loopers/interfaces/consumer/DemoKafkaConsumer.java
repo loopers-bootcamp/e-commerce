@@ -20,7 +20,7 @@ public class DemoKafkaConsumer {
             Acknowledgment acknowledgment
     ) {
         System.out.println(messages);
-        acknowledgment.acknowledge();
+        acknowledgment.acknowledge(); // manual ack
     }
 
 }
