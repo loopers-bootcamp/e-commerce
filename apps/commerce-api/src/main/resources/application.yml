@@ -100,6 +100,12 @@ resilience4j.retry:
       base-config: shared
       max-attempts: 2
 
+spring.kafka:
+  producer:
+    acks: all
+    properties:
+      enable.idempotence: true
+
 ---
 
 spring.config.activate.on-profile: dev
