@@ -22,17 +22,26 @@ class SagaEventPublisher implements ApplicationEventPublisher {
     @Override
     public void publishEvent(@NonNull Object event) {
         if (event instanceof SagaEvent sagaEvent) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void beforeCommit(boolean readOnly) {
-                    SagaCommand.Outbound command = new SagaCommand.Outbound(
-                            sagaEvent.eventKey(),
-                            sagaEvent.eventName(),
-                            sagaEvent
-                    );
-                    sagaService.outbound(command);
-                }
-            });
+            Runnable runnable = () -> {
+                SagaCommand.Outbound command = new SagaCommand.Outbound(
+                        sagaEvent.eventKey(),
+                        sagaEvent.eventName(),
+                        sagaEvent
+                );
+                sagaService.outbound(command);
+            };
+
+            if (TransactionSynchronizationManager.isSynchronizationActive()
+                    && TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void beforeCommit(boolean readOnly) {
+                        runnable.run();
+                    }
+                });
+            } else {
+                runnable.run();
+            }
         }
 
         delegate.publishEvent(event);
