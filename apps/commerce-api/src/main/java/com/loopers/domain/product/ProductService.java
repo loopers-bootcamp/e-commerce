@@ -1,10 +1,12 @@
 package com.loopers.domain.product;
 
 import com.loopers.annotation.ReadOnlyTransactional;
+import com.loopers.domain.product.event.ProductEvent;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCacheRepository productCacheRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
     public ProductResult.SearchProducts searchProducts(ProductCommand.SearchProducts command) {
@@ -78,6 +81,8 @@ public class ProductService {
 
         product.like();
         productRepository.saveProduct(product);
+
+        eventPublisher.publishEvent(ProductEvent.LikeChanged.from(product));
     }
 
     @Transactional
@@ -87,6 +92,8 @@ public class ProductService {
 
         product.dislike();
         productRepository.saveProduct(product);
+
+        eventPublisher.publishEvent(ProductEvent.LikeChanged.from(product));
     }
 
     @Transactional
