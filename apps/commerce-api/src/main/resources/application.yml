@@ -108,7 +108,6 @@ resilience4j.retry:
 
 spring.kafka:
   producer:
-    acks: all
     properties:
       enable.idempotence: true
 

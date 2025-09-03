@@ -14,8 +14,7 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      # At Least Once
-      acks: 1
+      acks: all
       retries: 3
       properties:
         enable.idempotence: false
@@ -24,7 +23,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
       enable-auto-commit: false
-      auto-offset-reset: earliest
+      auto-offset-reset: latest
     listener:
       ack-mode: manual
 
