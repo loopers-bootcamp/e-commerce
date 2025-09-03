@@ -26,7 +26,7 @@ public class ProductFacade {
         ProductResult.GetProductDetail detail = productService.getProductDetail(productId)
                 .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
 
-        BrandResult.GetBrand brand = brandService.getBrand(detail.getBrandId()).orElse(null);
+        BrandResult.GetBrand brand = brandService.getBrand(detail.brandId()).orElse(null);
 
         // 회원이면 상품 조회 이벤트를 발행한다.
         String userName = input.getUserName();
