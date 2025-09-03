@@ -25,9 +25,11 @@ spring:
       - application-logging.yml
       - application-monitoring.yml
 
-demo-kafka:
-  test:
-    topic-name: demo.internal.topic-v1
+loopers:
+  kafka:
+    topics:
+      "DomainEvent.Audit": common.audit.v1
+      "ProductEvent.LikeChanged": product.like.changed.v1
 
 ---
 

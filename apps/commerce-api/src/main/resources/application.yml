@@ -61,6 +61,12 @@ resilience4j.retry:
         - org.springframework.web.client.HttpClientErrorException
         - com.loopers.support.error.BusinessException
 
+loopers:
+  kafka:
+    topics:
+      "DomainEvent.Audit": common.audit.v1
+      "ProductEvent.LikeChanged": product.like.changed.v1
+
 ---
 
 spring.config.activate.on-profile: local, test

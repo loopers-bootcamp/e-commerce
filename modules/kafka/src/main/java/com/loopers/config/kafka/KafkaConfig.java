@@ -20,7 +20,7 @@ import java.util.Map;
 
 @EnableKafka
 @Configuration
-@EnableConfigurationProperties(KafkaProperties.class)
+@EnableConfigurationProperties({KafkaProperties.class, LoopersKafkaProperties.class})
 public class KafkaConfig {
 
     public static final String BATCH_LISTENER = "BATCH_LISTENER_DEFAULT";

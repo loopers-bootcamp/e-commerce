@@ -4,11 +4,7 @@ import com.loopers.domain.activity.ActivityCommand;
 import com.loopers.domain.activity.ActivityService;
 import com.loopers.domain.activity.event.ActivityEvent;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.user.UserResult;
-import com.loopers.domain.user.UserService;
 import com.loopers.support.annotation.Inboxing;
-import com.loopers.support.error.BusinessException;
-import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -21,7 +17,6 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class ActivityEventListener {
 
     private final ProductService productService;
-    private final UserService userService;
     private final ActivityService activityService;
 
     /**
@@ -57,11 +52,8 @@ public class ActivityEventListener {
     @Inboxing(idempotent = true)
     @EventListener
     public void viewProduct(ActivityEvent.View event) {
-        UserResult.GetUser user = userService.getUser(event.userName())
-                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
-
         ActivityCommand.View activityCommand = ActivityCommand.View.builder()
-                .userId(user.getUserId())
+                .userId(event.userId())
                 .productId(event.productId())
                 .build();
         activityService.view(activityCommand);
