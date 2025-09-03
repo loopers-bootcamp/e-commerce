@@ -12,7 +12,7 @@ public class AuditRepositoryImpl implements AuditRepository {
     private final EventLogJpaRepository eventLogJpaRepository;
 
     @Override
-    public boolean save(EventLog eventLog) {
+    public boolean saveIfAbsent(EventLog eventLog) {
         eventLog.prePersist();
         return eventLogJpaRepository.insertIfNotExists(
                 eventLog.getId(),

@@ -19,7 +19,7 @@ public class AuditService {
                 .userId(command.userId())
                 .build();
 
-        auditRepository.save(eventLog);
+        auditRepository.saveIfAbsent(eventLog);
     }
 
 }
