@@ -28,7 +28,7 @@ public class AuditKafkaConsumer {
             topics = "${loopers.kafka.topics.DomainEvent.Audit}",
             containerFactory = KafkaConfig.BATCH_LISTENER
     )
-    public void onProductLikeCountChanged(
+    public void onDomainAudited(
             List<ConsumerRecord<String, byte[]>> messages,
             Acknowledgment acknowledgment
     ) throws IOException {

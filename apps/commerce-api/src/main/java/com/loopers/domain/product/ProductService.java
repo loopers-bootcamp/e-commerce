@@ -123,6 +123,7 @@ public class ProductService {
         for (ProductCommand.AddStocks.Item item : items) {
             ProductStock stock = stockMap.get(item.getProductOptionId());
             stock.add(item.getAmount());
+            eventPublisher.publishEvent(ProductEvent.StockChanged.from(stock));
         }
 
         productRepository.saveStocks(List.copyOf(stockMap.values()));
@@ -150,6 +151,7 @@ public class ProductService {
         for (ProductCommand.DeductStocks.Item item : items) {
             ProductStock stock = stockMap.get(item.getProductOptionId());
             stock.deduct(item.getAmount());
+            eventPublisher.publishEvent(ProductEvent.StockChanged.from(stock));
         }
 
         productRepository.saveStocks(List.copyOf(stockMap.values()));

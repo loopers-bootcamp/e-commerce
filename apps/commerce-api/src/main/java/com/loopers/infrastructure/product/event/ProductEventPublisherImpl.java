@@ -21,4 +21,10 @@ public class ProductEventPublisherImpl implements ProductEventPublisher {
         kafkaTemplate.send(properties.getTopic(event), event.productId().toString(), message);
     }
 
+    @Override
+    public void publishEvent(ProductEvent.StockChanged event) {
+        KafkaMessage<ProductEvent.StockChanged> message = KafkaMessage.from(event);
+        kafkaTemplate.send(properties.getTopic(event), event.productId().toString(), message);
+    }
+
 }

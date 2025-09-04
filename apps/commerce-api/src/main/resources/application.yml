@@ -66,6 +66,7 @@ loopers:
     topics:
       "DomainEvent.Audit": common.audit.v1
       "ProductEvent.LikeChanged": product.like.changed.v1
+      "ProductEvent.StockChanged": product.stock.changed.v1
 
 ---
 
