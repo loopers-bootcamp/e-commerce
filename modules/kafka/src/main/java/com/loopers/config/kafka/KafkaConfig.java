@@ -74,6 +74,8 @@ public class KafkaConfig {
         factory.setBatchMessageConverter(new BatchMessagingMessageConverter(converter));
         factory.setConcurrency(3);
         factory.setBatchListener(true);
+        factory.setAckDiscarded(true); // 필터로 버린 것을 커밋
+
         return factory;
     }
 
