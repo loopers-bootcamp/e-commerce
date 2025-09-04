@@ -44,7 +44,6 @@ public class ProductKafkaConsumer {
             objectRedisTemplate.opsForHash().putIfAbsent(key, "likeCount", likeCount);
         }
 
-        // Manual ack
         acknowledgment.acknowledge();
     }
 
@@ -73,7 +72,6 @@ public class ProductKafkaConsumer {
 
         objectRedisTemplate.delete(cacheKeys);
 
-        // Manual ack
         acknowledgment.acknowledge();
     }
 

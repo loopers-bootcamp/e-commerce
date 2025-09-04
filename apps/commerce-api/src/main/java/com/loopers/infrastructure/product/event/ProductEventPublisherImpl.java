@@ -18,13 +18,15 @@ public class ProductEventPublisherImpl implements ProductEventPublisher {
     @Override
     public void publishEvent(ProductEvent.LikeChanged event) {
         KafkaMessage<ProductEvent.LikeChanged> message = KafkaMessage.from(event);
-        kafkaTemplate.send(properties.getTopic(event), event.productId().toString(), message);
+        String partitionKey = event.productId().toString();
+        kafkaTemplate.send(properties.getTopic(event), partitionKey, message);
     }
 
     @Override
     public void publishEvent(ProductEvent.StockChanged event) {
         KafkaMessage<ProductEvent.StockChanged> message = KafkaMessage.from(event);
-        kafkaTemplate.send(properties.getTopic(event), event.productId().toString(), message);
+        String partitionKey = event.productId().toString();
+        kafkaTemplate.send(properties.getTopic(event), partitionKey, message);
     }
 
 }

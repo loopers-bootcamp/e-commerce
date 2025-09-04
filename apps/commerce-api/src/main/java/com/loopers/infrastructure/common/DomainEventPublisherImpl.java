@@ -18,7 +18,8 @@ public class DomainEventPublisherImpl implements DomainEventPublisher {
     @Override
     public void publishEvent(DomainEvent.Audit event) {
         KafkaMessage<DomainEvent> message = KafkaMessage.from(event);
-        kafkaTemplate.send(properties.getTopic(event), message.eventId(), message);
+        String partitionKey = message.eventId();
+        kafkaTemplate.send(properties.getTopic(event), partitionKey, message);
     }
 
 }

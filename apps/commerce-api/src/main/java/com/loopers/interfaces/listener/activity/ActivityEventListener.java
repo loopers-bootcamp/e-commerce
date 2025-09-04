@@ -3,6 +3,7 @@ package com.loopers.interfaces.listener.activity;
 import com.loopers.domain.activity.ActivityCommand;
 import com.loopers.domain.activity.ActivityService;
 import com.loopers.domain.activity.event.ActivityEvent;
+import com.loopers.domain.activity.event.ActivityEventPublisher;
 import com.loopers.domain.product.ProductService;
 import com.loopers.support.annotation.Inboxing;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class ActivityEventListener {
 
     private final ProductService productService;
     private final ActivityService activityService;
+    private final ActivityEventPublisher activityEventPublisher;
 
     /**
      * {@link Async}: 기술적 이슈 + 좋아요와 함께 원자적 연산의 대상이라고 생각하지 않음.
@@ -29,6 +31,7 @@ public class ActivityEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void likeProduct(ActivityEvent.Like event) {
         productService.like(event.productId());
+        activityEventPublisher.publishEvent(event);
     }
 
     /**
@@ -41,6 +44,7 @@ public class ActivityEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void dislikeProduct(ActivityEvent.Dislike event) {
         productService.dislike(event.productId());
+        activityEventPublisher.publishEvent(event);
     }
 
     /**
@@ -57,6 +61,8 @@ public class ActivityEventListener {
                 .productId(event.productId())
                 .build();
         activityService.view(activityCommand);
+
+        activityEventPublisher.publishEvent(event);
     }
 
 }
