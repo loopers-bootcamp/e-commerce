@@ -56,11 +56,11 @@ public final class CacheAside {
         private final LookupFallback<T> prev;
         private final Consumer<T> saveCache;
 
-        public Optional<T> executeAsOptional() {
-            return Optional.ofNullable(execute());
+        public Optional<T> getAsOptional() {
+            return Optional.ofNullable(get());
         }
 
-        public T execute() {
+        public T get() {
             T cache = prev.prev.prev.cacheGetter.get();
             if (cache != null) {
                 // 캐시 관통을 방지한다.

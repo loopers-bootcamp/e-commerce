@@ -13,11 +13,9 @@ server:
 
 spring:
   mvc.format.date: iso
-  main:
-    web-application-type: servlet
+  main.web-application-type: servlet
   threads.virtual.enabled: true
-  application:
-    name: commerce-api
+  application.name: commerce-api
   profiles:
     active: local
   config:

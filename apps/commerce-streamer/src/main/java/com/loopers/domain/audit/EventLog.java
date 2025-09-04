@@ -44,7 +44,7 @@ public class EventLog extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    public EventLog(String id, String eventKey, String eventName, Long userId) {
+    private EventLog(String id, String eventKey, String eventName, Long userId) {
         this.id = id;
         this.eventKey = eventKey;
         this.eventName = eventName;

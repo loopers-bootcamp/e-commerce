@@ -1,17 +1,23 @@
 spring:
   jpa:
+    show-sql: false # Replaced with P6Spy
     open-in-view: false
     generate-ddl: false
-    show-sql: false
     hibernate:
       ddl-auto: none
     properties:
       hibernate:
+        show_sql: false # Replaced with P6Spy
+        format_sql: false # Replaced with P6Spy
+        highlight_sql: false # Replaced with P6Spy
+        use_sql_comments: false # Replaced with P6Spy
+        generate_statistics: false # Replaced with P6Spy
+        globally_quoted_identifiers: true
         default_batch_fetch_size: 100
         timezone.default_storage: NORMALIZE_UTC
         jdbc.time_zone: UTC
   # org.springframework.orm.jpa.JpaSystemException: Unable to commit against JDBC Connection.
-#        connection.provider_disables_autocommit: true # Make Hibernate skip to check autocommit mode.
+  #        connection.provider_disables_autocommit: true # Make Hibernate skip to check autocommit mode.
 
   datasource:
     hikari:
@@ -36,29 +42,20 @@ datasource:
       data-source-properties:
         rewriteBatchedStatements: true
 
+# P6Spy
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
 ---
 
 spring.config.activate.on-profile: local
 
 spring:
   jpa:
-    show-sql: false # Replaced with P6Spy
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        show_sql: false # Replaced with P6Spy
-        format_sql: false # Replaced with P6Spy
-        highlight_sql: false # Replaced with P6Spy
-        use_sql_comments: false # Replaced with P6Spy
-        generate_statistics: false # Replaced with P6Spy
-        globally_quoted_identifiers: true
-
-# P6Spy
-decorator:
-  datasource:
-    p6spy:
-      enable-logging: true
 
 datasource:
   mysql-jpa:
@@ -67,23 +64,26 @@ datasource:
       username: application
       password: application
 
+# P6Spy
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
 ---
 
 spring.config.activate.on-profile: test
 
 spring:
   jpa:
-    show-sql: false # Replaced with P6Spy
     hibernate:
       ddl-auto: create
-  properties:
-    hibernate:
-      show_sql: false # Replaced with P6Spy
-      format_sql: false # Replaced with P6Spy
-      highlight_sql: false # Replaced with P6Spy
-      use_sql_comments: false # Replaced with P6Spy
-      generate_statistics: false # Replaced with P6Spy
-      globally_quoted_identifiers: true
+
+datasource:
+  mysql-jpa:
+    main:
+      maximum-pool-size: 10
+      minimum-idle: 5
 
 # P6Spy
 decorator:
@@ -93,18 +93,9 @@ decorator:
       log-filter:
         pattern: ^(.*\b(select|insert|update|delete|merge)\b.*)$ # DML only
 
-datasource:
-  mysql-jpa:
-    main:
-      maximum-pool-size: 10
-      minimum-idle: 5
-
 ---
-spring.config.activate.on-profile: dev
 
-spring:
-  jpa:
-    show-sql: true
+spring.config.activate.on-profile: dev
 
 datasource:
   mysql-jpa:
@@ -114,6 +105,7 @@ datasource:
       password: application
 
 ---
+
 spring.config.activate.on-profile: qa
 
 datasource:
@@ -124,6 +116,7 @@ datasource:
       password: application
 
 ---
+
 spring.config.activate.on-profile: prd
 
 datasource:

@@ -65,7 +65,7 @@ public class ProductService {
                 .isNullObject(detail -> Objects.equals(detail, ProductQueryResult.ProductDetail.EMPTY))
                 .lookupFallback(() -> productRepository.findProductDetailById(productId))
                 .saveCache(detail -> productCacheRepository.saveProductDetail(productId, detail))
-                .executeAsOptional()
+                .getAsOptional()
                 .map(ProductResult.GetProductDetail::from);
     }
 

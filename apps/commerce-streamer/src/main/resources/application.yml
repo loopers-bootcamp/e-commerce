@@ -11,10 +11,8 @@ server:
   max-http-request-header-size: 8KB
 
 spring:
-  main:
-    web-application-type: servlet
-  application:
-    name: commerce-streamer
+  main.web-application-type: servlet
+  application.name: commerce-streamer
   profiles:
     active: local
   config:
