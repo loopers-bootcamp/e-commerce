@@ -3,6 +3,7 @@ package com.loopers.infrastructure.product;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.loopers.config.RedisCacheConfig;
 import com.loopers.domain.product.ProductCacheRepository;
 import com.loopers.domain.product.ProductQueryCommand;
 import com.loopers.domain.product.ProductQueryResult;
@@ -124,16 +125,19 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
     @Override
     public void saveProductDetail(Long productId, ProductQueryResult.ProductDetail productDetail) {
         String key = "product.detail:" + productId;
+        Duration ttl = RedisCacheConfig.jitter(Duration.ofMinutes(3));
 
         // 캐시 관통을 방지한다.
         if (productDetail == null) {
             objectRedisTemplate.opsForHash().putAll(key, Map.of("__null__", "null"));
+            objectRedisTemplate.expire(key, ttl);
             return;
         }
 
         Map<String, Object> cache = objectMapper.convertValue(productDetail, new TypeReference<>() {
         });
         objectRedisTemplate.opsForHash().putAll(key, cache);
+        objectRedisTemplate.expire(key, ttl);
     }
 
 }
