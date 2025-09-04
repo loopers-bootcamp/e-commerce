@@ -33,6 +33,7 @@ public class RedisCacheConfig {
         );
 
         return RedisCacheConfiguration.defaultCacheConfig()
+                .computePrefixWith(cacheName ->  cacheName + ":")
                 .entryTtl((key, value) -> jitter(Duration.ofMinutes(3)))
                 .disableCachingNullValues()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer.UTF_8))

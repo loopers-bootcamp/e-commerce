@@ -12,19 +12,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> objectRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -36,11 +40,17 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return Page.empty(pageRequest);
         }
 
-        String key = "page:products:" + Objects.hash(command);
+        String key = "product.page:" + Objects.hash(
+                command.getKeyword(),
+                command.getBrandId(),
+                command.getSort(),
+                command.getPage(),
+                command.getSize()
+        );
 
         String json = null;
         try {
-            json = redisTemplate.opsForValue().getAndExpire(key, Duration.ofSeconds(1));
+            json = stringRedisTemplate.opsForValue().getAndExpire(key, Duration.ofSeconds(1));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -76,7 +86,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             throw new RuntimeException(e);
         }
 
-        String key = "page:products:" + Objects.hash(
+        String key = "product.page:" + Objects.hash(
                 command.getKeyword(),
                 command.getBrandId(),
                 command.getSort(),
@@ -86,10 +96,44 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
         try {
             // 모든 검색 조건을 캐싱하는 대신, TTL를 짧게 줘서 과도한 메모리 점유를 방지한다.
-            redisTemplate.opsForValue().set(key, json, Duration.ofSeconds(5));
+            stringRedisTemplate.opsForValue().set(key, json, Duration.ofSeconds(5));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId) {
+        String key = "product.detail:" + productId;
+        Map<String, Object> cache = objectRedisTemplate.<String, Object>opsForHash().entries(key);
+
+        if (CollectionUtils.isEmpty(cache)) {
+            return Optional.empty();
+        }
+
+        // 캐시 관통을 방지한다.
+        if (cache.containsKey("__null__")) {
+            return Optional.of(ProductQueryResult.ProductDetail.EMPTY);
+        }
+
+        ProductQueryResult.ProductDetail productDetail = objectMapper.convertValue(cache, new TypeReference<>() {
+        });
+        return Optional.of(productDetail);
+    }
+
+    @Override
+    public void saveProductDetail(Long productId, ProductQueryResult.ProductDetail productDetail) {
+        String key = "product.detail:" + productId;
+
+        // 캐시 관통을 방지한다.
+        if (productDetail == null) {
+            objectRedisTemplate.opsForHash().putAll(key, Map.of("__null__", "null"));
+            return;
+        }
+
+        Map<String, Object> cache = objectMapper.convertValue(productDetail, new TypeReference<>() {
+        });
+        objectRedisTemplate.opsForHash().putAll(key, cache);
     }
 
 }

@@ -2,10 +2,10 @@ package com.loopers.domain.product;
 
 import com.loopers.annotation.ReadOnlyTransactional;
 import com.loopers.domain.product.event.ProductEvent;
+import com.loopers.support.cache.CacheAside;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -53,14 +54,18 @@ public class ProductService {
         return ProductResult.SearchProducts.from(page);
     }
 
-    @Cacheable(cacheNames = "detail:product", key = "#productId", unless = "#result == null")
     @ReadOnlyTransactional
     public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {
         if (productId == null) {
             return Optional.empty();
         }
 
-        return productRepository.findProductDetailById(productId)
+        return CacheAside
+                .lookupCache(() -> productCacheRepository.findProductDetailById(productId))
+                .isNullObject(detail -> Objects.equals(detail, ProductQueryResult.ProductDetail.EMPTY))
+                .lookupFallback(() -> productRepository.findProductDetailById(productId))
+                .saveCache(detail -> productCacheRepository.saveProductDetail(productId, detail))
+                .executeAsOptional()
                 .map(ProductResult.GetProductDetail::from);
     }
 
