@@ -6,6 +6,7 @@ import com.loopers.config.kafka.KafkaConfig;
 import com.loopers.domain.KafkaMessage;
 import com.loopers.domain.metric.MetricCommand;
 import com.loopers.domain.metric.MetricService;
+import com.loopers.interfaces.consumer.product.ProductEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -91,6 +92,31 @@ public class MetricKafkaConsumer {
             Long productId = kafkaMessage.payload().productId();
 
             MetricCommand.AggregateProduct command = MetricCommand.AggregateProduct.ofViewCount(date, productId, 1L);
+            metricService.aggregateProduct(command);
+        }
+
+        acknowledgment.acknowledge();
+    }
+
+    @KafkaListener(
+            topics = "${loopers.kafka.topics.ProductEvent.Sale}",
+            containerFactory = KafkaConfig.BATCH_LISTENER
+    )
+    public void onProductSale(
+            List<ConsumerRecord<String, byte[]>> messages,
+            Acknowledgment acknowledgment
+    ) throws IOException {
+        log.info("Received {} messages on '{}'", messages.size(), messages.getFirst().topic());
+
+        for (ConsumerRecord<String, byte[]> message : messages) {
+            KafkaMessage<ProductEvent.Sale> kafkaMessage = objectMapper.readValue(message.value(), new TypeReference<>() {
+            });
+
+            LocalDate date = kafkaMessage.publishedAt().toLocalDate();
+            Long productId = kafkaMessage.payload().productId();
+            long saleQuantity = kafkaMessage.payload().quantity().longValue();
+
+            MetricCommand.AggregateProduct command = MetricCommand.AggregateProduct.ofSaleQuantity(date, productId, saleQuantity);
             metricService.aggregateProduct(command);
         }
 

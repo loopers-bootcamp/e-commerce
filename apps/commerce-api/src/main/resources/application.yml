@@ -68,6 +68,7 @@ loopers:
       "ActivityEvent.View": activity.view.v1
       "ProductEvent.LikeChanged": product.like.changed.v1
       "ProductEvent.StockChanged": product.stock.changed.v1
+      "ProductEvent.Sale": product.sale.v1
 
 ---
 

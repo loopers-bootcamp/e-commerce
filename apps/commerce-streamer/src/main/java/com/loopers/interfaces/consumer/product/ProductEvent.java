@@ -1,8 +1,10 @@
 package com.loopers.interfaces.consumer.product;
 
+import java.util.UUID;
+
 public record ProductEvent() {
 
-    record LikeChanged(
+    public record LikeChanged(
             Long productId,
             Long likeCount
     ) {
@@ -10,9 +12,18 @@ public record ProductEvent() {
 
     // -------------------------------------------------------------------------------------------------
 
-    record StockChanged(
+    public record StockChanged(
             Long productId,
             Long productOptionId,
+            Integer quantity
+    ) {
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    public record Sale(
+            UUID orderId,
+            Long productId,
             Integer quantity
     ) {
     }

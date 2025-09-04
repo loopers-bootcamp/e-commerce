@@ -3,6 +3,8 @@ package com.loopers.domain.product.event;
 import com.loopers.domain.product.Product;
 import com.loopers.domain.product.ProductStock;
 
+import java.util.UUID;
+
 public interface ProductEvent {
 
     record LikeChanged(
@@ -28,6 +30,15 @@ public interface ProductEvent {
         public StockChanged withProductId(Long productId) {
             return new StockChanged(productId, productOptionId, quantity);
         }
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    record Sale(
+            UUID orderId,
+            Long productId,
+            Integer quantity
+    ) {
     }
 
 }

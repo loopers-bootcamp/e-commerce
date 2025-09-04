@@ -6,4 +6,6 @@ public interface ProductEventPublisher {
 
     void publishEvent(ProductEvent.StockChanged event);
 
+    void publishEvent(ProductEvent.Sale event);
+
 }
