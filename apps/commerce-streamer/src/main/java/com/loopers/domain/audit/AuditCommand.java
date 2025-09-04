@@ -10,4 +10,12 @@ public record AuditCommand() {
     ) {
     }
 
+    // -------------------------------------------------------------------------------------------------
+
+    public record Handle(
+            String eventId,
+            String topicName
+    ) {
+    }
+
 }

@@ -4,4 +4,6 @@ public interface AuditRepository {
 
     boolean saveIfAbsent(EventLog eventLog);
 
+    boolean saveIfAbsent(EventHandled eventHandled);
+
 }

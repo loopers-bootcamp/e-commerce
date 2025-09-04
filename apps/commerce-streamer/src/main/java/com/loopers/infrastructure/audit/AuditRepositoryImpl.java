@@ -1,6 +1,7 @@
 package com.loopers.infrastructure.audit;
 
 import com.loopers.domain.audit.AuditRepository;
+import com.loopers.domain.audit.EventHandled;
 import com.loopers.domain.audit.EventLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 public class AuditRepositoryImpl implements AuditRepository {
 
     private final EventLogJpaRepository eventLogJpaRepository;
+    private final EventHandledJpaRepository eventHandledJpaRepository;
 
     @Override
     public boolean saveIfAbsent(EventLog eventLog) {
@@ -21,6 +23,17 @@ public class AuditRepositoryImpl implements AuditRepository {
                 eventLog.getUserId(),
                 eventLog.getCreatedAt(),
                 eventLog.getUpdatedAt()
+        ) == 1;
+    }
+
+    @Override
+    public boolean saveIfAbsent(EventHandled eventHandled) {
+        eventHandled.prePersist();
+        return eventHandledJpaRepository.insertIfNotExists(
+                eventHandled.getId(),
+                eventHandled.getTopicName(),
+                eventHandled.getCreatedAt(),
+                eventHandled.getUpdatedAt()
         ) == 1;
     }
 

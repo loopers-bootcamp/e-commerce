@@ -22,4 +22,14 @@ public class AuditService {
         auditRepository.saveIfAbsent(eventLog);
     }
 
+    @Transactional
+    public boolean handle(AuditCommand.Handle command) {
+        EventHandled eventHandled = EventHandled.builder()
+                .id(command.eventId())
+                .topicName(command.topicName())
+                .build();
+
+        return auditRepository.saveIfAbsent(eventHandled);
+    }
+
 }
