@@ -1,10 +1,12 @@
 package com.loopers.domain.product;
 
 import com.loopers.annotation.ReadOnlyTransactional;
+import com.loopers.domain.product.event.ProductEvent;
+import com.loopers.support.cache.CacheAside;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -23,6 +26,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductCacheRepository productCacheRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @ReadOnlyTransactional
     public ProductResult.SearchProducts searchProducts(ProductCommand.SearchProducts command) {
@@ -50,14 +54,18 @@ public class ProductService {
         return ProductResult.SearchProducts.from(page);
     }
 
-    @Cacheable(cacheNames = "detail:product", key = "#productId", unless = "#result == null")
     @ReadOnlyTransactional
     public Optional<ProductResult.GetProductDetail> getProductDetail(Long productId) {
         if (productId == null) {
             return Optional.empty();
         }
 
-        return productRepository.findProductDetailById(productId)
+        return CacheAside
+                .lookupCache(() -> productCacheRepository.findProductDetailById(productId))
+                .isNullObject(detail -> Objects.equals(detail, ProductQueryResult.ProductDetail.EMPTY))
+                .lookupFallback(() -> productRepository.findProductDetailById(productId))
+                .saveCache(detail -> productCacheRepository.saveProductDetail(productId, detail))
+                .getAsOptional()
                 .map(ProductResult.GetProductDetail::from);
     }
 
@@ -78,6 +86,8 @@ public class ProductService {
 
         product.like();
         productRepository.saveProduct(product);
+
+        eventPublisher.publishEvent(ProductEvent.LikeChanged.from(product));
     }
 
     @Transactional
@@ -87,6 +97,8 @@ public class ProductService {
 
         product.dislike();
         productRepository.saveProduct(product);
+
+        eventPublisher.publishEvent(ProductEvent.LikeChanged.from(product));
     }
 
     @Transactional
@@ -111,6 +123,7 @@ public class ProductService {
         for (ProductCommand.AddStocks.Item item : items) {
             ProductStock stock = stockMap.get(item.getProductOptionId());
             stock.add(item.getAmount());
+            eventPublisher.publishEvent(ProductEvent.StockChanged.from(stock));
         }
 
         productRepository.saveStocks(List.copyOf(stockMap.values()));
@@ -138,6 +151,7 @@ public class ProductService {
         for (ProductCommand.DeductStocks.Item item : items) {
             ProductStock stock = stockMap.get(item.getProductOptionId());
             stock.deduct(item.getAmount());
+            eventPublisher.publishEvent(ProductEvent.StockChanged.from(stock));
         }
 
         productRepository.saveStocks(List.copyOf(stockMap.values()));

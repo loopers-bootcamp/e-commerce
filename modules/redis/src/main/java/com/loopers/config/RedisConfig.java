@@ -11,7 +11,8 @@ import org.springframework.data.redis.connection.RedisStaticMasterReplicaConfigu
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
 
 import java.util.function.Consumer;
 
@@ -20,7 +21,8 @@ import java.util.function.Consumer;
 @EnableConfigurationProperties(RedisProperties.class)
 public class RedisConfig {
 
-    public static final String REDIS_TEMPLATE_MASTER = "redisTemplateMaster";
+    public static final String REDIS_STRING_TEMPLATE_MASTER = "stringRedisTemplateMaster";
+    public static final String REDIS_OBJECT_TEMPLATE_MASTER = "objectRedisTemplateMaster";
     private static final String CONNECTION_MASTER = "redisConnectionMaster";
 
     private final RedisProperties redisProperties;
@@ -45,18 +47,30 @@ public class RedisConfig {
 
     @Primary
     @Bean
-    public RedisTemplate<String, String> defaultRedisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
-        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-        return defaultRedisTemplate(redisTemplate, lettuceConnectionFactory);
+    public StringRedisTemplate defaultStringRedisTemplate(LettuceConnectionFactory connectionFactory) {
+        return new StringRedisTemplate(connectionFactory);
     }
 
-    @Qualifier(REDIS_TEMPLATE_MASTER)
+    @Primary
     @Bean
-    public RedisTemplate<String, String> masterRedisTemplate(
-            @Qualifier(CONNECTION_MASTER) LettuceConnectionFactory lettuceConnectionFactory
+    public RedisTemplate<String, Object> defaultObjectRedisTemplate(LettuceConnectionFactory connectionFactory) {
+        return buildObjectRedisTemplate(connectionFactory);
+    }
+
+    @Qualifier(REDIS_STRING_TEMPLATE_MASTER)
+    @Bean
+    public StringRedisTemplate masterStringRedisTemplate(
+            @Qualifier(CONNECTION_MASTER) LettuceConnectionFactory connectionFactory
     ) {
-        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-        return defaultRedisTemplate(redisTemplate, lettuceConnectionFactory);
+        return new StringRedisTemplate(connectionFactory);
+    }
+
+    @Qualifier(REDIS_OBJECT_TEMPLATE_MASTER)
+    @Bean
+    public RedisTemplate<String, Object> masterObjectRedisTemplate(
+            @Qualifier(CONNECTION_MASTER) LettuceConnectionFactory connectionFactory
+    ) {
+        return buildObjectRedisTemplate(connectionFactory);
     }
 
     private LettuceConnectionFactory lettuceConnectionFactory(
@@ -80,16 +94,14 @@ public class RedisConfig {
         return new LettuceConnectionFactory(masterReplicaConfig, clientConfig);
     }
 
-    private <K, V> RedisTemplate<K, V> defaultRedisTemplate(
-            RedisTemplate<K, V> template,
-            LettuceConnectionFactory connectionFactory
-    ) {
-        StringRedisSerializer s = StringRedisSerializer.UTF_8;
-        template.setKeySerializer(s);
-        template.setValueSerializer(s);
-        template.setHashKeySerializer(s);
-        template.setHashValueSerializer(s);
+    private RedisTemplate<String, Object> buildObjectRedisTemplate(LettuceConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setKeySerializer(RedisSerializer.string());
+        template.setValueSerializer(RedisSerializer.json());
+        template.setHashKeySerializer(RedisSerializer.string());
+        template.setHashValueSerializer(RedisSerializer.json());
         template.setConnectionFactory(connectionFactory);
+
         return template;
     }
 

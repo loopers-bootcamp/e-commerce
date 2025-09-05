@@ -1,16 +1,6 @@
 rootProject.name = "e-commerce"
 
-include(
-    ":apps:commerce-api",
-    ":apps:pg-simulator",
-    ":modules:jpa",
-    ":modules:redis",
-    ":modules:feign",
-    ":modules:resilience4j",
-    ":supports:jackson",
-    ":supports:logging",
-    ":supports:monitoring",
-)
+registerSubDirectoriesAsModules("apps", "modules", "supports")
 
 // configurations
 pluginManagement {
@@ -30,5 +20,18 @@ pluginManagement {
                 "io.spring.dependency-management" -> useVersion(springDependencyManagementVersion)
             }
         }
+    }
+}
+
+fun registerSubDirectoriesAsModules(vararg parentDirs: String) {
+    parentDirs.forEach { parentDir ->
+        file(parentDir)
+            .listFiles { file -> file.isDirectory }
+            ?.forEach { subDir ->
+                val path = ":${parentDir}:${subDir.name}"
+
+                include(path)
+                project(path).projectDir = subDir
+            }
     }
 }

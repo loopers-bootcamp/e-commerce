@@ -53,46 +53,40 @@ public final class ProductResult {
 
     // -------------------------------------------------------------------------------------------------
 
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GetProductDetail {
-        private final Long productId;
-        private final String productName;
-        private final Integer basePrice;
-        private final Long likeCount;
-        private final Long brandId;
-        private final List<Option> options;
-
+    public record GetProductDetail(
+            Long productId,
+            String productName,
+            Integer basePrice,
+            Long likeCount,
+            Long brandId,
+            List<Option> options
+    ) {
         public static GetProductDetail from(ProductQueryResult.ProductDetail queryResult) {
-            return GetProductDetail.builder()
-                    .productId(queryResult.getProductId())
-                    .productName(queryResult.getProductName())
-                    .basePrice(queryResult.getBasePrice())
-                    .likeCount(queryResult.getLikeCount())
-                    .brandId(queryResult.getBrandId())
-                    .options(queryResult.getOptions().stream().map(Option::from).toList())
-                    .build();
+            return new GetProductDetail(
+                    queryResult.getProductId(),
+                    queryResult.getProductName(),
+                    queryResult.getBasePrice(),
+                    queryResult.getLikeCount(),
+                    queryResult.getBrandId(),
+                    queryResult.getOptions().stream().map(Option::from).toList()
+            );
         }
 
-        @Getter
-        @Builder
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        public static class Option {
-            private final Long productOptionId;
-            private final String productOptionName;
-            private final Integer additionalPrice;
-            private final Long productId;
-            private final Integer stockQuantity;
-
+        public record Option(
+                Long productOptionId,
+                String productOptionName,
+                Integer additionalPrice,
+                Long productId,
+                Integer stockQuantity
+        ) {
             public static Option from(ProductQueryResult.ProductDetail.Option item) {
-                return Option.builder()
-                        .productOptionId(item.getProductOptionId())
-                        .productOptionName(item.getProductOptionName())
-                        .additionalPrice(item.getAdditionalPrice())
-                        .productId(item.getProductId())
-                        .stockQuantity(item.getStockQuantity())
-                        .build();
+                return new Option(
+                        item.getProductOptionId(),
+                        item.getProductOptionName(),
+                        item.getAdditionalPrice(),
+                        item.getProductId(),
+                        item.getStockQuantity()
+                );
             }
         }
     }

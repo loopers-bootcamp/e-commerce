@@ -1,1 +1,3 @@
-application-logging.config: classpath:logback/logback.xml
+#application-logging.config: classpath:logback/logback.xml
+logging:
+  config: classpath:logback/logback.xml

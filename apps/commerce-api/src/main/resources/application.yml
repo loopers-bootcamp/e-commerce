@@ -13,17 +13,16 @@ server:
 
 spring:
   mvc.format.date: iso
-  main:
-    web-application-type: servlet
+  main.web-application-type: servlet
   threads.virtual.enabled: true
-  application:
-    name: commerce-api
+  application.name: commerce-api
   profiles:
     active: local
   config:
     import:
       - application-jpa.yml
       - application-redis.yml
+      - application-kafka.yml
       - application-feign.yml
       - application-resilience4j.yml
       - application-logging.yml
@@ -59,6 +58,17 @@ resilience4j.retry:
       ignore-exceptions:
         - org.springframework.web.client.HttpClientErrorException
         - com.loopers.support.error.BusinessException
+
+loopers:
+  kafka:
+    topics:
+      "DomainEvent.Audit": common.audit.v1
+      "ActivityEvent.Like": activity.like.v1
+      "ActivityEvent.Dislike": activity.dislike.v1
+      "ActivityEvent.View": activity.view.v1
+      "ProductEvent.LikeChanged": product.like.changed.v1
+      "ProductEvent.StockChanged": product.stock.changed.v1
+      "ProductEvent.Sale": product.sale.v1
 
 ---
 

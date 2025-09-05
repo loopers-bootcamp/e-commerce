@@ -1,6 +1,7 @@
 package com.loopers.domain.activity.event;
 
 import com.loopers.domain.activity.LikedProduct;
+import com.loopers.domain.common.DomainEvent;
 import com.loopers.domain.saga.event.SagaEvent;
 
 import java.time.Instant;
@@ -14,7 +15,7 @@ public record ActivityEvent() {
             String eventName,
             Long userId,
             Long productId
-    ) implements SagaEvent {
+    ) implements SagaEvent, DomainEvent {
         public static Like from(LikedProduct likedProduct) {
             return new Like(
                     UUID.randomUUID().toString(),
@@ -32,7 +33,7 @@ public record ActivityEvent() {
             String eventName,
             Long userId,
             Long productId
-    ) implements SagaEvent {
+    ) implements SagaEvent, DomainEvent {
         public static Dislike from(LikedProduct likedProduct) {
             return new Dislike(
                     UUID.randomUUID().toString(),
@@ -48,17 +49,17 @@ public record ActivityEvent() {
     public record View(
             String eventKey,
             String eventName,
-            String userName,
+            Long userId,
             Long productId
-    ) implements SagaEvent {
-        public static View from(String userName, Long productId) {
+    ) implements SagaEvent, DomainEvent {
+        public static View from(Long userId, Long productId) {
             // 분당 하나의 조회만 인정한다.
             long epochSecond = Instant.now().truncatedTo(ChronoUnit.MINUTES).getEpochSecond();
 
             return new View(
-                    "user:%s|product:%d|time:%d".formatted(userName, productId, epochSecond),
+                    "user:%d|product:%d|time:%d".formatted(userId, productId, epochSecond),
                     "activity.view",
-                    userName,
+                    userId,
                     productId
             );
         }

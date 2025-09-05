@@ -276,20 +276,20 @@ class ProductServiceIntegrationTest {
 
             // then
             assertThat(maybeDetail).isPresent();
-            assertThat(maybeDetail.get().getProductId()).isEqualTo(product.getId());
-            assertThat(maybeDetail.get().getProductName()).isEqualTo(product.getName());
-            assertThat(maybeDetail.get().getBasePrice()).isEqualTo(product.getBasePrice());
-            assertThat(maybeDetail.get().getLikeCount()).isEqualTo(product.getLikeCount());
-            assertThat(maybeDetail.get().getBrandId()).isEqualTo(product.getBrandId());
-            assertThat(maybeDetail.get().getOptions()).hasSize(2);
-            assertThat(maybeDetail.get().getOptions())
-                    .extracting(ProductResult.GetProductDetail.Option::getProductOptionId)
+            assertThat(maybeDetail.get().productId()).isEqualTo(product.getId());
+            assertThat(maybeDetail.get().productName()).isEqualTo(product.getName());
+            assertThat(maybeDetail.get().basePrice()).isEqualTo(product.getBasePrice());
+            assertThat(maybeDetail.get().likeCount()).isEqualTo(product.getLikeCount());
+            assertThat(maybeDetail.get().brandId()).isEqualTo(product.getBrandId());
+            assertThat(maybeDetail.get().options()).hasSize(2);
+            assertThat(maybeDetail.get().options())
+                    .extracting(ProductResult.GetProductDetail.Option::productOptionId)
                     .containsExactlyInAnyOrder(option1.getId(), option2.getId());
-            assertThat(maybeDetail.get().getOptions())
-                    .extracting(ProductResult.GetProductDetail.Option::getProductOptionName)
+            assertThat(maybeDetail.get().options())
+                    .extracting(ProductResult.GetProductDetail.Option::productOptionName)
                     .containsExactlyInAnyOrder("Small", "Large");
-            assertThat(maybeDetail.get().getOptions())
-                    .extracting(ProductResult.GetProductDetail.Option::getStockQuantity)
+            assertThat(maybeDetail.get().options())
+                    .extracting(ProductResult.GetProductDetail.Option::stockQuantity)
                     .containsExactlyInAnyOrder(100, 50);
         }
 

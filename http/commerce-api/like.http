@@ -1,0 +1,9 @@
+### 상품 좋아요
+POST {{commerce-api}}/api/v1/like/products/1
+X-USER-ID: user000001
+Content-Type: application/json
+
+### 상품 좋아요 취소
+DELETE {{commerce-api}}/api/v1/like/products/1
+X-USER-ID: user000001
+Content-Type: application/json

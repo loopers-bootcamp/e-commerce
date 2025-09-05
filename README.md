@@ -29,8 +29,11 @@ Root
 │   └── 📦 commerce-api
 ├── modules ( reusable-configurations )
 │   ├── 📦 jpa
-│   └── 📦 redis
+│   ├── 📦 redis
+│   ├── 📦 feign
+│   └── 📦 resilience4j
 └── supports ( add-ons )
+    ├── 📦 jackson
     ├── 📦 monitoring
     └── 📦 logging
 ```

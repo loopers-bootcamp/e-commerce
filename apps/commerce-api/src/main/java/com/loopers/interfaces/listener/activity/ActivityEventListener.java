@@ -3,12 +3,9 @@ package com.loopers.interfaces.listener.activity;
 import com.loopers.domain.activity.ActivityCommand;
 import com.loopers.domain.activity.ActivityService;
 import com.loopers.domain.activity.event.ActivityEvent;
+import com.loopers.domain.activity.event.ActivityEventPublisher;
 import com.loopers.domain.product.ProductService;
-import com.loopers.domain.user.UserResult;
-import com.loopers.domain.user.UserService;
 import com.loopers.support.annotation.Inboxing;
-import com.loopers.support.error.BusinessException;
-import com.loopers.support.error.CommonErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -21,8 +18,8 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class ActivityEventListener {
 
     private final ProductService productService;
-    private final UserService userService;
     private final ActivityService activityService;
+    private final ActivityEventPublisher activityEventPublisher;
 
     /**
      * {@link Async}: 기술적 이슈 + 좋아요와 함께 원자적 연산의 대상이라고 생각하지 않음.
@@ -34,6 +31,7 @@ public class ActivityEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void likeProduct(ActivityEvent.Like event) {
         productService.like(event.productId());
+        activityEventPublisher.publishEvent(event);
     }
 
     /**
@@ -46,6 +44,7 @@ public class ActivityEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void dislikeProduct(ActivityEvent.Dislike event) {
         productService.dislike(event.productId());
+        activityEventPublisher.publishEvent(event);
     }
 
     /**
@@ -57,14 +56,13 @@ public class ActivityEventListener {
     @Inboxing(idempotent = true)
     @EventListener
     public void viewProduct(ActivityEvent.View event) {
-        UserResult.GetUser user = userService.getUser(event.userName())
-                .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
-
         ActivityCommand.View activityCommand = ActivityCommand.View.builder()
-                .userId(user.getUserId())
+                .userId(event.userId())
                 .productId(event.productId())
                 .build();
         activityService.view(activityCommand);
+
+        activityEventPublisher.publishEvent(event);
     }
 
 }

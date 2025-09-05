@@ -2,6 +2,7 @@ dependencies {
     // add-ons
     implementation(project(":modules:jpa"))
     implementation(project(":modules:redis"))
+    implementation(project(":modules:kafka"))
     implementation(project(":modules:feign"))
     implementation(project(":modules:resilience4j"))
     implementation(project(":supports:jackson"))
