@@ -1,7 +1,7 @@
 package com.loopers.domain.product;
 
-import com.loopers.support.AddedItem;
 import com.loopers.domain.BaseEntity;
+import com.loopers.support.AddedItem;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
 import jakarta.persistence.*;

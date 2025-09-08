@@ -1,5 +1,6 @@
 package com.loopers.domain.order.event;
 
+import com.loopers.domain.common.DomainEvent;
 import com.loopers.domain.order.Order;
 import com.loopers.domain.saga.event.SagaEvent;
 
@@ -10,13 +11,15 @@ public record OrderEvent() {
     public record Complete(
             String eventKey,
             String eventName,
-            UUID orderId
-    ) implements SagaEvent {
+            UUID orderId,
+            Long userId
+    ) implements SagaEvent, DomainEvent {
         public static Complete from(Order order) {
             return new Complete(
-                    "order:%s".formatted(order.getId()),
+                    order.getId().toString(),
                     "order.complete",
-                    order.getId()
+                    order.getId(),
+                    order.getUserId()
             );
         }
     }

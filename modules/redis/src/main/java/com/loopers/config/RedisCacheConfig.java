@@ -24,14 +24,16 @@ public class RedisCacheConfig {
 
     @Bean
     public RedisCacheConfiguration redisCacheConfiguration(ObjectMapper objectMapper) {
-        ObjectMapper newMapper = new ObjectMapper(objectMapper.getFactory());
-        newMapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.WRAPPER_ARRAY
+        ObjectMapper newMapper = objectMapper.copy();
+        RecordSupportingTypeResolver typeResolver = new RecordSupportingTypeResolver(
+                ObjectMapper.DefaultTyping.NON_FINAL, LaissezFaireSubTypeValidator.instance);
+        newMapper.setDefaultTyping(typeResolver
+                .init(JsonTypeInfo.Id.CLASS, null)
+                .inclusion(JsonTypeInfo.As.PROPERTY)
         );
 
         return RedisCacheConfiguration.defaultCacheConfig()
+                .computePrefixWith(cacheName ->  cacheName + ":")
                 .entryTtl((key, value) -> jitter(Duration.ofMinutes(3)))
                 .disableCachingNullValues()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer.UTF_8))
@@ -50,7 +52,7 @@ public class RedisCacheConfig {
                 .build();
     }
 
-    private static Duration jitter(Duration ttl) {
+    public static Duration jitter(Duration ttl) {
         long ms = ttl.toMillis();
         long delta = ThreadLocalRandom.current().nextLong(-ms / 10, ms / 10 + 1); // ±10%
         return Duration.ofMillis(ms + delta);

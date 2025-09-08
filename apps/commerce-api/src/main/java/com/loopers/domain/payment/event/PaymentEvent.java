@@ -1,5 +1,6 @@
 package com.loopers.domain.payment.event;
 
+import com.loopers.domain.common.DomainEvent;
 import com.loopers.domain.payment.Payment;
 import com.loopers.domain.payment.attribute.CardNumber;
 import com.loopers.domain.payment.attribute.CardType;
@@ -19,18 +20,20 @@ public record PaymentEvent() {
             PaymentMethod paymentMethod,
             @Nullable CardType cardType,
             @Nullable CardNumber cardNumber,
-            Long amount
-    ) implements SagaEvent {
+            Long amount,
+            Long userId
+    ) implements SagaEvent, DomainEvent {
         public static Ready from(Payment payment) {
             return new Ready(
-                    "payment:%d".formatted(payment.getId()),
+                    payment.getId().toString(),
                     "payment.ready",
                     payment.getId(),
                     payment.getOrderId(),
                     payment.getMethod(),
                     payment.getCardType(),
                     payment.getCardNumber(),
-                    payment.getAmount()
+                    payment.getAmount(),
+                    payment.getUserId()
             );
         }
     }
@@ -41,14 +44,16 @@ public record PaymentEvent() {
             String eventKey,
             String eventName,
             Long paymentId,
-            UUID orderId
-    ) implements SagaEvent {
+            UUID orderId,
+            Long userId
+    ) implements SagaEvent, DomainEvent {
         public static Paid from(Payment payment) {
             return new Paid(
-                    "payment:%d".formatted(payment.getId()),
+                    payment.getId().toString(),
                     "payment.paid",
                     payment.getId(),
-                    payment.getOrderId()
+                    payment.getOrderId(),
+                    payment.getUserId()
             );
         }
     }
@@ -59,14 +64,16 @@ public record PaymentEvent() {
             String eventKey,
             String eventName,
             Long paymentId,
-            UUID orderId
-    ) implements SagaEvent {
+            UUID orderId,
+            Long userId
+    ) implements SagaEvent, DomainEvent {
         public static Failed from(Payment payment) {
             return new Failed(
-                    "payment:%d".formatted(payment.getId()),
+                    payment.getId().toString(),
                     "payment.failed",
                     payment.getId(),
-                    payment.getOrderId()
+                    payment.getOrderId(),
+                    payment.getUserId()
             );
         }
     }

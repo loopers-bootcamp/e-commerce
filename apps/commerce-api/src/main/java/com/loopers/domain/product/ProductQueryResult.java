@@ -25,6 +25,11 @@ public final class ProductQueryResult {
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ProductDetail {
+        /**
+         * For preventing cache penetration.
+         */
+        public static final ProductDetail EMPTY = ProductDetail.builder().build();
+
         private final Long productId;
         private final String productName;
         private final Integer basePrice;

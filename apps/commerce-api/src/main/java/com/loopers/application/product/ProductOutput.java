@@ -32,11 +32,11 @@ public final class ProductOutput {
                 BrandResult.GetBrand brand
         ) {
             return GetProductDetail.builder()
-                    .productId(product.getProductId())
-                    .productName(product.getProductName())
-                    .basePrice(product.getBasePrice())
-                    .likeCount(product.getLikeCount())
-                    .options(product.getOptions().stream().map(Option::from).toList())
+                    .productId(product.productId())
+                    .productName(product.productName())
+                    .basePrice(product.basePrice())
+                    .likeCount(product.likeCount())
+                    .options(product.options().stream().map(Option::from).toList())
                     .brandId(brand == null ? null : brand.getBrandId())
                     .brandName(brand == null ? null : brand.getBrandName())
                     .brandDescription(brand == null ? null : brand.getBrandDescription())
@@ -55,11 +55,11 @@ public final class ProductOutput {
 
             public static Option from(ProductResult.GetProductDetail.Option option) {
                 return Option.builder()
-                        .productOptionId(option.getProductOptionId())
-                        .productOptionName(option.getProductOptionName())
-                        .additionalPrice(option.getAdditionalPrice())
-                        .productId(option.getProductId())
-                        .stockQuantity(option.getStockQuantity())
+                        .productOptionId(option.productOptionId())
+                        .productOptionName(option.productOptionName())
+                        .additionalPrice(option.additionalPrice())
+                        .productId(option.productId())
+                        .stockQuantity(option.stockQuantity())
                         .build();
             }
         }
