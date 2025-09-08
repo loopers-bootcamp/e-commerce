@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.ReturnType;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Repository;
@@ -32,7 +31,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
     @SuppressWarnings("unchecked")
     @Override
     public void replaceLikeCountsIfAbsent(List<Map.Entry<Long, Long>> entries) {
-        objectRedisTemplate.executePipelined((RedisCallback<?>) (RedisConnection connection) -> {
+        objectRedisTemplate.executePipelined((RedisConnection connection) -> {
             RedisSerializer<String> keySerializer = (RedisSerializer<String>) objectRedisTemplate.getKeySerializer();
             RedisSerializer<String> hashKeySerializer = (RedisSerializer<String>) objectRedisTemplate.getHashKeySerializer();
             RedisSerializer<Object> hashValueSerializer = (RedisSerializer<Object>) objectRedisTemplate.getHashValueSerializer();
@@ -60,7 +59,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
     @SuppressWarnings("unchecked")
     @Override
     public void evictProductDetails(List<Long> productIds) {
-        objectRedisTemplate.executePipelined((RedisCallback<?>) (RedisConnection connection) -> {
+        objectRedisTemplate.executePipelined((RedisConnection connection) -> {
             RedisSerializer<String> keySerializer = (RedisSerializer<String>) objectRedisTemplate.getKeySerializer();
 
             // Cache evict
