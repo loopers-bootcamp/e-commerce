@@ -1,15 +1,19 @@
 package com.loopers.infrastructure.product;
 
+import com.loopers.config.ranking.WeightedRankingProperties;
 import com.loopers.domain.product.ProductCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Repository;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
+    // TODO: https://github.com/spring-projects/spring-data-redis/blob/main/src/main/antora/modules/ROOT/pages/redis/scripting.adoc
     private static final String HSET_IF_KEY_EXISTS = """
             local k = KEYS[1]
             if redis.call('EXISTS', k) == 1 then
@@ -27,6 +32,8 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             """;
 
     private final RedisTemplate<String, Object> objectRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final WeightedRankingProperties properties;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -71,6 +78,22 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
             return null;
         });
+    }
+
+    @Override
+    public void accumulateProductRanking(
+            LocalDate date,
+            Long productId,
+            Long likeCount,
+            Long saleQuantity,
+            Long viewCount
+    ) {
+        String day = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String value = productId.toString();
+
+        stringRedisTemplate.opsForZSet().incrementScore("product.ranking.all.likes:" + day, value, likeCount);
+        stringRedisTemplate.opsForZSet().incrementScore("product.ranking.all.sales:" + day, value, saleQuantity);
+        stringRedisTemplate.opsForZSet().incrementScore("product.ranking.all.views:" + day, value, viewCount);
     }
 
 }

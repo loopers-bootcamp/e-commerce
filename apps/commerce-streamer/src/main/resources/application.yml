@@ -34,6 +34,13 @@ loopers:
       "ProductEvent.StockChanged": product.stock.changed.v1
       "ProductEvent.Sale": product.sale.v1
 
+# 상품 랭킹 가중치
+ranking:
+  weight:
+    view: 0.1
+    like: 0.2
+    sale: 0.6
+
 ---
 
 spring.config.activate.on-profile: local, test

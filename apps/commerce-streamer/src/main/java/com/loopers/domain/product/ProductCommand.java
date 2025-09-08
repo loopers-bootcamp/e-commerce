@@ -1,10 +1,11 @@
 package com.loopers.domain.product;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public record ProductCommand() {
 
-    public record ReplaceLikeCountCaches(
+    public record ReplaceLikeCounts(
             List<Item> items
     ) {
         public record Item(
@@ -16,7 +17,7 @@ public record ProductCommand() {
 
     // -------------------------------------------------------------------------------------------------
 
-    public record EvictProductDetailCaches(
+    public record RemoveDetails(
             List<Item> items
     ) {
         public record Item(
@@ -24,6 +25,17 @@ public record ProductCommand() {
                 Integer stockQuantity
         ) {
         }
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    public record AggregateRanking(
+            LocalDate date,
+            Long productId,
+            Long likeCount,
+            Long saleQuantity,
+            Long viewCount
+    ) {
     }
 
 }

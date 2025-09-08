@@ -33,14 +33,14 @@ public class ProductKafkaConsumer {
     ) {
         log.info("Received {} messages on '{}'", messages.size(), topic);
 
-        List<ProductCommand.ReplaceLikeCountCaches.Item> items = messages.stream()
-                .map(message -> new ProductCommand.ReplaceLikeCountCaches.Item(
+        List<ProductCommand.ReplaceLikeCounts.Item> items = messages.stream()
+                .map(message -> new ProductCommand.ReplaceLikeCounts.Item(
                         message.payload().productId(),
                         message.payload().likeCount()
                 ))
                 .toList();
-        ProductCommand.ReplaceLikeCountCaches command = new ProductCommand.ReplaceLikeCountCaches(items);
-        productService.replaceLikeCountCaches(command);
+        ProductCommand.ReplaceLikeCounts command = new ProductCommand.ReplaceLikeCounts(items);
+        productService.replaceLikeCounts(command);
 
         acknowledgment.acknowledge();
     }
@@ -56,14 +56,14 @@ public class ProductKafkaConsumer {
     ) {
         log.info("Received {} messages on '{}'", messages.size(), topic);
 
-        List<ProductCommand.EvictProductDetailCaches.Item> items = messages.stream()
-                .map(message -> new ProductCommand.EvictProductDetailCaches.Item(
+        List<ProductCommand.RemoveDetails.Item> items = messages.stream()
+                .map(message -> new ProductCommand.RemoveDetails.Item(
                         message.payload().productId(),
                         message.payload().quantity()
                 ))
                 .toList();
-        ProductCommand.EvictProductDetailCaches command = new ProductCommand.EvictProductDetailCaches(items);
-        productService.evictProductDetailCaches(command);
+        ProductCommand.RemoveDetails command = new ProductCommand.RemoveDetails(items);
+        productService.removeDetails(command);
 
         acknowledgment.acknowledge();
     }

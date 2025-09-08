@@ -13,7 +13,7 @@ public class ProductService {
 
     private final ProductCacheRepository productCacheRepository;
 
-    public void replaceLikeCountCaches(ProductCommand.ReplaceLikeCountCaches command) {
+    public void replaceLikeCounts(ProductCommand.ReplaceLikeCounts command) {
         if (CollectionUtils.isEmpty(command.items())) {
             return;
         }
@@ -25,7 +25,7 @@ public class ProductService {
         productCacheRepository.replaceLikeCountsIfAbsent(entries);
     }
 
-    public void evictProductDetailCaches(ProductCommand.EvictProductDetailCaches command) {
+    public void removeDetails(ProductCommand.RemoveDetails command) {
         if (CollectionUtils.isEmpty(command.items())) {
             return;
         }
@@ -34,9 +34,19 @@ public class ProductService {
                 .stream()
                 // 재고가 소진된 상품만 캐시를 삭제한다.
                 .filter(item -> item.stockQuantity() == 0)
-                .map(ProductCommand.EvictProductDetailCaches.Item::productId)
+                .map(ProductCommand.RemoveDetails.Item::productId)
                 .toList();
         productCacheRepository.evictProductDetails(productIds);
+    }
+
+    public void aggregateRanking(ProductCommand.AggregateRanking command) {
+        productCacheRepository.accumulateProductRanking(
+                command.date(),
+                command.productId(),
+                command.likeCount(),
+                command.saleQuantity(),
+                command.viewCount()
+        );
     }
 
 }
