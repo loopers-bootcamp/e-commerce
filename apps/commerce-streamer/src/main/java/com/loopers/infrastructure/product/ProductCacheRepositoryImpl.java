@@ -91,9 +91,19 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
         String day = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String value = productId.toString();
 
-        stringRedisTemplate.opsForZSet().incrementScore("product.ranking.all.likes:" + day, value, likeCount);
-        stringRedisTemplate.opsForZSet().incrementScore("product.ranking.all.sales:" + day, value, saleQuantity);
-        stringRedisTemplate.opsForZSet().incrementScore("product.ranking.all.views:" + day, value, viewCount);
+        Map.of(
+                        "product.ranking.top100.likes:" + day, likeCount,
+                        "product.ranking.top100.sales:" + day, saleQuantity,
+                        "product.ranking.top100.views:" + day, viewCount
+                )
+                .forEach((k, v) -> {
+                    // No TTL, but remove tails
+                    stringRedisTemplate.opsForZSet().incrementScore(k, value, v);
+                    stringRedisTemplate.opsForZSet().removeRange(k, 0, -101);
+                });
+
+//        Weights weights = Weights.of(0.2, 0.7, 0.1);
+//        stringRedisTemplate.opsForZSet().unionWithScores("", List.of(), Aggregate.SUM, weights);
     }
 
 }
