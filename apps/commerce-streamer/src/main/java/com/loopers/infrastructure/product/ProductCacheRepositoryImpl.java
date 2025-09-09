@@ -1,19 +1,15 @@
 package com.loopers.infrastructure.product;
 
-import com.loopers.config.ranking.WeightedRankingProperties;
 import com.loopers.domain.product.ProductCacheRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Repository;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -32,8 +28,6 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             """;
 
     private final RedisTemplate<String, Object> objectRedisTemplate;
-    private final StringRedisTemplate stringRedisTemplate;
-    private final WeightedRankingProperties properties;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -78,32 +72,6 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
             return null;
         });
-    }
-
-    @Override
-    public void accumulateProductRanking(
-            LocalDate date,
-            Long productId,
-            Long likeCount,
-            Long saleQuantity,
-            Long viewCount
-    ) {
-        String day = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String value = productId.toString();
-
-        Map.of(
-                        "product.ranking.top100.likes:" + day, likeCount,
-                        "product.ranking.top100.sales:" + day, saleQuantity,
-                        "product.ranking.top100.views:" + day, viewCount
-                )
-                .forEach((k, v) -> {
-                    // No TTL, but remove tails
-                    stringRedisTemplate.opsForZSet().incrementScore(k, value, v);
-                    stringRedisTemplate.opsForZSet().removeRange(k, 0, -101);
-                });
-
-//        Weights weights = Weights.of(0.2, 0.7, 0.1);
-//        stringRedisTemplate.opsForZSet().unionWithScores("", List.of(), Aggregate.SUM, weights);
     }
 
 }

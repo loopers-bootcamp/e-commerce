@@ -39,14 +39,4 @@ public class ProductService {
         productCacheRepository.evictProductDetails(productIds);
     }
 
-    public void aggregateRanking(ProductCommand.AggregateRanking command) {
-        productCacheRepository.accumulateProductRanking(
-                command.date(),
-                command.productId(),
-                command.likeCount(),
-                command.saleQuantity(),
-                command.viewCount()
-        );
-    }
-
 }

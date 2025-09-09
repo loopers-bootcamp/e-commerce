@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MetricService {
 
     private final MetricRepository metricRepository;
+    private final MetricCacheRepository metricCacheRepository;
 
     @Transactional
     public void aggregateProduct(MetricCommand.AggregateProduct command) {
@@ -21,6 +22,7 @@ public class MetricService {
                 .build();
 
         metricRepository.merge(metric);
+        metricCacheRepository.accumulate(metric);
     }
 
 }

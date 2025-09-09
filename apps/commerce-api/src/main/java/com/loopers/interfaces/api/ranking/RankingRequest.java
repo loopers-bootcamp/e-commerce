@@ -1,0 +1,28 @@
+package com.loopers.interfaces.api.ranking;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.*;
+
+import java.time.LocalDate;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class RankingRequest {
+
+    @Getter
+    @Builder
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class SearchRankings {
+        @NotNull
+        private final LocalDate date;
+
+        @NotNull
+        @PositiveOrZero
+        private final Integer page;
+        @NotNull
+        @Positive
+        private final Integer size;
+    }
+
+}

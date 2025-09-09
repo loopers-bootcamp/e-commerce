@@ -4,13 +4,10 @@ import com.loopers.domain.audit.AuditCommand;
 import com.loopers.domain.audit.AuditService;
 import com.loopers.domain.metric.MetricCommand;
 import com.loopers.domain.metric.MetricService;
-import com.loopers.domain.product.ProductCommand;
 import com.loopers.domain.product.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +26,6 @@ public class MetricFacade {
             }
 
             metricService.aggregateProduct(new MetricCommand.AggregateProduct(
-                    item.date(),
-                    item.productId(),
-                    item.likeCount(),
-                    item.saleQuantity(),
-                    item.viewCount()
-            ));
-
-            productService.aggregateRanking(new ProductCommand.AggregateRanking(
                     item.date(),
                     item.productId(),
                     item.likeCount(),

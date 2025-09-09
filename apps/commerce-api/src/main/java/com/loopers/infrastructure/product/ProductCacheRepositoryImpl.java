@@ -125,7 +125,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
     @Override
     public void saveProductDetail(Long productId, ProductQueryResult.ProductDetail productDetail) {
         String key = "product.detail:" + productId;
-        Duration ttl = RedisCacheConfig.jitter(Duration.ofMinutes(3));
+        Duration ttl = RedisCacheConfig.jitter(Duration.ofMinutes(30));
 
         // 캐시 관통을 방지한다.
         if (productDetail == null) {
