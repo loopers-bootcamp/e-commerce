@@ -25,12 +25,12 @@ public final class ProductResult {
                     .page(page.getPageable().getPageNumber())
                     .size(page.getPageable().getPageSize())
                     .items(page.map(content -> Item.builder()
-                                            .productId(content.getProductId())
-                                            .productName(content.getProductName())
-                                            .basePrice(content.getBasePrice())
-                                            .likeCount(content.getLikeCount())
-                                            .brandId(content.getBrandId())
-                                            .brandName(content.getBrandName())
+                                            .productId(content.productId())
+                                            .productName(content.productName())
+                                            .basePrice(content.basePrice())
+                                            .likeCount(content.likeCount())
+                                            .brandId(content.brandId())
+                                            .brandName(content.brandName())
                                             .build()
                                     )
                                     .toList()
@@ -59,16 +59,18 @@ public final class ProductResult {
             Integer basePrice,
             Long likeCount,
             Long brandId,
+            String  brandName,
             List<Option> options
     ) {
         public static GetProductDetail from(ProductQueryResult.ProductDetail queryResult) {
             return new GetProductDetail(
-                    queryResult.getProductId(),
-                    queryResult.getProductName(),
-                    queryResult.getBasePrice(),
-                    queryResult.getLikeCount(),
-                    queryResult.getBrandId(),
-                    queryResult.getOptions().stream().map(Option::from).toList()
+                    queryResult.productId(),
+                    queryResult.productName(),
+                    queryResult.basePrice(),
+                    queryResult.likeCount(),
+                    queryResult.brandId(),
+                    queryResult.brandName(),
+                    queryResult.options().stream().map(Option::from).toList()
             );
         }
 
@@ -81,11 +83,11 @@ public final class ProductResult {
         ) {
             public static Option from(ProductQueryResult.ProductDetail.Option item) {
                 return new Option(
-                        item.getProductOptionId(),
-                        item.getProductOptionName(),
-                        item.getAdditionalPrice(),
-                        item.getProductId(),
-                        item.getStockQuantity()
+                        item.productOptionId(),
+                        item.productOptionName(),
+                        item.additionalPrice(),
+                        item.productId(),
+                        item.stockQuantity()
                 );
             }
         }
@@ -101,7 +103,7 @@ public final class ProductResult {
 
         public static GetProductOptions from(ProductQueryResult.ProductOptions queryResult) {
             return GetProductOptions.builder()
-                    .items(queryResult.getItems().stream().map(Item::from).toList())
+                    .items(queryResult.items().stream().map(Item::from).toList())
                     .build();
         }
 
@@ -116,10 +118,10 @@ public final class ProductResult {
 
             public static Item from(ProductQueryResult.ProductOptions.Item item) {
                 return Item.builder()
-                        .productOptionId(item.getProductOptionId())
-                        .salePrice(item.getSalePrice())
-                        .stockQuantity(item.getStockQuantity())
-                        .productId(item.getProductId())
+                        .productOptionId(item.productOptionId())
+                        .salePrice(item.salePrice())
+                        .stockQuantity(item.stockQuantity())
+                        .productId(item.productId())
                         .build();
             }
         }

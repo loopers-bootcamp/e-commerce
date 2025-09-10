@@ -9,8 +9,8 @@ import jakarta.validation.Valid;
 public interface RankingV1ApiSpec {
 
     @Operation(
-            summary = "상품 목록 조회",
-            description = "상품 목록을 조회합니다."
+            summary = "상품 랭킹 조회",
+            description = "상품 랭킹을 조회합니다."
     )
     ApiResponse<RankingResponse.SearchRankings> searchRankings(
             @Valid

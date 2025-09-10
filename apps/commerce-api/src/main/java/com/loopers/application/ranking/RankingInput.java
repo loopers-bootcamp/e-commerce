@@ -1,10 +1,10 @@
-package com.loopers.domain.ranking;
+package com.loopers.application.ranking;
 
 import java.time.LocalDate;
 
-public record RankingCommand() {
+public record RankingInput() {
 
-    public record SearchRanks(
+    public record SearchRankings(
             LocalDate date,
             Integer page,
             Integer size

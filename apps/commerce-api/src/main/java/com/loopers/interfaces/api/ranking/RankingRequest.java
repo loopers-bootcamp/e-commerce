@@ -1,6 +1,7 @@
 package com.loopers.interfaces.api.ranking;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
@@ -13,7 +14,7 @@ public final class RankingRequest {
     @Builder
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class SearchRankings {
-        @NotNull
+        @PastOrPresent
         private final LocalDate date;
 
         @NotNull

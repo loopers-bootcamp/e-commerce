@@ -1,6 +1,6 @@
 package com.loopers.interfaces.api.ranking;
 
-import com.loopers.domain.ranking.RankingResult;
+import com.loopers.application.ranking.RankingOutput;
 import lombok.*;
 
 import java.util.List;
@@ -18,13 +18,13 @@ public final class RankingResponse {
         private final Integer size;
         private final List<Item> items;
 
-        public static SearchRankings from(RankingResult.SearchRankings result) {
+        public static SearchRankings from(RankingOutput.SearchRankings output) {
             return builder()
-                    .totalPages(result.totalPages())
-                    .totalItems(result.totalItems())
-                    .page(result.page())
-                    .size(result.size())
-                    .items(result.items()
+                    .totalPages(output.totalPages())
+                    .totalItems(output.totalItems())
+                    .page(output.page())
+                    .size(output.size())
+                    .items(output.items()
                             .stream()
                             .map(content -> Item.builder()
                                     .productId(content.productId())

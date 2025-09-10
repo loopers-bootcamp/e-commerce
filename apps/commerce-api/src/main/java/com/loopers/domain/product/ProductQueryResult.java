@@ -1,70 +1,56 @@
 package com.loopers.domain.product;
 
-import lombok.*;
-
 import java.util.List;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ProductQueryResult {
+public record ProductQueryResult() {
 
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class Products {
-        private final Long productId;
-        private final String productName;
-        private final Integer basePrice;
-        private final Long likeCount;
-        private final Long brandId;
-        private final String brandName;
+    public record Products(
+            Long productId,
+            String productName,
+            Integer basePrice,
+            Long likeCount,
+            Long brandId,
+            String brandName
+    ) {
     }
 
     // -------------------------------------------------------------------------------------------------
 
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class ProductDetail {
+    public record ProductDetail(
+            Long productId,
+            String productName,
+            Integer basePrice,
+            Long likeCount,
+            Long brandId,
+            String brandName,
+            List<Option> options
+    ) {
         /**
          * For preventing cache penetration.
          */
-        public static final ProductDetail EMPTY = ProductDetail.builder().build();
+        public static final ProductDetail EMPTY = new ProductDetail(null, null, null, null, null, null, null);
 
-        private final Long productId;
-        private final String productName;
-        private final Integer basePrice;
-        private final Long likeCount;
-        private final Long brandId;
-        private final List<Option> options;
-
-        @Getter
-        @Builder
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        public static class Option {
-            private final Long productOptionId;
-            private final String productOptionName;
-            private final Integer additionalPrice;
-            private final Long productId;
-            private final Integer stockQuantity;
+        public record Option(
+                Long productOptionId,
+                String productOptionName,
+                Integer additionalPrice,
+                Long productId,
+                Integer stockQuantity
+        ) {
         }
     }
 
     // -------------------------------------------------------------------------------------------------
 
-    @Getter
-    @Builder
-    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class ProductOptions {
-        private final List<Item> items;
-
-        @Getter
-        @Builder
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        public static class Item {
-            private final Long productOptionId;
-            private final Integer salePrice;
-            private final Integer stockQuantity;
-            private final Long productId;
+    public record ProductOptions(
+            List<Item> items
+    ) {
+        public record Item(
+                Long productOptionId,
+                Integer salePrice,
+                Integer stockQuantity,
+                Long productId
+        ) {
         }
     }
 

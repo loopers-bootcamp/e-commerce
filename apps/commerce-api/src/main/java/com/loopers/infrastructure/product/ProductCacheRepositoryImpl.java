@@ -1,9 +1,8 @@
 package com.loopers.infrastructure.product;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.loopers.config.RedisCacheConfig;
+import com.loopers.config.jackson.WrappedJsonMapper;
 import com.loopers.domain.product.ProductCacheRepository;
 import com.loopers.domain.product.ProductQueryCommand;
 import com.loopers.domain.product.ProductQueryResult;
@@ -12,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
@@ -28,9 +26,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
-    private final RedisTemplate<String, Object> objectRedisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
-    private final ObjectMapper objectMapper;
+    private final WrappedJsonMapper wrappedJsonMapper;
 
     @Override
     public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command) {
@@ -60,12 +57,10 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return Page.empty(pageRequest);
         }
 
-        try {
-            return objectMapper.readValue(json, new TypeReference<PageImpl<ProductQueryResult.Products>>() {
-            });
-        } catch (JsonProcessingException ignored) {
-            return Page.empty(pageRequest);
-        }
+        PageImpl<ProductQueryResult.Products> page = wrappedJsonMapper.readValue(json, new TypeReference<>() {
+        });
+
+        return page == null ? Page.empty(pageRequest) : page;
     }
 
     @Override
@@ -80,13 +75,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return;
         }
 
-        String json;
-        try {
-            json = objectMapper.writeValueAsString(page);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
+        String json = wrappedJsonMapper.writeValueAsString(page);
         String key = "product.page:" + Objects.hash(
                 command.getKeyword(),
                 command.getBrandId(),
@@ -104,9 +93,9 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
     }
 
     @Override
-    public Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId) {
+    public Optional<ProductQueryResult.ProductDetail> findDetail(Long productId) {
         String key = "product.detail:" + productId;
-        Map<String, Object> cache = objectRedisTemplate.<String, Object>opsForHash().entries(key);
+        Map<String, String> cache = stringRedisTemplate.<String, String>opsForHash().entries(key);
 
         if (CollectionUtils.isEmpty(cache)) {
             return Optional.empty();
@@ -117,27 +106,26 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return Optional.of(ProductQueryResult.ProductDetail.EMPTY);
         }
 
-        ProductQueryResult.ProductDetail productDetail = objectMapper.convertValue(cache, new TypeReference<>() {
+        ProductQueryResult.ProductDetail detail = wrappedJsonMapper.readMap(cache, new TypeReference<>() {
         });
-        return Optional.of(productDetail);
+        return Optional.ofNullable(detail);
     }
 
     @Override
-    public void saveProductDetail(Long productId, ProductQueryResult.ProductDetail productDetail) {
+    public void saveDetail(Long productId, ProductQueryResult.ProductDetail detail) {
         String key = "product.detail:" + productId;
         Duration ttl = RedisCacheConfig.jitter(Duration.ofMinutes(30));
 
         // 캐시 관통을 방지한다.
-        if (productDetail == null) {
-            objectRedisTemplate.opsForHash().putAll(key, Map.of("__null__", "null"));
-            objectRedisTemplate.expire(key, ttl);
+        if (detail == null) {
+            stringRedisTemplate.opsForHash().putAll(key, Map.of("__null__", "null"));
+            stringRedisTemplate.expire(key, ttl);
             return;
         }
 
-        Map<String, Object> cache = objectMapper.convertValue(productDetail, new TypeReference<>() {
-        });
-        objectRedisTemplate.opsForHash().putAll(key, cache);
-        objectRedisTemplate.expire(key, ttl);
+        Map<String, String> cache = wrappedJsonMapper.writeValueAsMap(detail);
+        stringRedisTemplate.opsForHash().putAll(key, cache);
+        stringRedisTemplate.expire(key, ttl);
     }
 
 }

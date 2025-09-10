@@ -61,10 +61,10 @@ public class ProductService {
         }
 
         return CacheAside
-                .lookupCache(() -> productCacheRepository.findProductDetailById(productId))
+                .lookupCache(() -> productCacheRepository.findDetail(productId))
                 .isNullObject(detail -> Objects.equals(detail, ProductQueryResult.ProductDetail.EMPTY))
-                .lookupFallback(() -> productRepository.findProductDetailById(productId))
-                .saveCache(detail -> productCacheRepository.saveProductDetail(productId, detail))
+                .lookupFallback(() -> productRepository.findDetail(productId))
+                .saveCache(detail -> productCacheRepository.saveDetail(productId, detail))
                 .getAsOptional()
                 .map(ProductResult.GetProductDetail::from);
     }
@@ -75,7 +75,7 @@ public class ProductService {
             return Optional.empty();
         }
 
-        return productRepository.findProductOptionsByIds(productOptionIds)
+        return productRepository.findOptions(productOptionIds)
                 .map(ProductResult.GetProductOptions::from);
     }
 
