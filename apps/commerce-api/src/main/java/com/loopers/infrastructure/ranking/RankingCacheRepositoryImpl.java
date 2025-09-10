@@ -1,32 +1,33 @@
 package com.loopers.infrastructure.ranking;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.loopers.domain.ranking.RankingCacheRepository;
+import com.loopers.domain.ranking.RankingQueryCommand;
 import com.loopers.domain.ranking.RankingQueryResult;
 import com.loopers.support.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.connection.zset.Aggregate;
 import org.springframework.data.redis.connection.zset.Weights;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import static java.util.Comparator.comparing;
 
 @Repository
 @RequiredArgsConstructor
 public class RankingCacheRepositoryImpl implements RankingCacheRepository {
 
     private final StringRedisTemplate stringRedisTemplate;
+    private final ObjectMapper objectMapper;
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public List<RankingQueryResult.FindRanks> findRanks(LocalDate date) {
         String day = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -44,7 +45,8 @@ public class RankingCacheRepositoryImpl implements RankingCacheRepository {
 
         List<ZSetOperations.TypedTuple<String>> tuples = tupleSet.stream()
                 .limit(1000)
-                .sorted((Comparator<ZSetOperations.TypedTuple>) comparing(ZSetOperations.TypedTuple::getScore)
+                .sorted(Comparator.<ZSetOperations.TypedTuple<String>>
+                                comparingDouble(ZSetOperations.TypedTuple::getScore)
                         .thenComparing(ZSetOperations.TypedTuple::getValue)
                         .reversed()
                 )
@@ -60,31 +62,64 @@ public class RankingCacheRepositoryImpl implements RankingCacheRepository {
     }
 
     @Override
-    public Page<?> searchRankings(LocalDate date, Integer page, Integer size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+    public Page<RankingQueryResult.SearchRankings> searchRankings(LocalDate date, Pageable pageable) {
+        // page 1번을 offset 0으로 변환한다.
+        Pageable pageRequest = pageable.withPage(pageable.getPageNumber() - 1);
 
         String day = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String likes = "metric.product.like:" + day;
-        String sales = "metric.product.sale:" + day;
-        String views = "metric.product.view:" + day;
+        String key = "product.ranking:" + day;
 
-        String destKey = "temp:" + UUID.randomUUID().toString().replace("-", "");
+        long start = pageRequest.getOffset();
+        long end = pageRequest.getOffset() + pageRequest.getPageSize();
+        List<String> jsonList = stringRedisTemplate.opsForList().range(key, start, end);
 
-        // Weight: 0.0 ~ 1.0
-        Weights weights = Weights.of(0.01, 0.1, 0.001);
+        if (CollectionUtils.isEmpty(jsonList)) {
+            return Page.empty(pageRequest);
+        }
 
-        stringRedisTemplate.opsForZSet()
-                .unionAndStore(likes, List.of(sales, views), destKey, Aggregate.SUM, weights);
-        stringRedisTemplate.expire(destKey, Duration.ofSeconds(10));
-
-        stringRedisTemplate.opsForZSet()
-                .reverseRange(destKey, pageRequest.getOffset(), pageRequest.getPageSize())
-                .stream()
-                .map(StringUtils::invert9sComplement)
-                .map(Long::parseLong)
+        List<RankingQueryResult.SearchRankings> rankings = jsonList.stream()
+                .map(json -> parseJson(json, RankingQueryResult.SearchRankings.class))
+                .filter(Objects::nonNull)
                 .toList();
 
-        return null;
+        return PageableExecutionUtils.getPage(rankings, pageRequest, () -> stringRedisTemplate.opsForList().size(key));
+    }
+
+    @Override
+    public void saveRankings(LocalDate date, List<RankingQueryCommand.SaveRankings> rankings) {
+        if (CollectionUtils.isEmpty(rankings)) {
+            return;
+        }
+
+        String day = date.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String key = "product.ranking:" + day;
+
+        List<String> jsonList = rankings.stream()
+                .map(this::toJson)
+                .filter(Objects::nonNull)
+                .toList();
+
+        // Idempotent
+        stringRedisTemplate.delete(key);
+        stringRedisTemplate.opsForList().rightPushAll(key, jsonList);
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    private <T> T parseJson(String json, Class<T> type) {
+        try {
+            return objectMapper.readValue(json, type);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
+    private String toJson(Object o) {
+        try {
+            return objectMapper.writeValueAsString(o);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
     }
 
 }

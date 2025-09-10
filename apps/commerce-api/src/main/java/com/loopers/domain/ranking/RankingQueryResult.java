@@ -8,4 +8,16 @@ public record RankingQueryResult() {
     ) {
     }
 
+    // -------------------------------------------------------------------------------------------------
+
+    public record SearchRankings(
+            Long productId,
+            String productName,
+            Integer basePrice,
+            Long likeCount,
+            Long brandId,
+            String brandName
+    ) {
+    }
+
 }

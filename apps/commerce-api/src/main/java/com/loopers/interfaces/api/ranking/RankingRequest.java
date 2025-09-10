@@ -2,7 +2,6 @@ package com.loopers.interfaces.api.ranking;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -18,7 +17,7 @@ public final class RankingRequest {
         private final LocalDate date;
 
         @NotNull
-        @PositiveOrZero
+        @Positive
         private final Integer page;
         @NotNull
         @Positive

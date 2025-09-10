@@ -1,4 +1,4 @@
-package com.loopers.interfaces.scheduler;
+package com.loopers.interfaces.scheduler.ranking;
 
 import com.loopers.application.ranking.RankingFacade;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +17,15 @@ public class RankingScheduler {
 
     private final RankingFacade rankingFacade;
 
-    @Scheduled(cron = "0 30 23 * * *")
+    @Scheduled(fixedDelayString = "PT1M", initialDelayString = "PT5S")
+//    @Scheduled(cron = "0 30 23 * * *")
     public void createDailyRankings() {
-        LocalDate date = LocalDate.now().plusDays(1); // 30 mins early
-        rankingFacade.saveDailyRankings(date);
+//        LocalDate date = LocalDate.now().plusDays(1); // 30 mins early
+        LocalDate date = LocalDate.now();
+
+        log.info("Creating daily({}) rankings", date);
+        int rankSize = rankingFacade.saveDailyRankings(date);
+        log.info("Created daily({}) rankings: {} products", date, rankSize);
     }
 
 }

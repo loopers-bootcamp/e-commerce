@@ -1,7 +1,10 @@
 package com.loopers.application.ranking;
 
+import com.loopers.domain.brand.BrandResult;
+import com.loopers.domain.brand.BrandService;
 import com.loopers.domain.product.ProductResult;
 import com.loopers.domain.product.ProductService;
+import com.loopers.domain.ranking.RankingCommand;
 import com.loopers.domain.ranking.RankingResult;
 import com.loopers.domain.ranking.RankingService;
 import com.loopers.support.error.BusinessException;
@@ -11,8 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,21 +23,44 @@ public class RankingFacade {
 
     private final RankingService rankingService;
     private final ProductService productService;
+    private final BrandService brandService;
 
-    public void saveDailyRankings(LocalDate date) {
+    public int saveDailyRankings(LocalDate date) {
         // TODO: carry-over
-        RankingResult.FindRanks ranks = rankingService.findRanks(date);
-        if (CollectionUtils.isEmpty(ranks.items())) {
-            return;
+        RankingResult.FindRanks rankResult = rankingService.findRanks(date);
+        if (CollectionUtils.isEmpty(rankResult.items())) {
+            return 0;
         }
 
-        int maxRanks = Math.min(ranks.items().size(), 1000);
-        List<RankingResult.FindRanks.Item> top1k = ranks.items().subList(0, maxRanks);
+        int maxRanks = Math.min(rankResult.items().size(), 1000);
+        List<RankingResult.FindRanks.Item> rankItems = rankResult.items().subList(0, maxRanks);
 
-        for (RankingResult.FindRanks.Item item : top1k) {
-            ProductResult.GetProductDetail detail = productService.getProductDetail(item.productId())
+        List<RankingCommand.SaveRankings.Item> items = new ArrayList<>();
+        for (RankingResult.FindRanks.Item rankItem : rankItems) {
+            ProductResult.GetProductDetail detail = productService.getProductDetail(rankItem.productId())
                     .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND));
+            String brandName = brandService.getBrand(detail.brandId())
+                    .map(BrandResult.GetBrand::getBrandName)
+                    .orElse(null);
+
+            RankingCommand.SaveRankings.Item item = RankingCommand.SaveRankings.Item.builder()
+                    .productId(detail.productId())
+                    .productName(detail.productName())
+                    .basePrice(detail.basePrice())
+                    .likeCount(detail.likeCount())
+                    .brandId(detail.brandId())
+                    .brandName(brandName)
+                    .build();
+            items.add(item);
         }
+
+        RankingCommand.SaveRankings saveCommand = RankingCommand.SaveRankings.builder()
+                .date(date)
+                .items(List.copyOf(items))
+                .build();
+        rankingService.saveRankings(saveCommand);
+
+        return items.size();
     }
 
 }

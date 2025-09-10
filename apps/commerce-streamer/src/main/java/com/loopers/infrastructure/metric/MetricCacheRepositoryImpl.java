@@ -19,7 +19,7 @@ public class MetricCacheRepositoryImpl implements MetricCacheRepository {
     @Override
     public void accumulate(ProductMetricDaily metric) {
         String day = metric.getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String member = StringUtils.invert9sComplement(metric.getProductId().toString());
+        String member = StringUtils.invert9sComplement("%019d".formatted(metric.getProductId()));
 
         Map.of(
                         "metric.product.like:" + day, metric.getLikeCount(),

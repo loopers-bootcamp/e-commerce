@@ -1,6 +1,6 @@
 package com.loopers.interfaces.api.ranking;
 
-import com.loopers.domain.product.ProductResult;
+import com.loopers.domain.ranking.RankingResult;
 import lombok.*;
 
 import java.util.List;
@@ -18,21 +18,21 @@ public final class RankingResponse {
         private final Integer size;
         private final List<Item> items;
 
-        public static SearchRankings from(ProductResult.SearchProducts result) {
+        public static SearchRankings from(RankingResult.SearchRankings result) {
             return builder()
-                    .totalPages(result.getTotalPages())
-                    .totalItems(result.getTotalItems())
-                    .page(result.getPage())
-                    .size(result.getSize())
-                    .items(result.getItems()
+                    .totalPages(result.totalPages())
+                    .totalItems(result.totalItems())
+                    .page(result.page())
+                    .size(result.size())
+                    .items(result.items()
                             .stream()
                             .map(content -> Item.builder()
-                                    .productId(content.getProductId())
-                                    .productName(content.getProductName())
-                                    .basePrice(content.getBasePrice())
-                                    .likeCount(content.getLikeCount())
-                                    .brandId(content.getBrandId())
-                                    .brandName(content.getBrandName())
+                                    .productId(content.productId())
+                                    .productName(content.productName())
+                                    .basePrice(content.basePrice())
+                                    .likeCount(content.likeCount())
+                                    .brandId(content.brandId())
+                                    .brandName(content.brandName())
                                     .build()
                             )
                             .toList()
