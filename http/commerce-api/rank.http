@@ -1,0 +1,4 @@
+### 상품 랭킹 조회
+GET {{commerce-api}}/api/v1/rankings?date=2025-09-10&page=1&size=10
+X-USER-ID: user000001
+Content-Type: application/json
