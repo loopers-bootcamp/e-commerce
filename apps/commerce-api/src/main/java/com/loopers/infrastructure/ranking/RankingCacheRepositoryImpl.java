@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.connection.zset.Aggregate;
 import org.springframework.data.redis.connection.zset.Weights;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
@@ -35,27 +34,26 @@ public class RankingCacheRepositoryImpl implements RankingCacheRepository {
         String sales = "metric.product.sale:" + day;
         String views = "metric.product.view:" + day;
 
+        String destKey = "temp:" + UUID.randomUUID().toString().replace("-", "");
         Weights weights = Weights.of(0.01, 0.1, 0.001);
-        Set<ZSetOperations.TypedTuple<String>> tupleSet = stringRedisTemplate.opsForZSet()
-                .unionWithScores(likes, List.of(sales, views), Aggregate.SUM, weights);
+        stringRedisTemplate.opsForZSet().unionAndStore(likes, List.of(sales, views), destKey, Aggregate.SUM, weights);
 
-        if (CollectionUtils.isEmpty(tupleSet)) {
+        // Top 1000
+        Set<String> members = stringRedisTemplate.opsForZSet().reverseRange(destKey, 0, 999);
+        stringRedisTemplate.delete(destKey);
+
+        if (CollectionUtils.isEmpty(members)) {
             return List.of();
         }
 
-        List<ZSetOperations.TypedTuple<String>> tuples = tupleSet.stream()
-                .limit(1000)
-                .sorted(Comparator.<ZSetOperations.TypedTuple<String>>
-                                comparingDouble(ZSetOperations.TypedTuple::getScore)
-                        .thenComparing(ZSetOperations.TypedTuple::getValue)
-                        .reversed()
-                )
+        List<Long> productIds = members.stream()
+                .map(StringUtils::invert9sComplement)
+                .map(Long::parseLong)
                 .toList();
 
         List<RankingQueryResult.FindRanks> results = new ArrayList<>();
-        for (int i = 0; i < tuples.size(); i++) {
-            long productId = Long.parseLong(StringUtils.invert9sComplement(tuples.get(i).getValue()));
-            results.add(new RankingQueryResult.FindRanks(productId, i + 1));
+        for (int i = 0; i < productIds.size(); i++) {
+            results.add(new RankingQueryResult.FindRanks(productIds.get(i), i + 1));
         }
 
         return List.copyOf(results);
