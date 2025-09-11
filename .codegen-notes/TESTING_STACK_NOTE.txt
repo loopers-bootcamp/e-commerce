@@ -1,0 +1,2 @@
+Tests added for RankingRepositoryImpl.
+Assumed testing stack: JUnit 5 (Jupiter) + Mockito. Adjust imports if your project differs.
