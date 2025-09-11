@@ -2,7 +2,7 @@ package com.loopers.infrastructure.product;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.loopers.config.RedisCacheConfig;
-import com.loopers.config.jackson.WrappedJsonMapper;
+import com.loopers.config.jackson.WrappedObjectMapper;
 import com.loopers.domain.product.ProductCacheRepository;
 import com.loopers.domain.product.ProductQueryCommand;
 import com.loopers.domain.product.ProductQueryResult;
@@ -27,7 +27,7 @@ import java.util.Optional;
 public class ProductCacheRepositoryImpl implements ProductCacheRepository {
 
     private final StringRedisTemplate stringRedisTemplate;
-    private final WrappedJsonMapper wrappedJsonMapper;
+    private final WrappedObjectMapper wrappedObjectMapper;
 
     @Override
     public Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command) {
@@ -57,7 +57,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return Page.empty(pageRequest);
         }
 
-        PageImpl<ProductQueryResult.Products> page = wrappedJsonMapper.readValue(json, new TypeReference<>() {
+        PageImpl<ProductQueryResult.Products> page = wrappedObjectMapper.readValue(json, new TypeReference<>() {
         });
 
         return page == null ? Page.empty(pageRequest) : page;
@@ -75,7 +75,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return;
         }
 
-        String json = wrappedJsonMapper.writeValueAsString(page);
+        String json = wrappedObjectMapper.writeValueAsString(page);
         String key = "product.page:" + Objects.hash(
                 command.getKeyword(),
                 command.getBrandId(),
@@ -106,7 +106,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return Optional.of(ProductQueryResult.ProductDetail.EMPTY);
         }
 
-        ProductQueryResult.ProductDetail detail = wrappedJsonMapper.readMap(cache, new TypeReference<>() {
+        ProductQueryResult.ProductDetail detail = wrappedObjectMapper.readMap(cache, new TypeReference<>() {
         });
         return Optional.ofNullable(detail);
     }
@@ -123,7 +123,7 @@ public class ProductCacheRepositoryImpl implements ProductCacheRepository {
             return;
         }
 
-        Map<String, String> cache = wrappedJsonMapper.writeValueAsMap(detail);
+        Map<String, String> cache = wrappedObjectMapper.writeValueAsMap(detail);
         stringRedisTemplate.opsForHash().putAll(key, cache);
         stringRedisTemplate.expire(key, ttl);
     }
