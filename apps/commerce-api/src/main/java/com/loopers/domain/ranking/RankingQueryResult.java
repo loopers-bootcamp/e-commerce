@@ -4,7 +4,7 @@ public record RankingQueryResult() {
 
     public record SearchRanks(
             Long productId,
-            Integer rank
+            Long rank
     ) {
     }
 

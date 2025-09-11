@@ -25,11 +25,15 @@ public final class ProductOutput {
         private final String brandName;
         @Nullable
         private final String brandDescription;
+        @Nullable
+        private final Long rank;
 
         public static GetProductDetail from(
                 ProductResult.GetProductDetail product,
                 @Nullable
-                BrandResult.GetBrand brand
+                BrandResult.GetBrand brand,
+                @Nullable
+                Long rank
         ) {
             return GetProductDetail.builder()
                     .productId(product.productId())
@@ -40,6 +44,7 @@ public final class ProductOutput {
                     .brandId(brand == null ? null : brand.getBrandId())
                     .brandName(brand == null ? null : brand.getBrandName())
                     .brandDescription(brand == null ? null : brand.getBrandDescription())
+                    .rank(rank)
                     .build();
         }
 

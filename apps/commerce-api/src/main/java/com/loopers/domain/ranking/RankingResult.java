@@ -31,7 +31,7 @@ public record RankingResult() {
 
         public record Item(
                 Long productId,
-                Integer rank
+                Long rank
         ) {
         }
     }

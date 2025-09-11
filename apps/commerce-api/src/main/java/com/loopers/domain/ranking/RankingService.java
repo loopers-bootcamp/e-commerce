@@ -8,12 +8,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class RankingService {
 
     private final RankingRepository rankingRepository;
+
+    @ReadOnlyTransactional
+    public Optional<Long> findRank(RankingCommand.FindRank command) {
+        return rankingRepository.findRank(command.date(), command.productId());
+    }
 
     @ReadOnlyTransactional
     public RankingResult.SearchRanks searchRanks(RankingCommand.SearchRanks command) {

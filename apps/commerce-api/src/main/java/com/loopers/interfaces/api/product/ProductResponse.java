@@ -72,6 +72,8 @@ public final class ProductResponse {
         private final String brandName;
         @Nullable
         private final String brandDescription;
+        @Nullable
+        private final Long rank;
 
         public static GetProductDetail from(ProductOutput.GetProductDetail output) {
             List<Option> options = output.getOptions()
@@ -95,6 +97,7 @@ public final class ProductResponse {
                     .brandId(output.getBrandId())
                     .brandName(output.getBrandName())
                     .brandDescription(output.getBrandDescription())
+                    .rank(output.getRank())
                     .build();
         }
 
