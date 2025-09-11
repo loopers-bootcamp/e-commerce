@@ -42,7 +42,8 @@ public class MetricRepositoryImpl implements MetricRepository {
                 String sales = "metric.product.sale:" + day;
 
                 for (Metric item : items) {
-                    String member = StringUtils.invert9sComplement("%019d".formatted(item.getProductId()));
+                    String padded = StringUtils.padStart(item.getProductId().toString(), 19, '0');
+                    String member = StringUtils.invert9sComplement(padded);
                     ZSetOperations<String, String> zSet = stringRedisTemplate.opsForZSet();
 
                     // Save with non-weighted score.
@@ -53,7 +54,7 @@ public class MetricRepositoryImpl implements MetricRepository {
 
                 // Save with weighted score: overwrite for each call.
                 String all = "metric.product.all:" + day;
-                Weights weights = MetricWeight.toWeights();
+                Weights weights = Weights.of(MetricWeight.toArray());
                 stringRedisTemplate.opsForZSet().unionAndStore(views, List.of(likes, sales), all, Aggregate.SUM, weights);
 
                 // Top 1000

@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toMap;
 
 @Service
@@ -21,7 +21,7 @@ public class MetricService {
             return;
         }
 
-        Collection<Metric> metrics = command.items()
+        List<Metric> metrics = command.items()
                 .stream()
                 .map(item -> Metric.builder()
                         .date(item.date())
@@ -31,14 +31,16 @@ public class MetricService {
                         .viewCount(item.viewCount())
                         .build()
                 )
-                .collect(toMap(
-                        Function.identity(),
-                        Function.identity(),
-                        Metric::plus
-                ))
-                .values();
+                .collect(collectingAndThen(
+                        toMap(
+                                Function.identity(),
+                                Function.identity(),
+                                Metric::plus
+                        ),
+                        map -> List.copyOf(map.values())
+                ));
 
-        metricRepository.increase(List.copyOf(metrics));
+        metricRepository.increase(metrics);
     }
 
 }

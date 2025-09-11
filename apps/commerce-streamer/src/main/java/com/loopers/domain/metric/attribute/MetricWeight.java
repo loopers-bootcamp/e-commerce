@@ -2,7 +2,6 @@ package com.loopers.domain.metric.attribute;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.connection.zset.Weights;
 
 import java.util.Arrays;
 
@@ -16,8 +15,8 @@ public enum MetricWeight {
 
     private final double value;
 
-    public static Weights toWeights() {
-        return Weights.of(Arrays.stream(values()).mapToDouble(MetricWeight::getValue).toArray());
+    public static double[] toArray() {
+        return Arrays.stream(values()).mapToDouble(MetricWeight::getValue).toArray();
     }
 
 }
