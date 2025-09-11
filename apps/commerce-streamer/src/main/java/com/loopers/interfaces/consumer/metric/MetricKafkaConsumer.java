@@ -54,7 +54,7 @@ public class MetricKafkaConsumer {
     )
     public void onUserDisliked(
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-            @Payload List<KafkaMessage<ActivityEvent.Like>> messages,
+            @Payload List<KafkaMessage<ActivityEvent.Dislike>> messages,
             Acknowledgment acknowledgment
     ) {
         log.info("Received {} messages on '{}'", messages.size(), topic);
