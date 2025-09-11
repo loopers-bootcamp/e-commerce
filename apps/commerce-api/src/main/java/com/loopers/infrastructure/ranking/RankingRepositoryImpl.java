@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Repository
@@ -53,7 +54,8 @@ public class RankingRepositoryImpl implements RankingRepository {
             content.add(new RankingQueryResult.SearchRanks(productIds.get(i), i + 1));
         }
 
-        return PageableExecutionUtils.getPage(List.copyOf(content), pageRequest, () -> zSet.zCard(all));
+        return PageableExecutionUtils.getPage(List.copyOf(content), pageRequest,
+                () -> Objects.requireNonNullElse(zSet.zCard(all), 0L));
     }
 
 }

@@ -2,6 +2,7 @@ package com.loopers.infrastructure.metric;
 
 import com.loopers.domain.metric.Metric;
 import com.loopers.domain.metric.MetricRepository;
+import com.loopers.domain.metric.attribute.MetricWeight;
 import com.loopers.support.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,32 +37,32 @@ public class MetricRepositoryImpl implements MetricRepository {
         stringRedisTemplate.executePipelined((RedisConnection connection) -> {
             dateMap.forEach((date, items) -> {
                 String day = date.format(DateTimeFormatter.BASIC_ISO_DATE);
+                String views = "metric.product.view:" + day;
                 String likes = "metric.product.like:" + day;
                 String sales = "metric.product.sale:" + day;
-                String views = "metric.product.view:" + day;
 
                 for (Metric item : items) {
                     String member = StringUtils.invert9sComplement("%019d".formatted(item.getProductId()));
                     ZSetOperations<String, String> zSet = stringRedisTemplate.opsForZSet();
 
                     // Save with non-weighted score.
+                    zSet.incrementScore(views, member, item.getViewCount());
                     zSet.incrementScore(likes, member, item.getLikeCount());
                     zSet.incrementScore(sales, member, item.getSaleQuantity());
-                    zSet.incrementScore(views, member, item.getViewCount());
                 }
 
                 // Save with weighted score: overwrite for each call.
                 String all = "metric.product.all:" + day;
-                Weights weights = Weights.of(0.001, 0.01, 0.0001);
-                stringRedisTemplate.opsForZSet().unionAndStore(likes, List.of(sales, views), all, Aggregate.SUM, weights);
+                Weights weights = MetricWeight.toWeights();
+                stringRedisTemplate.opsForZSet().unionAndStore(views, List.of(likes, sales), all, Aggregate.SUM, weights);
 
                 // Top 1000
                 stringRedisTemplate.opsForZSet().removeRange(all, 0, -1001);
 
                 Instant ttl = ZonedDateTime.of(date.plusDays(RETENTION_DAYS), LocalTime.MIN, ZoneId.systemDefault()).toInstant();
-                Stream.of(likes, sales, views, all).forEach(key -> stringRedisTemplate.expireAt(key, ttl));
+                Stream.of(views, likes, sales, all).forEach(key -> stringRedisTemplate.expireAt(key, ttl));
 
-                log.info("Increase {} metrics on '{}', '{}', '{}', '{}'", items.size(), likes, sales, views, all);
+                log.info("Increase {} metrics on '{}', '{}', '{}', '{}'", items.size(), views, likes, sales, all);
             });
 
             return null;
