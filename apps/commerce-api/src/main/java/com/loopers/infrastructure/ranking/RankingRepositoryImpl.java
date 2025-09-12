@@ -29,9 +29,9 @@ public class RankingRepositoryImpl implements RankingRepository {
         String member = StringUtils.invert9sComplement(productId.toString());
 
         ZSetOperations<String, String> zSet = stringRedisTemplate.opsForZSet();
-        Long rank = zSet.rank(key, member);
+        Long rank = zSet.reverseRank(key, member);
 
-        return Optional.ofNullable(rank);
+        return Optional.ofNullable(rank).map(i -> i + 1L);
     }
 
     @Override
