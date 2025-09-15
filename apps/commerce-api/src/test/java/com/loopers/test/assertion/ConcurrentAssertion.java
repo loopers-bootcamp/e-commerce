@@ -56,6 +56,7 @@ public class ConcurrentAssertion<V> {
     }
 
     private ConcurrentAssertion<V> execute(RunnableCallableAdapter<V> adapter) {
+        CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch countDownLatch = new CountDownLatch(this.threadCount);
 
         try (ExecutorService executorService = this.executorServiceProvider.get()) {
@@ -63,6 +64,8 @@ public class ConcurrentAssertion<V> {
                 int n = i;
                 executorService.submit(() -> {
                     try {
+                        startLatch.await();
+
                         V executed = adapter.execute(n);
                         this.successCount.incrementAndGet();
                         return executed;
@@ -75,6 +78,7 @@ public class ConcurrentAssertion<V> {
                 });
             }
 
+            startLatch.countDown();
             countDownLatch.await();
         } catch (Throwable t) {
             throw new RuntimeException(t);
