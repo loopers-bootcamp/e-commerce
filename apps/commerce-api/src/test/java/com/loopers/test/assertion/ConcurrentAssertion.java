@@ -56,13 +56,17 @@ public class ConcurrentAssertion<V> {
     }
 
     private ConcurrentAssertion<V> execute(RunnableCallableAdapter<V> adapter) {
-        CountDownLatch countDownLatch = new CountDownLatch(this.threadCount);
+        CyclicBarrier barrier = new CyclicBarrier(this.threadCount);
+        CountDownLatch latch = new CountDownLatch(this.threadCount);
 
         try (ExecutorService executorService = this.executorServiceProvider.get()) {
             for (int i = 0; i < this.threadCount; i++) {
                 int n = i;
                 executorService.submit(() -> {
                     try {
+                        // Suspend all threads until ready to execute.
+                        barrier.await(10, TimeUnit.SECONDS);
+
                         V executed = adapter.execute(n);
                         this.successCount.incrementAndGet();
                         return executed;
@@ -70,12 +74,15 @@ public class ConcurrentAssertion<V> {
                         this.errors.add(t);
                         return null;
                     } finally {
-                        countDownLatch.countDown();
+                        latch.countDown();
                     }
                 });
             }
 
-            countDownLatch.await();
+            // Wait for all threads to complete execution.
+            if (!latch.await(10, TimeUnit.MINUTES)) {
+                throw new TimeoutException("Timed out waiting for an executor service to execute");
+            }
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

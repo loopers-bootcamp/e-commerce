@@ -1,20 +1,19 @@
 package com.loopers.interfaces.consumer.audit;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.loopers.application.audit.AuditFacade;
 import com.loopers.application.audit.AuditInput;
 import com.loopers.config.kafka.KafkaConfig;
 import com.loopers.domain.KafkaMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,7 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuditKafkaConsumer {
 
-    private final ObjectMapper objectMapper;
     private final AuditFacade auditFacade;
 
     @KafkaListener(
@@ -30,27 +28,22 @@ public class AuditKafkaConsumer {
             containerFactory = KafkaConfig.BATCH_LISTENER
     )
     public void onDomainAudited(
-            List<ConsumerRecord<String, byte[]>> messages,
+            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+            @Header(KafkaHeaders.RECEIVED_KEY) List<String> keys,
+            @Payload List<KafkaMessage<DomainEvent.Audit>> messages,
             Acknowledgment acknowledgment
-    ) throws IOException {
-        String topicName = messages.getFirst().topic();
-        log.info("Received {} messages on '{}'", messages.size(), topicName);
+    ) {
+        log.info("Received {} messages on '{}'", messages.size(), topic);
 
-        List<AuditInput.Audit.Item> items = new ArrayList<>();
-        for (ConsumerRecord<String, byte[]> message : messages) {
-            KafkaMessage<DomainEvent.Audit> kafkaMessage = objectMapper.readValue(message.value(), new TypeReference<>() {
-            });
-
-            AuditInput.Audit.Item item = new AuditInput.Audit.Item(
-                    kafkaMessage.eventId(),
-                    kafkaMessage.payload().eventKey(),
-                    kafkaMessage.payload().eventName(),
-                    kafkaMessage.payload().userId()
-            );
-            items.add(item);
-        }
-
-        AuditInput.Audit input = new AuditInput.Audit(topicName, List.copyOf(items));
+        List<AuditInput.Audit.Item> items = messages.stream()
+                .map(message -> new AuditInput.Audit.Item(
+                        message.eventId(),
+                        message.payload().eventKey(),
+                        message.payload().eventName(),
+                        message.payload().userId()
+                ))
+                .toList();
+        AuditInput.Audit input = new AuditInput.Audit(topic, items);
         auditFacade.audit(input);
 
         // Manual ack

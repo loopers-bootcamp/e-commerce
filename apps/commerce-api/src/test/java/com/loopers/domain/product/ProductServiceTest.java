@@ -58,14 +58,16 @@ class ProductServiceTest {
                     .build();
 
             List<ProductQueryResult.Products> content = IntStream.range(0, command.getSize())
-                    .mapToObj(i -> ProductQueryResult.Products.builder()
-                            .productId(Instancio.of(Long.class).generate(root(),
-                                    gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1))
-                            .productName(Instancio.of(String.class).generate(root(),
-                                    gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create())
-                            .basePrice(i + 10_000)
-                            .brandId(command.getBrandId())
-                            .build()
+                    .mapToObj(i -> new ProductQueryResult.Products(
+                                    Instancio.of(Long.class).generate(root(),
+                                            gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1),
+                                    Instancio.of(String.class).generate(root(),
+                                            gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create(),
+                                    i + 10_000,
+                                    Instancio.create(Long.class),
+                                    command.getBrandId(),
+                                    Instancio.create(String.class)
+                            )
                     )
                     .toList();
             long totalItems = Instancio.of(Long.class).generate(root(),
@@ -103,14 +105,16 @@ class ProductServiceTest {
                     .build();
 
             List<ProductQueryResult.Products> content = IntStream.range(0, command.getSize())
-                    .mapToObj(i -> ProductQueryResult.Products.builder()
-                            .productId(Instancio.of(Long.class).generate(root(),
-                                    gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1))
-                            .productName(Instancio.of(String.class).generate(root(),
-                                    gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create())
-                            .basePrice(i + 10_000)
-                            .brandId(command.getBrandId())
-                            .build()
+                    .mapToObj(i -> new ProductQueryResult.Products(
+                                    Instancio.of(Long.class).generate(root(),
+                                            gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1),
+                                    Instancio.of(String.class).generate(root(),
+                                            gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create(),
+                                    i + 10_000,
+                                    Instancio.create(Long.class),
+                                    command.getBrandId(),
+                                    Instancio.create(String.class)
+                            )
                     )
                     .toList();
             long totalItems = Instancio.of(Long.class).generate(root(),
@@ -151,14 +155,16 @@ class ProductServiceTest {
                     .build();
 
             List<ProductQueryResult.Products> content = IntStream.range(0, command.getSize())
-                    .mapToObj(i -> ProductQueryResult.Products.builder()
-                            .productId(Instancio.of(Long.class).generate(root(),
-                                    gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1))
-                            .productName(Instancio.of(String.class).generate(root(),
-                                    gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create())
-                            .basePrice(i + 10_000)
-                            .brandId(command.getBrandId())
-                            .build()
+                    .mapToObj(i -> new ProductQueryResult.Products(
+                                    Instancio.of(Long.class).generate(root(),
+                                            gen -> gen.longs().range(1L, 100_000L)).create() * (i + 1),
+                                    Instancio.of(String.class).generate(root(),
+                                            gen -> gen.string().mixedCase().alphaNumeric().prefix(command.getKeyword()).maxLength(30)).create(),
+                                    i + 10_000,
+                                    Instancio.create(Long.class),
+                                    command.getBrandId(),
+                                    Instancio.create(String.class)
+                            )
                     )
                     .toList();
             long totalItems = Instancio.of(Long.class).generate(root(),
@@ -203,7 +209,7 @@ class ProductServiceTest {
 
             // then
             assertThat(maybeDetail).isEmpty();
-            verify(productRepository, never()).findProductDetailById(productId);
+            verify(productRepository, never()).findDetail(productId);
         }
 
         @DisplayName("상품 아이디와 일치하는 상품이 없으면, Optional.empty를 반환한다.")
@@ -211,7 +217,7 @@ class ProductServiceTest {
         void returnEmptyOptional_whenProductDoesNotExistById() {
             // given
             Long productId = 1L;
-            given(productRepository.findProductDetailById(productId))
+            given(productRepository.findDetail(productId))
                     .willReturn(Optional.empty());
 
             // when
@@ -219,7 +225,7 @@ class ProductServiceTest {
 
             // then
             assertThat(maybeDetail).isEmpty();
-            verify(productRepository).findProductDetailById(productId);
+            verify(productRepository).findDetail(productId);
         }
 
         @DisplayName("상품 아이디와 일치하는 상품이 있으면, 상품 상세 정보를 반환한다.")
@@ -227,19 +233,15 @@ class ProductServiceTest {
         void returnProductDetail_whenProductExistsById() {
             // given
             Long productId = 1L;
-            given(productRepository.findProductDetailById(productId))
-                    .willReturn(Optional.of(
-                            ProductQueryResult.ProductDetail.builder()
-                                    .options(List.of())
-                                    .build()
-                    ));
+            given(productRepository.findDetail(productId))
+                    .willReturn(Optional.of(ProductQueryResult.ProductDetail.EMPTY));
 
             // when
             Optional<ProductResult.GetProductDetail> maybeDetail = sut.getProductDetail(productId);
 
             // then
             assertThat(maybeDetail).isPresent();
-            verify(productRepository).findProductDetailById(productId);
+            verify(productRepository).findDetail(productId);
         }
 
     }

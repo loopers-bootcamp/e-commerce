@@ -5,6 +5,8 @@ import com.loopers.domain.brand.BrandResult;
 import com.loopers.domain.brand.BrandService;
 import com.loopers.domain.product.ProductResult;
 import com.loopers.domain.product.ProductService;
+import com.loopers.domain.ranking.RankingCommand;
+import com.loopers.domain.ranking.RankingService;
 import com.loopers.domain.user.UserService;
 import com.loopers.support.error.BusinessException;
 import com.loopers.support.error.CommonErrorType;
@@ -16,6 +18,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Component
@@ -24,6 +27,7 @@ public class ProductFacade {
 
     private final ProductService productService;
     private final BrandService brandService;
+    private final RankingService rankingService;
     private final UserService userService;
 
     @Qualifier(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
@@ -38,6 +42,9 @@ public class ProductFacade {
 
         BrandResult.GetBrand brand = brandService.getBrand(detail.brandId()).orElse(null);
 
+        RankingCommand.FindRank rankCommand = new RankingCommand.FindRank(LocalDate.now(), productId);
+        Long rank = rankingService.findRank(rankCommand).orElse(null);
+
         // 회원이면 상품 조회 이벤트를 발행한다.
         Optional.ofNullable(input.getUserName())
                 .filter(StringUtils::hasText)
@@ -48,7 +55,7 @@ public class ProductFacade {
                                 ))
                 ));
 
-        return ProductOutput.GetProductDetail.from(detail, brand);
+        return ProductOutput.GetProductDetail.from(detail, brand, rank);
     }
 
 }

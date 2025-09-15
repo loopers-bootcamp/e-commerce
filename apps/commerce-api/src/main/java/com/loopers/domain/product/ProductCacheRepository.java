@@ -13,11 +13,11 @@ public interface ProductCacheRepository {
             Page<ProductQueryResult.Products> page
     );
 
-    Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId);
+    Optional<ProductQueryResult.ProductDetail> findDetail(Long productId);
 
-    void saveProductDetail(
+    void saveDetail(
             Long productId,
-            ProductQueryResult.ProductDetail productDetail
+            ProductQueryResult.ProductDetail detail
     );
 
 }

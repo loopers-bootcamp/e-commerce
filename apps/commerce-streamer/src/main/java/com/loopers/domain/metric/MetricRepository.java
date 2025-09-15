@@ -1,7 +1,9 @@
 package com.loopers.domain.metric;
 
+import java.util.List;
+
 public interface MetricRepository {
 
-    boolean merge(ProductMetricDaily metric);
+    void increase(List<Metric> metrics);
 
 }

@@ -70,29 +70,42 @@ public class ProductRepositoryImpl implements ProductRepository {
                 );
 
         List<ProductQueryResult.Products> products = query.stream()
-                .map(row -> ProductQueryResult.Products.builder()
-                        .productId(row.get(p.id))
-                        .productName(row.get(p.name))
-                        .basePrice(row.get(p.basePrice))
-                        .likeCount(row.get(p.likeCount))
-                        .brandId(row.get(p.brandId))
-                        .brandName(row.get(b.name))
-                        .build()
-                )
+                .map(row -> new ProductQueryResult.Products(
+                        row.get(p.id),
+                        row.get(p.name),
+                        row.get(p.basePrice),
+                        row.get(p.likeCount),
+                        row.get(p.brandId),
+                        row.get(b.name)
+                ))
                 .toList();
 
         return PageableExecutionUtils.getPage(products, pageRequest, countQuery::fetchOne);
     }
 
     @Override
-    public Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId) {
+    public Optional<ProductQueryResult.ProductDetail> findDetail(Long productId) {
+        QBrand b = QBrand.brand;
         QProduct p = QProduct.product;
         QProductOption po = QProductOption.productOption;
         QProductStock ps = QProductStock.productStock;
 
         List<Tuple> rows = queryFactory
-                .select(p, po, ps)
+                .select(
+                        p.id
+                        , p.name
+                        , p.basePrice
+                        , p.likeCount
+                        , p.brandId
+                        , b.name
+                        , po.id
+                        , po.name
+                        , po.additionalPrice
+                        , po.productId
+                        , ps.quantity
+                )
                 .from(p)
+                .leftJoin(b).on(b.id.eq(p.brandId))
                 .leftJoin(po).on(po.productId.eq(p.id))
                 .leftJoin(ps).on(ps.productOptionId.eq(po.id))
                 .where(p.id.eq(productId))
@@ -102,39 +115,37 @@ public class ProductRepositoryImpl implements ProductRepository {
             return Optional.empty();
         }
 
-        Product product = rows.getFirst().get(p);
-        ProductQueryResult.ProductDetail detail = ProductQueryResult.ProductDetail.builder()
-                .productId(product.getId())
-                .productName(product.getName())
-                .basePrice(product.getBasePrice())
-                .likeCount(product.getLikeCount())
-                .brandId(product.getBrandId())
-                .options(new ArrayList<>())
-                .build();
+        ProductQueryResult.ProductDetail detail = new ProductQueryResult.ProductDetail(
+                rows.getFirst().get(p.id),
+                rows.getFirst().get(p.name),
+                rows.getFirst().get(p.basePrice),
+                rows.getFirst().get(p.likeCount),
+                rows.getFirst().get(p.brandId),
+                rows.getFirst().get(b.name),
+                new ArrayList<>()
+        );
 
         for (Tuple row : rows) {
-            ProductOption option = row.get(po);
-            if (option == null) {
+            if (row.get(po.id) == null) {
                 continue;
             }
 
-            ProductStock stock = row.get(ps);
-            ProductQueryResult.ProductDetail.Option item = ProductQueryResult.ProductDetail.Option.builder()
-                    .productOptionId(option.getId())
-                    .productOptionName(option.getName())
-                    .additionalPrice(option.getAdditionalPrice())
-                    .productId(option.getProductId())
-                    .stockQuantity(stock.getQuantity())
-                    .build();
+            ProductQueryResult.ProductDetail.Option item = new ProductQueryResult.ProductDetail.Option(
+                    row.get(po.id),
+                    row.get(po.name),
+                    row.get(po.additionalPrice),
+                    row.get(po.productId),
+                    row.get(ps.quantity)
+            );
 
-            detail.getOptions().add(item);
+            detail.options().add(item);
         }
 
         return Optional.of(detail);
     }
 
     @Override
-    public Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds) {
+    public Optional<ProductQueryResult.ProductOptions> findOptions(List<Long> productOptionIds) {
         QProduct p = QProduct.product;
         QProductOption po = QProductOption.productOption;
         QProductStock ps = QProductStock.productStock;
@@ -153,13 +164,12 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .join(ps).on(ps.productOptionId.eq(po.id))
                 .where(po.id.in(productOptionIds))
                 .stream()
-                .map(row ->
-                        ProductQueryResult.ProductOptions.Item.builder()
-                                .productOptionId(row.get(po.id))
-                                .salePrice(row.get(salePrice))
-                                .stockQuantity(row.get(ps.quantity))
-                                .productId(row.get(p.id))
-                                .build()
+                .map(row -> new ProductQueryResult.ProductOptions.Item(
+                                row.get(po.id),
+                                row.get(salePrice),
+                                row.get(ps.quantity),
+                                row.get(p.id)
+                        )
                 )
                 .toList();
 
@@ -167,10 +177,7 @@ public class ProductRepositoryImpl implements ProductRepository {
             return Optional.empty();
         }
 
-        ProductQueryResult.ProductOptions queryResult = ProductQueryResult.ProductOptions.builder()
-                .items(items)
-                .build();
-
+        ProductQueryResult.ProductOptions queryResult = new ProductQueryResult.ProductOptions(items);
         return Optional.of(queryResult);
     }
 

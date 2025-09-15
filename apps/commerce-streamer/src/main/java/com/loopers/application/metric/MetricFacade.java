@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MetricFacade {
@@ -17,18 +19,20 @@ public class MetricFacade {
 
     @Transactional
     public void aggregateProduct(MetricInput.AggregateProduct input) {
-        input.items()
+        List<MetricCommand.Aggregate.Item> unhandled = input.items()
                 .stream()
                 // Idempotent
                 .filter(item -> auditService.handle(new AuditCommand.Handle(item.eventId(), input.topicName())))
-                .map(item -> new MetricCommand.AggregateProduct(
+                .map(item -> new MetricCommand.Aggregate.Item(
                         item.date(),
                         item.productId(),
                         item.likeCount(),
                         item.saleQuantity(),
                         item.viewCount()
                 ))
-                .forEach(metricService::aggregateProduct);
+                .toList();
+
+        metricService.aggregate(new MetricCommand.Aggregate(unhandled));
     }
 
 }

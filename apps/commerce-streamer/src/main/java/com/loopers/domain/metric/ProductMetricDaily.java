@@ -1,7 +1,6 @@
 package com.loopers.domain.metric;
 
 import com.loopers.domain.BaseEntity;
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -9,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Getter
 @Entity
@@ -65,15 +63,21 @@ public class ProductMetricDaily extends BaseEntity {
     @Builder
     private ProductMetricDaily(
             LocalDate date,
-            @Nullable Long likeCount,
-            @Nullable Long saleQuantity,
-            @Nullable Long viewCount,
+            Long likeCount,
+            Long saleQuantity,
+            Long viewCount,
             Long productId
     ) {
         if (date == null) {
             throw new IllegalArgumentException("기준 일자가 올바르지 않습니다.");
         }
-        if (viewCount != null && viewCount < 0) {
+        if (likeCount == null) {
+            throw new IllegalArgumentException("상품 좋아요 수가 올바르지 않습니다.");
+        }
+        if (saleQuantity == null) {
+            throw new IllegalArgumentException("상품 판매 수가 올바르지 않습니다.");
+        }
+        if (viewCount == null || viewCount < 0) {
             throw new IllegalArgumentException("상품 조회 수가 올바르지 않습니다.");
         }
         if (productId == null) {
@@ -81,9 +85,9 @@ public class ProductMetricDaily extends BaseEntity {
         }
 
         this.date = date;
-        this.likeCount = Objects.requireNonNullElse(likeCount, 0L);
-        this.saleQuantity = Objects.requireNonNullElse(saleQuantity, 0L);
-        this.viewCount = Objects.requireNonNullElse(viewCount, 0L);
+        this.likeCount = likeCount;
+        this.saleQuantity = saleQuantity;
+        this.viewCount = viewCount;
         this.productId = productId;
     }
 

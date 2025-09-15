@@ -9,9 +9,9 @@ public interface ProductRepository {
 
     Page<ProductQueryResult.Products> searchProducts(ProductQueryCommand.SearchProducts command);
 
-    Optional<ProductQueryResult.ProductDetail> findProductDetailById(Long productId);
+    Optional<ProductQueryResult.ProductDetail> findDetail(Long productId);
 
-    Optional<ProductQueryResult.ProductOptions> findProductOptionsByIds(List<Long> productOptionIds);
+    Optional<ProductQueryResult.ProductOptions> findOptions(List<Long> productOptionIds);
 
     Optional<Product> findProductForUpdate(Long productId);
 
