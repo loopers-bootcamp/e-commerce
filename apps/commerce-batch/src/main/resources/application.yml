@@ -26,6 +26,13 @@ spring:
     job:
       enabled: false
 
+batch:
+  jobs:
+    product_ranking_weekly_job:
+      steps:
+        aggregate_step:
+          check-size: 1000
+
 ---
 
 spring.config.activate.on-profile: test

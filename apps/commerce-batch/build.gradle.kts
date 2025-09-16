@@ -8,6 +8,8 @@ dependencies {
     // batch
     implementation("org.springframework.boot:spring-boot-starter-batch")
 
+    implementation("org.threeten:threeten-extra")
+
     // querydsl
     annotationProcessor("com.querydsl:querydsl-apt::jakarta")
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
