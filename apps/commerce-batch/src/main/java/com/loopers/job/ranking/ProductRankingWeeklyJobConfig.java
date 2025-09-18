@@ -1,4 +1,4 @@
-package com.loopers.application.ranking;
+package com.loopers.job.ranking;
 
 import com.loopers.config.BatchJobProperties;
 import com.loopers.domain.ranking.ProductRankingWeekly;
