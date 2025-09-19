@@ -17,6 +17,8 @@ dependencies {
     // UUIDv7
     implementation("com.fasterxml.uuid:java-uuid-generator")
 
+    implementation("org.threeten:threeten-extra")
+
     // querydsl
     annotationProcessor("com.querydsl:querydsl-apt::jakarta")
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
