@@ -45,7 +45,7 @@ public class ProductRankingJobConfig {
     private final MonthlyRankingAggregationTasklet monthlyRankingAggregationTasklet;
 
     @Bean(name = JOB_NAME)
-    public Job productRankingJob() {
+    Job productRankingJob() {
         return new JobBuilder(JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .listener(commonJobListener)
@@ -61,28 +61,28 @@ public class ProductRankingJobConfig {
     }
 
     @Bean(name = DAILY_RANKING_STEP_NAME)
-    public Step dailyRankingStep() {
+    Step dailyRankingStep() {
         return new StepBuilder(DAILY_RANKING_STEP_NAME, jobRepository)
                 .tasklet(dailyRankingAggregationTasklet, transactionManager)
                 .build();
     }
 
     @Bean(name = WEEKLY_RANKING_STEP_NAME)
-    public Step weeklyRankingStep() {
+    Step weeklyRankingStep() {
         return new StepBuilder(WEEKLY_RANKING_STEP_NAME, jobRepository)
                 .tasklet(weeklyRankingAggregationTasklet, transactionManager)
                 .build();
     }
 
     @Bean(name = MONTHLY_RANKING_STEP_NAME)
-    public Step monthlyRankingStep() {
+    Step monthlyRankingStep() {
         return new StepBuilder(MONTHLY_RANKING_STEP_NAME, jobRepository)
                 .tasklet(monthlyRankingAggregationTasklet, transactionManager)
                 .build();
     }
 
     @Bean
-    public Flow weeklyRankingFlow() {
+    Flow weeklyRankingFlow() {
         return new FlowBuilder<Flow>("weeklyRankingFlow")
                 .start(weeklyDecider())
                 .on("RUN").to(weeklyRankingStep())
@@ -92,7 +92,7 @@ public class ProductRankingJobConfig {
     }
 
     @Bean
-    public Flow monthlyRankingFlow() {
+    Flow monthlyRankingFlow() {
         return new FlowBuilder<Flow>("monthlyRankingFlow")
                 .start(monthlyDecider())
                 .on("RUN").to(monthlyRankingStep())

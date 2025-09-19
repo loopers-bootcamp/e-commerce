@@ -20,12 +20,15 @@ public class RankingFacade {
     private final RankingService rankingService;
     private final ProductService productService;
 
-    public RankingOutput.SearchRankings searchRankings(RankingInput.SearchRankings input) {
-        RankingCommand.SearchRanks rankCommand = new RankingCommand.SearchRanks(input.date(), input.page(), input.size());
-        RankingResult.SearchRanks ranks = rankingService.searchRanks(rankCommand);
+    public RankingOutput.SearchDaily searchDaily(RankingInput.SearchDaily input) {
+        RankingResult.SearchDaily ranks = rankingService.searchDaily(new RankingCommand.SearchDaily(
+                input.date(),
+                input.page(),
+                input.size()
+        ));
 
         if (CollectionUtils.isEmpty(ranks.items())) {
-            return RankingOutput.SearchRankings.empty(ranks);
+            return RankingOutput.SearchDaily.empty(ranks);
         }
 
         List<ProductResult.GetProductDetail> details = ranks.items()
@@ -35,7 +38,49 @@ public class RankingFacade {
                 )
                 .toList();
 
-        return RankingOutput.SearchRankings.from(ranks, details);
+        return RankingOutput.SearchDaily.from(ranks, details);
+    }
+
+    public RankingOutput.SearchWeekly searchWeekly(RankingInput.SearchWeekly input) {
+        RankingResult.SearchWeekly ranks = rankingService.searchWeekly(new RankingCommand.SearchWeekly(
+                input.yearWeek(),
+                input.page(),
+                input.size()
+        ));
+
+        if (CollectionUtils.isEmpty(ranks.items())) {
+            return RankingOutput.SearchWeekly.empty(ranks);
+        }
+
+        List<ProductResult.GetProductDetail> details = ranks.items()
+                .stream()
+                .map(rank -> productService.getProductDetail(rank.productId())
+                        .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND))
+                )
+                .toList();
+
+        return RankingOutput.SearchWeekly.from(ranks, details);
+    }
+
+    public RankingOutput.SearchMonthly searchMonthly(RankingInput.SearchMonthly input) {
+        RankingResult.SearchMonthly ranks = rankingService.searchMonthly(new RankingCommand.SearchMonthly(
+                input.yearMonth(),
+                input.page(),
+                input.size()
+        ));
+
+        if (CollectionUtils.isEmpty(ranks.items())) {
+            return RankingOutput.SearchMonthly.empty(ranks);
+        }
+
+        List<ProductResult.GetProductDetail> details = ranks.items()
+                .stream()
+                .map(rank -> productService.getProductDetail(rank.productId())
+                        .orElseThrow(() -> new BusinessException(CommonErrorType.NOT_FOUND))
+                )
+                .toList();
+
+        return RankingOutput.SearchMonthly.from(ranks, details);
     }
 
 }
