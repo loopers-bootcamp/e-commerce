@@ -25,13 +25,7 @@ spring:
       initialize-schema: never
     job:
       enabled: false
-
-batch:
-  jobs:
-    product_ranking_weekly_job:
-      steps:
-        aggregate_step:
-          check-size: 1000
+      name: ${job.name:NONE}
 
 ---
 

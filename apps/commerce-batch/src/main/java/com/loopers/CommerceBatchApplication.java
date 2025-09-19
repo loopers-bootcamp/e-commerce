@@ -1,6 +1,7 @@
 package com.loopers;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -11,6 +12,7 @@ import java.util.TimeZone;
 
 @EnableAsync
 @EnableScheduling
+@EnableBatchProcessing(dataSourceRef = "mysqlMainDataSource")
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class CommerceBatchApplication {

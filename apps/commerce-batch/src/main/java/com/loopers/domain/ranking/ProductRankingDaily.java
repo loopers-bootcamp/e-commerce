@@ -8,37 +8,42 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
 
 @Getter
 @Entity
 @Table(
-        name = "product_rankings_monthly",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"year_month", "ref_product_id"}),
-        indexes = @Index(columnList = "year_month, ref_product_id, rank")
+        name = "product_rankings_daily",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"date", "ref_product_id"}),
+        indexes = @Index(columnList = "date, ref_product_id, rank")
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductRankingMonthly extends BaseEntity {
+public class ProductRankingDaily extends BaseEntity {
 
     /**
      * 아이디
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_ranking_weekly_id", nullable = false, updatable = false)
+    @Column(name = "product_ranking_daily_id", nullable = false, updatable = false)
     private Long id;
 
     /**
-     * 한 해의 주차
+     * 기준일자
      */
-    @Column(name = "year_month", nullable = false, updatable = false)
-    private YearMonth yearMonth;
+    @Column(name = "date", nullable = false, updatable = false)
+    private LocalDate date;
 
     /**
      * 순위
      */
     @Column(name = "rank", nullable = false, updatable = false)
     private Integer rank;
+
+    /**
+     * 점수
+     */
+    @Column(name = "score", nullable = false, updatable = false)
+    private Double score;
 
     // -------------------------------------------------------------------------------------------------
 
@@ -51,23 +56,28 @@ public class ProductRankingMonthly extends BaseEntity {
     // -------------------------------------------------------------------------------------------------
 
     @Builder
-    private ProductRankingMonthly(
-            LocalDate standardDate,
+    private ProductRankingDaily(
+            LocalDate date,
             Integer rank,
+            Double score,
             Long productId
     ) {
-        if (standardDate == null) {
+        if (date == null) {
             throw new IllegalArgumentException("기준 일자가 올바르지 않습니다.");
         }
         if (rank == null || rank <= 0) {
             throw new IllegalArgumentException("랭크가 올바르지 않습니다.");
         }
+        if (score == null || Double.isNaN(score) || Double.isInfinite(score) || score <= 0.0) {
+            throw new IllegalArgumentException("점수가 올바르지 않습니다.");
+        }
         if (productId == null) {
             throw new IllegalArgumentException("상품 아이디가 올바르지 않습니다.");
         }
 
-        this.yearMonth = YearMonth.from(standardDate);
+        this.date = date;
         this.rank = rank;
+        this.score = score;
         this.productId = productId;
     }
 

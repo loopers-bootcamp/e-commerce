@@ -69,7 +69,6 @@ public class ProductRankingWeekly extends BaseEntity {
         }
 
         LocalDate dateAtMonday = standardDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-//        this.yearWeek = YearWeek.of(dateAtMonday.getYear(), dateAtMonday.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR));
         this.yearWeek = YearWeek.from(dateAtMonday);
         this.rank = rank;
         this.productId = productId;

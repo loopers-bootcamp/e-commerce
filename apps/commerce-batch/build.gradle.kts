@@ -7,6 +7,7 @@ dependencies {
 
     // batch
     implementation("org.springframework.boot:spring-boot-starter-batch")
+    testImplementation("org.springframework.batch:spring-batch-test")
 
     implementation("org.threeten:threeten-extra")
 
