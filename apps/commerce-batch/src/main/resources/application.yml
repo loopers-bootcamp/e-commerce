@@ -1,0 +1,58 @@
+server:
+  shutdown: graceful
+  port: 8086
+
+spring:
+  mvc.format.date: iso
+  threads.virtual.enabled: true
+  application.name: commerce-batch
+  profiles:
+    active: local
+  config:
+    import:
+      - application-jpa.yml
+      - application-redis.yml
+      - application-logging.yml
+
+  task:
+    execution:
+      pool:
+        core-size: 8
+        max-size: 16
+        queue-capacity: 8
+  batch:
+    jdbc:
+      initialize-schema: never
+    job:
+      enabled: false
+      name: ${job.name:NONE}
+
+---
+
+spring.config.activate.on-profile: test
+
+spring:
+  batch:
+    jdbc:
+      initialize-schema: always
+
+---
+
+spring.config.activate.on-profile: local
+
+spring:
+  batch:
+    job:
+      enabled: true
+
+---
+
+spring.config.activate.on-profile: dev
+
+---
+
+spring.config.activate.on-profile: qa
+
+---
+
+spring.config.activate.on-profile: prd

@@ -53,6 +53,9 @@ subprojects {
 
             // UUID v7
             dependency("com.fasterxml.uuid:java-uuid-generator:5.1.0")
+
+            // Additional date-time classes that complement those in Java SE 8.
+            dependency("org.threeten:threeten-extra:1.8.0")
         }
     }
 

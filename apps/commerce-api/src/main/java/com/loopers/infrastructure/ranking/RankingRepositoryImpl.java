@@ -1,5 +1,7 @@
 package com.loopers.infrastructure.ranking;
 
+import com.loopers.domain.ranking.ProductRankingMonthly;
+import com.loopers.domain.ranking.ProductRankingWeekly;
 import com.loopers.domain.ranking.RankingQueryResult;
 import com.loopers.domain.ranking.RankingRepository;
 import com.loopers.support.StringUtils;
@@ -11,8 +13,10 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
+import org.threeten.extra.YearWeek;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -20,6 +24,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class RankingRepositoryImpl implements RankingRepository {
 
+    private final ProductRankingWeeklyJpaRepository productRankingWeeklyJpaRepository;
+    private final ProductRankingMonthlyJpaRepository productRankingMonthlyJpaRepository;
     private final StringRedisTemplate stringRedisTemplate;
 
     @Override
@@ -63,6 +69,36 @@ public class RankingRepositoryImpl implements RankingRepository {
 
         return PageableExecutionUtils.getPage(List.copyOf(content), pageRequest,
                 () -> Objects.requireNonNullElse(zSet.zCard(key), 0L));
+    }
+
+    @Override
+    public Page<RankingQueryResult.SearchRanks> searchRanks(YearWeek yearWeek, Pageable pageable) {
+        Page<ProductRankingWeekly> page = productRankingWeeklyJpaRepository.findByYearWeek(yearWeek, pageable);
+
+        List<RankingQueryResult.SearchRanks> content = page.getContent()
+                .stream()
+                .map(item -> new RankingQueryResult.SearchRanks(
+                        item.getProductId(),
+                        Long.valueOf(item.getRank())
+                ))
+                .toList();
+
+        return PageableExecutionUtils.getPage(content, pageable, page::getTotalElements);
+    }
+
+    @Override
+    public Page<RankingQueryResult.SearchRanks> searchRanks(YearMonth yearMonth, Pageable pageable) {
+        Page<ProductRankingMonthly> page = productRankingMonthlyJpaRepository.findByYearMonth(yearMonth, pageable);
+
+        List<RankingQueryResult.SearchRanks> content = page.getContent()
+                .stream()
+                .map(item -> new RankingQueryResult.SearchRanks(
+                        item.getProductId(),
+                        Long.valueOf(item.getRank())
+                ))
+                .toList();
+
+        return PageableExecutionUtils.getPage(content, pageable, page::getTotalElements);
     }
 
 }

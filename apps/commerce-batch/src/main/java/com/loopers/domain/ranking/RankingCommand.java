@@ -1,42 +1,38 @@
 package com.loopers.domain.ranking;
 
-import org.threeten.extra.YearWeek;
-
 import java.time.LocalDate;
-import java.time.YearMonth;
+import java.util.List;
+import java.util.Map;
 
 public record RankingCommand() {
 
-    public record FindRank(
+    public record GetDaily(
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+    }
+
+    // -------------------------------------------------------------------------------------------------
+
+    public record AggregateDaily(
             LocalDate date,
-            Long productId
+            List<Map.Entry<Long, Double>> entries
     ) {
     }
 
     // -------------------------------------------------------------------------------------------------
 
-    public record SearchDaily(
+    public record AggregateWeekly(
             LocalDate date,
-            Integer page,
-            Integer size
+            List<Long> productIds
     ) {
     }
 
     // -------------------------------------------------------------------------------------------------
 
-    public record SearchWeekly(
-            YearWeek yearWeek,
-            Integer page,
-            Integer size
-    ) {
-    }
-
-    // -------------------------------------------------------------------------------------------------
-
-    public record SearchMonthly(
-            YearMonth yearMonth,
-            Integer page,
-            Integer size
+    public record AggregateMonthly(
+            LocalDate date,
+            List<Long> productIds
     ) {
     }
 

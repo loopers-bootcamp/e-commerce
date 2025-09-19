@@ -23,11 +23,27 @@ public class RankingService {
     }
 
     @ReadOnlyTransactional
-    public RankingResult.SearchRanks searchRanks(RankingCommand.SearchRanks command) {
+    public RankingResult.SearchDaily searchDaily(RankingCommand.SearchDaily command) {
         Pageable pageable = PageRequest.of(command.page(), command.size());
         Page<RankingQueryResult.SearchRanks> page = rankingRepository.searchRanks(command.date(), pageable);
 
-        return RankingResult.SearchRanks.from(page, pageable);
+        return RankingResult.SearchDaily.from(page, pageable);
+    }
+
+    @ReadOnlyTransactional
+    public RankingResult.SearchWeekly searchWeekly(RankingCommand.SearchWeekly command) {
+        Pageable pageable = PageRequest.of(command.page(), command.size());
+        Page<RankingQueryResult.SearchRanks> page = rankingRepository.searchRanks(command.yearWeek(), pageable);
+
+        return RankingResult.SearchWeekly.from(page, pageable);
+    }
+
+    @ReadOnlyTransactional
+    public RankingResult.SearchMonthly searchMonthly(RankingCommand.SearchMonthly command) {
+        Pageable pageable = PageRequest.of(command.page(), command.size());
+        Page<RankingQueryResult.SearchRanks> page = rankingRepository.searchRanks(command.yearMonth(), pageable);
+
+        return RankingResult.SearchMonthly.from(page, pageable);
     }
 
 }

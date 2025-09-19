@@ -1,4 +1,14 @@
-### 상품 랭킹 조회
-GET {{commerce-api}}/api/v1/rankings?date=2025-09-10&page=1&size=10
+### (실시간) 일간 상품 랭킹 조회
+GET {{commerce-api}}/api/v1/rankings/daily?date=2025-09-10&page=1&size=10
+X-USER-ID: user000001
+Content-Type: application/json
+
+### 주간 상품 랭킹 조회
+GET {{commerce-api}}/api/v1/rankings/weekly?yearWeek=2025-W36&page=1&size=10
+X-USER-ID: user000001
+Content-Type: application/json
+
+### 월간 상품 랭킹 조회
+GET {{commerce-api}}/api/v1/rankings/monthly?yearMonth=2025-08&page=1&size=10
 X-USER-ID: user000001
 Content-Type: application/json
