@@ -9,12 +9,30 @@ import jakarta.validation.Valid;
 public interface RankingV1ApiSpec {
 
     @Operation(
-            summary = "상품 랭킹 조회",
-            description = "상품 랭킹을 조회합니다."
+            summary = "(실시간) 일간 상품 랭킹 조회",
+            description = "(실시간) 일간 상품 랭킹을 조회합니다."
     )
-    ApiResponse<RankingResponse.SearchRankings> searchRankings(
+    ApiResponse<RankingResponse.SearchDaily> searchDailyRankings(
             @Valid
-            RankingRequest.SearchRankings request
+            RankingRequest.SearchDaily request
+    );
+
+    @Operation(
+            summary = "주간 상품 랭킹 조회",
+            description = "주간 상품 랭킹을 조회합니다."
+    )
+    ApiResponse<RankingResponse.SearchWeekly> searchWeeklyRankings(
+            @Valid
+            RankingRequest.SearchWeekly request
+    );
+
+    @Operation(
+            summary = "월간 상품 랭킹 조회",
+            description = "월간 상품 랭킹을 조회합니다."
+    )
+    ApiResponse<RankingResponse.SearchMonthly> searchMonthlyRankings(
+            @Valid
+            RankingRequest.SearchMonthly request
     );
 
 }

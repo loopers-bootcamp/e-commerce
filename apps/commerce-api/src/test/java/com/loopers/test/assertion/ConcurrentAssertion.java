@@ -70,6 +70,10 @@ public class ConcurrentAssertion<V> {
                         V executed = adapter.execute(n);
                         this.successCount.incrementAndGet();
                         return executed;
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        this.errors.add(e);
+                        return null;
                     } catch (Throwable t) {
                         this.errors.add(t);
                         return null;
